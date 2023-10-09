@@ -407,797 +407,797 @@ static class _UniFFILib {
         FfiConverterTypeSlidingSyncViewStateObserver.INSTANCE.Register();
         }
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_StoppableSpawn_object_free(IntPtr @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern sbyte matrix_sdk_ffi_397b_StoppableSpawn_is_cancelled(StoppableSpawnSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_StoppableSpawn_cancel(StoppableSpawnSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_SlidingSyncViewBuilder_object_free(IntPtr @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern SlidingSyncViewBuilderSafeHandle matrix_sdk_ffi_397b_SlidingSyncViewBuilder_new(
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern SlidingSyncViewBuilderSafeHandle matrix_sdk_ffi_397b_SlidingSyncViewBuilder_timeline_limit(SlidingSyncViewBuilderSafeHandle @ptr,uint @limit,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern SlidingSyncViewBuilderSafeHandle matrix_sdk_ffi_397b_SlidingSyncViewBuilder_sync_mode(SlidingSyncViewBuilderSafeHandle @ptr,RustBuffer @mode,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern SlidingSyncViewBuilderSafeHandle matrix_sdk_ffi_397b_SlidingSyncViewBuilder_batch_size(SlidingSyncViewBuilderSafeHandle @ptr,uint @size,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern SlidingSyncViewBuilderSafeHandle matrix_sdk_ffi_397b_SlidingSyncViewBuilder_name(SlidingSyncViewBuilderSafeHandle @ptr,RustBuffer @name,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern SlidingSyncViewBuilderSafeHandle matrix_sdk_ffi_397b_SlidingSyncViewBuilder_sort(SlidingSyncViewBuilderSafeHandle @ptr,RustBuffer @sort,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern SlidingSyncViewBuilderSafeHandle matrix_sdk_ffi_397b_SlidingSyncViewBuilder_add_range(SlidingSyncViewBuilderSafeHandle @ptr,uint @from,uint @to,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern SlidingSyncViewBuilderSafeHandle matrix_sdk_ffi_397b_SlidingSyncViewBuilder_reset_ranges(SlidingSyncViewBuilderSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern SlidingSyncViewBuilderSafeHandle matrix_sdk_ffi_397b_SlidingSyncViewBuilder_required_state(SlidingSyncViewBuilderSafeHandle @ptr,RustBuffer @requiredState,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern SlidingSyncViewSafeHandle matrix_sdk_ffi_397b_SlidingSyncViewBuilder_build(SlidingSyncViewBuilderSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_SlidingSyncView_object_free(IntPtr @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern StoppableSpawnSafeHandle matrix_sdk_ffi_397b_SlidingSyncView_observe_room_list(SlidingSyncViewSafeHandle @ptr,ulong @observer,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern StoppableSpawnSafeHandle matrix_sdk_ffi_397b_SlidingSyncView_observe_rooms_count(SlidingSyncViewSafeHandle @ptr,ulong @observer,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern StoppableSpawnSafeHandle matrix_sdk_ffi_397b_SlidingSyncView_observe_state(SlidingSyncViewSafeHandle @ptr,ulong @observer,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern StoppableSpawnSafeHandle matrix_sdk_ffi_397b_SlidingSyncView_observe_room_items(SlidingSyncViewSafeHandle @ptr,ulong @observer,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_SlidingSyncView_current_room_count(SlidingSyncViewSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_SlidingSyncView_current_rooms_list(SlidingSyncViewSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_SlidingSyncView_add_range(SlidingSyncViewSafeHandle @ptr,uint @from,uint @to,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_SlidingSyncView_reset_ranges(SlidingSyncViewSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_SlidingSyncView_set_range(SlidingSyncViewSafeHandle @ptr,uint @from,uint @to,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_UnreadNotificationsCount_object_free(IntPtr @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern sbyte matrix_sdk_ffi_397b_UnreadNotificationsCount_has_notifications(UnreadNotificationsCountSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern uint matrix_sdk_ffi_397b_UnreadNotificationsCount_highlight_count(UnreadNotificationsCountSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern uint matrix_sdk_ffi_397b_UnreadNotificationsCount_notification_count(UnreadNotificationsCountSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_SlidingSyncRoom_object_free(IntPtr @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_SlidingSyncRoom_name(SlidingSyncRoomSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_SlidingSyncRoom_room_id(SlidingSyncRoomSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_SlidingSyncRoom_full_room(SlidingSyncRoomSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_SlidingSyncRoom_is_dm(SlidingSyncRoomSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_SlidingSyncRoom_is_initial(SlidingSyncRoomSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern sbyte matrix_sdk_ffi_397b_SlidingSyncRoom_has_unread_notifications(SlidingSyncRoomSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern UnreadNotificationsCountSafeHandle matrix_sdk_ffi_397b_SlidingSyncRoom_unread_notifications(SlidingSyncRoomSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern sbyte matrix_sdk_ffi_397b_SlidingSyncRoom_is_loading_more(SlidingSyncRoomSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_SlidingSyncRoom_latest_room_message(SlidingSyncRoomSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_SlidingSync_object_free(IntPtr @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_SlidingSync_set_observer(SlidingSyncSafeHandle @ptr,RustBuffer @observer,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern StoppableSpawnSafeHandle matrix_sdk_ffi_397b_SlidingSync_sync(SlidingSyncSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_SlidingSync_subscribe(SlidingSyncSafeHandle @ptr,RustBuffer @roomId,RustBuffer @settings,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_SlidingSync_unsubscribe(SlidingSyncSafeHandle @ptr,RustBuffer @roomId,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_SlidingSync_get_view(SlidingSyncSafeHandle @ptr,RustBuffer @name,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_SlidingSync_get_room(SlidingSyncSafeHandle @ptr,RustBuffer @roomId,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_SlidingSync_get_rooms(SlidingSyncSafeHandle @ptr,RustBuffer @roomIds,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_ClientBuilder_object_free(IntPtr @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern ClientBuilderSafeHandle matrix_sdk_ffi_397b_ClientBuilder_new(
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern ClientBuilderSafeHandle matrix_sdk_ffi_397b_ClientBuilder_base_path(ClientBuilderSafeHandle @ptr,RustBuffer @path,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern ClientBuilderSafeHandle matrix_sdk_ffi_397b_ClientBuilder_username(ClientBuilderSafeHandle @ptr,RustBuffer @username,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern ClientBuilderSafeHandle matrix_sdk_ffi_397b_ClientBuilder_homeserver_url(ClientBuilderSafeHandle @ptr,RustBuffer @url,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern ClientSafeHandle matrix_sdk_ffi_397b_ClientBuilder_build(ClientBuilderSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_SlidingSyncBuilder_object_free(IntPtr @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern SlidingSyncBuilderSafeHandle matrix_sdk_ffi_397b_SlidingSyncBuilder_homeserver(SlidingSyncBuilderSafeHandle @ptr,RustBuffer @url,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern SlidingSyncBuilderSafeHandle matrix_sdk_ffi_397b_SlidingSyncBuilder_add_fullsync_view(SlidingSyncBuilderSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern SlidingSyncBuilderSafeHandle matrix_sdk_ffi_397b_SlidingSyncBuilder_no_views(SlidingSyncBuilderSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern SlidingSyncBuilderSafeHandle matrix_sdk_ffi_397b_SlidingSyncBuilder_add_view(SlidingSyncBuilderSafeHandle @ptr,SlidingSyncViewSafeHandle @view,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern SlidingSyncSafeHandle matrix_sdk_ffi_397b_SlidingSyncBuilder_build(SlidingSyncBuilderSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_Client_object_free(IntPtr @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_Client_set_delegate(ClientSafeHandle @ptr,RustBuffer @delegate,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_Client_login(ClientSafeHandle @ptr,RustBuffer @username,RustBuffer @password,RustBuffer @initialDeviceName,RustBuffer @deviceId,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_Client_restore_login(ClientSafeHandle @ptr,RustBuffer @restoreToken,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_Client_start_sync(ClientSafeHandle @ptr,RustBuffer @timelineLimit,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_Client_restore_token(ClientSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_Client_user_id(ClientSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_Client_display_name(ClientSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_Client_avatar_url(ClientSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_Client_device_id(ClientSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_Client_account_data(ClientSafeHandle @ptr,RustBuffer @eventType,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_Client_set_account_data(ClientSafeHandle @ptr,RustBuffer @eventType,RustBuffer @content,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_Client_get_media_content(ClientSafeHandle @ptr,MediaSourceSafeHandle @source,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_Client_get_media_thumbnail(ClientSafeHandle @ptr,MediaSourceSafeHandle @source,ulong @width,ulong @height,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern SessionVerificationControllerSafeHandle matrix_sdk_ffi_397b_Client_get_session_verification_controller(ClientSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern SlidingSyncSafeHandle matrix_sdk_ffi_397b_Client_full_sliding_sync(ClientSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern SlidingSyncBuilderSafeHandle matrix_sdk_ffi_397b_Client_sliding_sync(ClientSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_Client_logout(ClientSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_Room_object_free(IntPtr @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_Room_set_delegate(RoomSafeHandle @ptr,RustBuffer @delegate,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_Room_id(RoomSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_Room_name(RoomSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_Room_topic(RoomSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_Room_avatar_url(RoomSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_Room_membership(RoomSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern sbyte matrix_sdk_ffi_397b_Room_is_direct(RoomSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern sbyte matrix_sdk_ffi_397b_Room_is_public(RoomSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern sbyte matrix_sdk_ffi_397b_Room_is_space(RoomSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern sbyte matrix_sdk_ffi_397b_Room_is_encrypted(RoomSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern sbyte matrix_sdk_ffi_397b_Room_is_tombstoned(RoomSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_Room_display_name(RoomSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_Room_member_avatar_url(RoomSafeHandle @ptr,RustBuffer @userId,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_Room_member_display_name(RoomSafeHandle @ptr,RustBuffer @userId,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_Room_start_live_event_listener(RoomSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_Room_stop_live_event_listener(RoomSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_Room_send(RoomSafeHandle @ptr,RoomMessageEventContentSafeHandle @msg,RustBuffer @txnId,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_Room_send_reply(RoomSafeHandle @ptr,RustBuffer @msg,RustBuffer @inReplyToEventId,RustBuffer @txnId,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_Room_redact(RoomSafeHandle @ptr,RustBuffer @eventId,RustBuffer @reason,RustBuffer @txnId,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_BackwardsStream_object_free(IntPtr @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_BackwardsStream_paginate_backwards(BackwardsStreamSafeHandle @ptr,ulong @count,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_RoomMessageEventContent_object_free(IntPtr @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_AnyMessage_object_free(IntPtr @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_AnyMessage_text_message(AnyMessageSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_AnyMessage_image_message(AnyMessageSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_AnyMessage_notice_message(AnyMessageSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_AnyMessage_emote_message(AnyMessageSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_BaseMessage_object_free(IntPtr @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_BaseMessage_id(BaseMessageSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_BaseMessage_body(BaseMessageSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_BaseMessage_sender(BaseMessageSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern ulong matrix_sdk_ffi_397b_BaseMessage_origin_server_ts(BaseMessageSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_BaseMessage_transaction_id(BaseMessageSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_TextMessage_object_free(IntPtr @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern BaseMessageSafeHandle matrix_sdk_ffi_397b_TextMessage_base_message(TextMessageSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_TextMessage_html_body(TextMessageSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_ImageMessage_object_free(IntPtr @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern BaseMessageSafeHandle matrix_sdk_ffi_397b_ImageMessage_base_message(ImageMessageSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern MediaSourceSafeHandle matrix_sdk_ffi_397b_ImageMessage_source(ImageMessageSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_ImageMessage_width(ImageMessageSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_ImageMessage_height(ImageMessageSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_ImageMessage_blurhash(ImageMessageSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_NoticeMessage_object_free(IntPtr @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern BaseMessageSafeHandle matrix_sdk_ffi_397b_NoticeMessage_base_message(NoticeMessageSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_NoticeMessage_html_body(NoticeMessageSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_EmoteMessage_object_free(IntPtr @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern BaseMessageSafeHandle matrix_sdk_ffi_397b_EmoteMessage_base_message(EmoteMessageSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_EmoteMessage_html_body(EmoteMessageSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_MediaSource_object_free(IntPtr @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_MediaSource_url(MediaSourceSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_HomeserverLoginDetails_object_free(IntPtr @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_HomeserverLoginDetails_url(HomeserverLoginDetailsSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_HomeserverLoginDetails_authentication_issuer(HomeserverLoginDetailsSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern sbyte matrix_sdk_ffi_397b_HomeserverLoginDetails_supports_password_login(HomeserverLoginDetailsSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_AuthenticationService_object_free(IntPtr @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern AuthenticationServiceSafeHandle matrix_sdk_ffi_397b_AuthenticationService_new(RustBuffer @basePath,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_AuthenticationService_homeserver_details(AuthenticationServiceSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_AuthenticationService_configure_homeserver(AuthenticationServiceSafeHandle @ptr,RustBuffer @serverName,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern ClientSafeHandle matrix_sdk_ffi_397b_AuthenticationService_login(AuthenticationServiceSafeHandle @ptr,RustBuffer @username,RustBuffer @password,RustBuffer @initialDeviceName,RustBuffer @deviceId,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern ClientSafeHandle matrix_sdk_ffi_397b_AuthenticationService_restore_with_access_token(AuthenticationServiceSafeHandle @ptr,RustBuffer @token,RustBuffer @deviceId,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_SessionVerificationEmoji_object_free(IntPtr @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_SessionVerificationEmoji_symbol(SessionVerificationEmojiSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer matrix_sdk_ffi_397b_SessionVerificationEmoji_description(SessionVerificationEmojiSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_SessionVerificationController_object_free(IntPtr @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_SessionVerificationController_set_delegate(SessionVerificationControllerSafeHandle @ptr,RustBuffer @delegate,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern sbyte matrix_sdk_ffi_397b_SessionVerificationController_is_verified(SessionVerificationControllerSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_SessionVerificationController_request_verification(SessionVerificationControllerSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_SessionVerificationController_approve_verification(SessionVerificationControllerSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_SessionVerificationController_decline_verification(SessionVerificationControllerSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void matrix_sdk_ffi_397b_SessionVerificationController_cancel_verification(SessionVerificationControllerSafeHandle @ptr,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_ClientDelegate_init_callback(ForeignCallback @callbackStub,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_SlidingSyncObserver_init_callback(ForeignCallback @callbackStub,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_SlidingSyncViewStateObserver_init_callback(ForeignCallback @callbackStub,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_SlidingSyncViewRoomListObserver_init_callback(ForeignCallback @callbackStub,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_SlidingSyncViewRoomsCountObserver_init_callback(ForeignCallback @callbackStub,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_SlidingSyncViewRoomItemsObserver_init_callback(ForeignCallback @callbackStub,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_RoomDelegate_init_callback(ForeignCallback @callbackStub,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_SessionVerificationControllerDelegate_init_callback(ForeignCallback @callbackStub,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer ffi_matrix_sdk_ffi_397b_rustbuffer_alloc(int @size,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer ffi_matrix_sdk_ffi_397b_rustbuffer_from_bytes(ForeignBytes @bytes,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern void ffi_matrix_sdk_ffi_397b_rustbuffer_free(RustBuffer @buf,
     ref RustCallStatus _uniffi_out_err
     );
 
-    [DllImport("matrix-sdk")]
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer ffi_matrix_sdk_ffi_397b_rustbuffer_reserve(RustBuffer @buf,int @additional,
     ref RustCallStatus _uniffi_out_err
     );

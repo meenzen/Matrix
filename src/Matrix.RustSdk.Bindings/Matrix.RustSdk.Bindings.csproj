@@ -13,5 +13,14 @@
     <ItemGroup>
         <None Include="README.md" Pack="true" PackagePath="/" />
     </ItemGroup>
+    
+    <ItemGroup>
+        <Content Include="../../external/matrix-rust-sdk/target/release/libmatrix_sdk_ffi.so">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Link>libmatrix_sdk_ffi.so</Link>
+            <Pack>true</Pack>
+            <PackagePath>runtimes/linux-x64/native/libmatrix_sdk_ffi.so</PackagePath>
+        </Content>
+    </ItemGroup>
 
 </Project>
