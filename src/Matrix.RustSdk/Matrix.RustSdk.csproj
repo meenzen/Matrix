@@ -1,12 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0;net7.0</TargetFrameworks>
+        <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
 
         <PackageId>Matrix.RustSdk</PackageId>
         <PackageDescription>A C# wrapper for the matrix-rust-sdk crate.</PackageDescription>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
+    
+    <ItemGroup>
+        <PackageReference Include="Roslynator.Analyzers" Version="4.5.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="SonarAnalyzer.CSharp" Version="9.11.0.78383">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
 
     <ItemGroup>
         <None Include="../../README.md" Pack="true" PackagePath="/" />
