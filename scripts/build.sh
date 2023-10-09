@@ -11,4 +11,3 @@ echo "Building rust-tools image..."
 docker build -t rust-tools -f Dockerfile .
 
 docker run --rm --user $USER_ID:$GROUP_ID -v $(pwd):/app rust-tools bash -c ./scripts/generate-bindings.sh
-./scripts/format-bindings.sh
