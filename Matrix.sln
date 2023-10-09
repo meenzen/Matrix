@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Matrix.RustSdk", "src\Matrix.RustSdk\Matrix.RustSdk.csproj", "{6FECF5D4-CEF4-476B-8763-7AD11F7874C1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Matrix.RustSdk.Bindings", "src\Matrix.RustSdk.Bindings\Matrix.RustSdk.Bindings.csproj", "{AD71BDFA-F850-4226-B78E-9366371B3E6F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Matrix.RustSdk.Tests", "test\Matrix.RustSdk.Tests\Matrix.RustSdk.Tests.csproj", "{0B0DE234-61C1-4722-A941-ED1663AC933A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6FECF5D4-CEF4-476B-8763-7AD11F7874C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6FECF5D4-CEF4-476B-8763-7AD11F7874C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6FECF5D4-CEF4-476B-8763-7AD11F7874C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6FECF5D4-CEF4-476B-8763-7AD11F7874C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD71BDFA-F850-4226-B78E-9366371B3E6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD71BDFA-F850-4226-B78E-9366371B3E6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD71BDFA-F850-4226-B78E-9366371B3E6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD71BDFA-F850-4226-B78E-9366371B3E6F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B0DE234-61C1-4722-A941-ED1663AC933A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B0DE234-61C1-4722-A941-ED1663AC933A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B0DE234-61C1-4722-A941-ED1663AC933A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B0DE234-61C1-4722-A941-ED1663AC933A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
