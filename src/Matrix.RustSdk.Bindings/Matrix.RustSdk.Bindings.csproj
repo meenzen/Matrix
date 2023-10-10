@@ -13,13 +13,35 @@
     <ItemGroup>
         <None Include="README.md" Pack="true" PackagePath="/" />
     </ItemGroup>
-    
-    <ItemGroup>
-        <Content Include="../../external/matrix-rust-sdk/target/release/libmatrix_sdk_ffi.so">
+
+    <ItemGroup Condition="'$(Configuration)'=='DEBUG'">
+        <Content Include="../../external/matrix-rust-sdk/target/debug/libmatrix_sdk_ffi.so">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-            <Link>libmatrix_sdk_ffi.so</Link>
             <Pack>true</Pack>
             <PackagePath>runtimes/linux-x64/native/libmatrix_sdk_ffi.so</PackagePath>
+        </Content>
+    </ItemGroup>
+    
+    <ItemGroup Condition="'$(Configuration)'=='RELEASE'">
+        <Content Include="../../external/matrix-rust-sdk/target/x86_64-pc-windows-gnu/release/matrix_sdk_ffi.dll">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Pack>true</Pack>
+            <PackagePath>runtimes/win-x64/native/matrix_sdk_ffi.dll</PackagePath>
+        </Content>
+        <Content Include="../../external/matrix-rust-sdk/target/i686-pc-windows-gnu/release/matrix_sdk_ffi.dll">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Pack>true</Pack>
+            <PackagePath>runtimes/win-x86/native/matrix_sdk_ffi.dll</PackagePath>
+        </Content>
+        <Content Include="../../external/matrix-rust-sdk/target/x86_64-unknown-linux-gnu/release/libmatrix_sdk_ffi.so">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Pack>true</Pack>
+            <PackagePath>runtimes/linux-x64/native/libmatrix_sdk_ffi.so</PackagePath>
+        </Content>
+        <Content Include="../../external/matrix-rust-sdk/target/aarch64-unknown-linux-gnu/release/libmatrix_sdk_ffi.so">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Pack>true</Pack>
+            <PackagePath>runtimes/linux-arm64/native/libmatrix_sdk_ffi.so</PackagePath>
         </Content>
     </ItemGroup>
 
