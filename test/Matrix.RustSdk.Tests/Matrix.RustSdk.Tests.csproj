@@ -32,4 +32,15 @@
       <ProjectReference Include="..\..\src\Matrix.RustSdk\Matrix.RustSdk.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Content Include="../../external/matrix-rust-sdk/target/debug/libmatrix_sdk_ffi.so" Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Visible>false</Visible>
+        </Content>
+        <Content Include="../../external/matrix-rust-sdk/target/debug/matrix_sdk_ffi.dll" Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <Visible>false</Visible>
+        </Content>
+    </ItemGroup>
+
 </Project>
