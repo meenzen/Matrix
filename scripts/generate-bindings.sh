@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-# cargo install uniffi-bindgen-cs --git https://github.com/NordSecurity/uniffi-bindgen-cs --tag v0.2.4+v0.23.0
+# cargo install uniffi-bindgen-cs --git https://github.com/NordSecurity/uniffi-bindgen-cs.git --tag v0.5.0+v0.24.0
 
 echo "Generating bindings..."
 
