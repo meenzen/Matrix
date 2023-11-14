@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-echo "Working directory: $(pwd)"
+echo "=> Working directory: $(pwd)"
 
-./scripts/generate-bindings.sh
+./scripts/build-debug.sh
 ./scripts/build-rust-sdk.sh
