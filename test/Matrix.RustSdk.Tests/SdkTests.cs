@@ -36,6 +36,21 @@ public class SdkTests : IAsyncLifetime
         ClientBuilder builder = new();
         Client client = builder.HomeserverUrl(GetConduitUrl()).Username("@admin:localhost").Build();
         client.Login("@admin:localhost", "admin", null, null);
-        client.StartSync(null);
+
+        CreateRoomParameters parameters =
+            new(
+                name: "TestRoom",
+                isEncrypted: false,
+                visibility: RoomVisibility.Private,
+                preset: RoomPreset.PrivateChat,
+                topic: null,
+                avatar: null,
+                isDirect: false,
+                invite: null
+            );
+        client.CreateRoom(parameters);
+
+        List<Room> rooms = client.Rooms();
+        Assert.Single(rooms);
     }
 }

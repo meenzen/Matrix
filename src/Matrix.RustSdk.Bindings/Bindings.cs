@@ -415,16 +415,21 @@ static class _UniFFILib {
         _UniFFILib.uniffiCheckContractApiVersion();
         _UniFFILib.uniffiCheckApiChecksums();
         
+        FfiConverterTypeBackPaginationStatusListener.INSTANCE.Register();
+        FfiConverterTypeClientDelegate.INSTANCE.Register();
+        FfiConverterTypeClientSessionDelegate.INSTANCE.Register();
+        FfiConverterTypeNotificationSettingsDelegate.INSTANCE.Register();
+        FfiConverterTypeProgressWatcher.INSTANCE.Register();
+        FfiConverterTypeRoomInfoListener.INSTANCE.Register();
+        FfiConverterTypeRoomListEntriesListener.INSTANCE.Register();
+        FfiConverterTypeRoomListLoadingStateListener.INSTANCE.Register();
+        FfiConverterTypeRoomListServiceStateListener.INSTANCE.Register();
+        FfiConverterTypeRoomListServiceSyncIndicatorListener.INSTANCE.Register();
+        FfiConverterTypeSessionVerificationControllerDelegate.INSTANCE.Register();
+        FfiConverterTypeSyncServiceStateObserver.INSTANCE.Register();
+        FfiConverterTypeTimelineListener.INSTANCE.Register();
+        FfiConverterTypeWidgetCapabilitiesProvider.INSTANCE.Register();
         }
-
-    [DllImport("matrix_sdk_ffi")]
-    public static extern void uniffi_matrix_sdk_ffi_fn_free_roommessageeventcontentwithoutrelation(
-    IntPtr ptr,ref RustCallStatus _uniffi_out_err
-    );
-
-    [DllImport("matrix_sdk_ffi")]
-    public static extern RoomMessageEventContentWithoutRelationSafeHandle uniffi_matrix_sdk_ffi_fn_method_roommessageeventcontentwithoutrelation_with_mentions(RoomMessageEventContentWithoutRelationSafeHandle @ptr,RustBuffer @mentions,ref RustCallStatus _uniffi_out_err
-    );
 
     [DllImport("matrix_sdk_ffi")]
     public static extern void uniffi_matrix_sdk_ffi_fn_free_mediasource(
@@ -444,6 +449,1335 @@ static class _UniFFILib {
     );
 
     [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_roommessageeventcontentwithoutrelation(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RoomMessageEventContentWithoutRelationSafeHandle uniffi_matrix_sdk_ffi_fn_method_roommessageeventcontentwithoutrelation_with_mentions(RoomMessageEventContentWithoutRelationSafeHandle @ptr,RustBuffer @mentions,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_authenticationservice(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern AuthenticationServiceSafeHandle uniffi_matrix_sdk_ffi_fn_constructor_authenticationservice_new(RustBuffer @basePath,RustBuffer @passphrase,RustBuffer @userAgent,RustBuffer @oidcConfiguration,RustBuffer @customSlidingSyncProxy,RustBuffer @sessionDelegate,RustBuffer @crossProcessRefreshLockId,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_authenticationservice_configure_homeserver(AuthenticationServiceSafeHandle @ptr,RustBuffer @serverNameOrHomeserverUrl,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_authenticationservice_homeserver_details(AuthenticationServiceSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ClientSafeHandle uniffi_matrix_sdk_ffi_fn_method_authenticationservice_login(AuthenticationServiceSafeHandle @ptr,RustBuffer @username,RustBuffer @password,RustBuffer @initialDeviceName,RustBuffer @deviceId,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ClientSafeHandle uniffi_matrix_sdk_ffi_fn_method_authenticationservice_login_with_oidc_callback(AuthenticationServiceSafeHandle @ptr,OidcAuthenticationDataSafeHandle @authenticationData,RustBuffer @callbackUrl,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern OidcAuthenticationDataSafeHandle uniffi_matrix_sdk_ffi_fn_method_authenticationservice_url_for_oidc_login(AuthenticationServiceSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_client(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_client_account_data(ClientSafeHandle @ptr,RustBuffer @eventType,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_client_account_url(ClientSafeHandle @ptr,RustBuffer @action,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_client_avatar_url(ClientSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_client_cached_avatar_url(ClientSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_client_create_room(ClientSafeHandle @ptr,RustBuffer @request,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_client_device_id(ClientSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_client_display_name(ClientSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_client_get_dm_room(ClientSafeHandle @ptr,RustBuffer @userId,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_client_get_media_content(ClientSafeHandle @ptr,MediaSourceSafeHandle @mediaSource,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern MediaFileHandleSafeHandle uniffi_matrix_sdk_ffi_fn_method_client_get_media_file(ClientSafeHandle @ptr,MediaSourceSafeHandle @mediaSource,RustBuffer @body,RustBuffer @mimeType,sbyte @useCache,RustBuffer @tempDir,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_client_get_media_thumbnail(ClientSafeHandle @ptr,MediaSourceSafeHandle @mediaSource,ulong @width,ulong @height,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern NotificationSettingsSafeHandle uniffi_matrix_sdk_ffi_fn_method_client_get_notification_settings(ClientSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_client_get_profile(ClientSafeHandle @ptr,RustBuffer @userId,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern SessionVerificationControllerSafeHandle uniffi_matrix_sdk_ffi_fn_method_client_get_session_verification_controller(ClientSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_client_homeserver(ClientSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_client_ignore_user(ClientSafeHandle @ptr,RustBuffer @userId,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_client_login(ClientSafeHandle @ptr,RustBuffer @username,RustBuffer @password,RustBuffer @initialDeviceName,RustBuffer @deviceId,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_client_logout(ClientSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern NotificationClientBuilderSafeHandle uniffi_matrix_sdk_ffi_fn_method_client_notification_client(ClientSafeHandle @ptr,RustBuffer @processSetup,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_client_remove_avatar(ClientSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_client_restore_session(ClientSafeHandle @ptr,RustBuffer @session,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_client_rooms(ClientSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_client_search_users(ClientSafeHandle @ptr,RustBuffer @searchTerm,ulong @limit,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_client_session(ClientSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_client_set_account_data(ClientSafeHandle @ptr,RustBuffer @eventType,RustBuffer @content,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_client_set_delegate(ClientSafeHandle @ptr,RustBuffer @delegate,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_client_set_display_name(ClientSafeHandle @ptr,RustBuffer @name,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_client_set_pusher(ClientSafeHandle @ptr,RustBuffer @identifiers,RustBuffer @kind,RustBuffer @appDisplayName,RustBuffer @deviceDisplayName,RustBuffer @profileTag,RustBuffer @lang,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern SyncServiceBuilderSafeHandle uniffi_matrix_sdk_ffi_fn_method_client_sync_service(ClientSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_client_unignore_user(ClientSafeHandle @ptr,RustBuffer @userId,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_client_upload_avatar(ClientSafeHandle @ptr,RustBuffer @mimeType,RustBuffer @data,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_client_upload_media(ClientSafeHandle @ptr,RustBuffer @mimeType,RustBuffer @data,RustBuffer @progressWatcher,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_client_user_id(ClientSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_clientbuilder(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ClientBuilderSafeHandle uniffi_matrix_sdk_ffi_fn_constructor_clientbuilder_new(ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ClientBuilderSafeHandle uniffi_matrix_sdk_ffi_fn_method_clientbuilder_base_path(ClientBuilderSafeHandle @ptr,RustBuffer @path,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ClientSafeHandle uniffi_matrix_sdk_ffi_fn_method_clientbuilder_build(ClientBuilderSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ClientBuilderSafeHandle uniffi_matrix_sdk_ffi_fn_method_clientbuilder_disable_automatic_token_refresh(ClientBuilderSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ClientBuilderSafeHandle uniffi_matrix_sdk_ffi_fn_method_clientbuilder_disable_ssl_verification(ClientBuilderSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ClientBuilderSafeHandle uniffi_matrix_sdk_ffi_fn_method_clientbuilder_enable_cross_process_refresh_lock(ClientBuilderSafeHandle @ptr,RustBuffer @processId,ulong @sessionDelegate,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ClientBuilderSafeHandle uniffi_matrix_sdk_ffi_fn_method_clientbuilder_homeserver_url(ClientBuilderSafeHandle @ptr,RustBuffer @url,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ClientBuilderSafeHandle uniffi_matrix_sdk_ffi_fn_method_clientbuilder_passphrase(ClientBuilderSafeHandle @ptr,RustBuffer @passphrase,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ClientBuilderSafeHandle uniffi_matrix_sdk_ffi_fn_method_clientbuilder_proxy(ClientBuilderSafeHandle @ptr,RustBuffer @url,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ClientBuilderSafeHandle uniffi_matrix_sdk_ffi_fn_method_clientbuilder_server_name(ClientBuilderSafeHandle @ptr,RustBuffer @serverName,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ClientBuilderSafeHandle uniffi_matrix_sdk_ffi_fn_method_clientbuilder_server_versions(ClientBuilderSafeHandle @ptr,RustBuffer @versions,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ClientBuilderSafeHandle uniffi_matrix_sdk_ffi_fn_method_clientbuilder_set_session_delegate(ClientBuilderSafeHandle @ptr,ulong @sessionDelegate,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ClientBuilderSafeHandle uniffi_matrix_sdk_ffi_fn_method_clientbuilder_sliding_sync_proxy(ClientBuilderSafeHandle @ptr,RustBuffer @slidingSyncProxy,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ClientBuilderSafeHandle uniffi_matrix_sdk_ffi_fn_method_clientbuilder_user_agent(ClientBuilderSafeHandle @ptr,RustBuffer @userAgent,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ClientBuilderSafeHandle uniffi_matrix_sdk_ffi_fn_method_clientbuilder_username(ClientBuilderSafeHandle @ptr,RustBuffer @username,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_eventtimelineitem(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_can_be_replied_to(EventTimelineItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern TimelineItemContentSafeHandle uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_content(EventTimelineItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_debug_info(EventTimelineItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_event_id(EventTimelineItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_is_editable(EventTimelineItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_is_local(EventTimelineItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_is_own(EventTimelineItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_is_remote(EventTimelineItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_local_send_state(EventTimelineItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_origin(EventTimelineItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_reactions(EventTimelineItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_read_receipts(EventTimelineItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_sender(EventTimelineItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_sender_profile(EventTimelineItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ulong uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_timestamp(EventTimelineItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_transaction_id(EventTimelineItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_homeserverlogindetails(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_homeserverlogindetails_supports_oidc_login(HomeserverLoginDetailsSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_homeserverlogindetails_supports_password_login(HomeserverLoginDetailsSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_homeserverlogindetails_url(HomeserverLoginDetailsSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_mediafilehandle(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_mediafilehandle_path(MediaFileHandleSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_mediafilehandle_persist(MediaFileHandleSafeHandle @ptr,RustBuffer @path,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_message(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_message_body(MessageSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_message_in_reply_to(MessageSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_message_is_edited(MessageSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_message_is_threaded(MessageSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_message_msgtype(MessageSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_notificationclient(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_notificationclient_get_notification(NotificationClientSafeHandle @ptr,RustBuffer @roomId,RustBuffer @eventId,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_notificationclientbuilder(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern NotificationClientBuilderSafeHandle uniffi_matrix_sdk_ffi_fn_method_notificationclientbuilder_filter_by_push_rules(NotificationClientBuilderSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern NotificationClientSafeHandle uniffi_matrix_sdk_ffi_fn_method_notificationclientbuilder_finish(NotificationClientBuilderSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_notificationsettings(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_notificationsettings_contains_keywords_rules(NotificationSettingsSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_notificationsettings_get_default_room_notification_mode(NotificationSettingsSafeHandle @ptr,sbyte @isEncrypted,sbyte @isOneToOne
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_notificationsettings_get_room_notification_settings(NotificationSettingsSafeHandle @ptr,RustBuffer @roomId,sbyte @isEncrypted,sbyte @isOneToOne
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_notificationsettings_get_rooms_with_user_defined_rules(NotificationSettingsSafeHandle @ptr,RustBuffer @enabled
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_notificationsettings_get_user_defined_room_notification_mode(NotificationSettingsSafeHandle @ptr,RustBuffer @roomId
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_notificationsettings_is_call_enabled(NotificationSettingsSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_notificationsettings_is_room_mention_enabled(NotificationSettingsSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_notificationsettings_is_user_mention_enabled(NotificationSettingsSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_notificationsettings_restore_default_room_notification_mode(NotificationSettingsSafeHandle @ptr,RustBuffer @roomId
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_notificationsettings_set_call_enabled(NotificationSettingsSafeHandle @ptr,sbyte @enabled
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_notificationsettings_set_default_room_notification_mode(NotificationSettingsSafeHandle @ptr,sbyte @isEncrypted,sbyte @isOneToOne,RustBuffer @mode
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_notificationsettings_set_delegate(NotificationSettingsSafeHandle @ptr,RustBuffer @delegate,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_notificationsettings_set_room_mention_enabled(NotificationSettingsSafeHandle @ptr,sbyte @enabled
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_notificationsettings_set_room_notification_mode(NotificationSettingsSafeHandle @ptr,RustBuffer @roomId,RustBuffer @mode
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_notificationsettings_set_user_mention_enabled(NotificationSettingsSafeHandle @ptr,sbyte @enabled
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_notificationsettings_unmute_room(NotificationSettingsSafeHandle @ptr,RustBuffer @roomId,sbyte @isEncrypted,sbyte @isOneToOne
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_oidcauthenticationdata(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_oidcauthenticationdata_login_url(OidcAuthenticationDataSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_room(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ulong uniffi_matrix_sdk_ffi_fn_method_room_active_members_count(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_room_active_room_call_participants(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_room_add_timeline_listener(RoomSafeHandle @ptr,ulong @listener
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_room_alternative_aliases(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_room_avatar_url(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_room_can_user_ban(RoomSafeHandle @ptr,RustBuffer @userId
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_room_can_user_invite(RoomSafeHandle @ptr,RustBuffer @userId
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_room_can_user_kick(RoomSafeHandle @ptr,RustBuffer @userId
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_room_can_user_redact(RoomSafeHandle @ptr,RustBuffer @userId
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_room_can_user_send_message(RoomSafeHandle @ptr,RustBuffer @userId,RustBuffer @message
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_room_can_user_send_state(RoomSafeHandle @ptr,RustBuffer @userId,RustBuffer @stateEvent
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_room_can_user_trigger_room_notification(RoomSafeHandle @ptr,RustBuffer @userId
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_cancel_send(RoomSafeHandle @ptr,RustBuffer @txnId,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_room_canonical_alias(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_create_poll(RoomSafeHandle @ptr,RustBuffer @question,RustBuffer @answers,byte @maxSelections,RustBuffer @pollKind,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_room_display_name(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_edit(RoomSafeHandle @ptr,RoomMessageEventContentWithoutRelationSafeHandle @newContent,EventTimelineItemSafeHandle @editItem,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_end_poll(RoomSafeHandle @ptr,RustBuffer @pollStartId,RustBuffer @text,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_fetch_details_for_event(RoomSafeHandle @ptr,RustBuffer @eventId,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_room_fetch_members(RoomSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern EventTimelineItemSafeHandle uniffi_matrix_sdk_ffi_fn_method_room_get_event_timeline_item_by_event_id(RoomSafeHandle @ptr,RustBuffer @eventId,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RoomMessageEventContentWithoutRelationSafeHandle uniffi_matrix_sdk_ffi_fn_method_room_get_timeline_event_content_by_event_id(RoomSafeHandle @ptr,RustBuffer @eventId,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_room_has_active_room_call(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_room_id(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_ignore_user(RoomSafeHandle @ptr,RustBuffer @userId,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_invite_user_by_id(RoomSafeHandle @ptr,RustBuffer @userId,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ulong uniffi_matrix_sdk_ffi_fn_method_room_invited_members_count(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_room_inviter(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_room_is_direct(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_room_is_encrypted(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_room_is_public(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_room_is_space(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_room_is_tombstoned(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_join(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ulong uniffi_matrix_sdk_ffi_fn_method_room_joined_members_count(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_leave(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_room_member(RoomSafeHandle @ptr,RustBuffer @userId
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_room_member_avatar_url(RoomSafeHandle @ptr,RustBuffer @userId,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_room_member_display_name(RoomSafeHandle @ptr,RustBuffer @userId,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_room_members(RoomSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_room_membership(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_room_name(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_room_own_user_id(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_paginate_backwards(RoomSafeHandle @ptr,RustBuffer @opts,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_redact(RoomSafeHandle @ptr,RustBuffer @eventId,RustBuffer @reason,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_remove_avatar(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_remove_timeline(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_report_content(RoomSafeHandle @ptr,RustBuffer @eventId,RustBuffer @score,RustBuffer @reason,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_retry_decryption(RoomSafeHandle @ptr,RustBuffer @sessionIds,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_retry_send(RoomSafeHandle @ptr,RustBuffer @txnId,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_room_room_info(RoomSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_send(RoomSafeHandle @ptr,RoomMessageEventContentWithoutRelationSafeHandle @msg,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern SendAttachmentJoinHandleSafeHandle uniffi_matrix_sdk_ffi_fn_method_room_send_audio(RoomSafeHandle @ptr,RustBuffer @url,RustBuffer @audioInfo,RustBuffer @progressWatcher,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern SendAttachmentJoinHandleSafeHandle uniffi_matrix_sdk_ffi_fn_method_room_send_file(RoomSafeHandle @ptr,RustBuffer @url,RustBuffer @fileInfo,RustBuffer @progressWatcher,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern SendAttachmentJoinHandleSafeHandle uniffi_matrix_sdk_ffi_fn_method_room_send_image(RoomSafeHandle @ptr,RustBuffer @url,RustBuffer @thumbnailUrl,RustBuffer @imageInfo,RustBuffer @progressWatcher,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_send_location(RoomSafeHandle @ptr,RustBuffer @body,RustBuffer @geoUri,RustBuffer @description,RustBuffer @zoomLevel,RustBuffer @assetType,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_send_poll_response(RoomSafeHandle @ptr,RustBuffer @pollStartId,RustBuffer @answers,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_send_read_receipt(RoomSafeHandle @ptr,RustBuffer @eventId,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_send_reply(RoomSafeHandle @ptr,RoomMessageEventContentWithoutRelationSafeHandle @msg,EventTimelineItemSafeHandle @replyItem,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern SendAttachmentJoinHandleSafeHandle uniffi_matrix_sdk_ffi_fn_method_room_send_video(RoomSafeHandle @ptr,RustBuffer @url,RustBuffer @thumbnailUrl,RustBuffer @videoInfo,RustBuffer @progressWatcher,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern SendAttachmentJoinHandleSafeHandle uniffi_matrix_sdk_ffi_fn_method_room_send_voice_message(RoomSafeHandle @ptr,RustBuffer @url,RustBuffer @audioInfo,RustBuffer @waveform,RustBuffer @progressWatcher,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_set_name(RoomSafeHandle @ptr,RustBuffer @name,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_set_topic(RoomSafeHandle @ptr,RustBuffer @topic,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern TaskHandleSafeHandle uniffi_matrix_sdk_ffi_fn_method_room_subscribe_to_back_pagination_status(RoomSafeHandle @ptr,ulong @listener,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern TaskHandleSafeHandle uniffi_matrix_sdk_ffi_fn_method_room_subscribe_to_room_info_updates(RoomSafeHandle @ptr,ulong @listener,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_toggle_reaction(RoomSafeHandle @ptr,RustBuffer @eventId,RustBuffer @key,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_room_topic(RoomSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_upload_avatar(RoomSafeHandle @ptr,RustBuffer @mimeType,RustBuffer @data,RustBuffer @mediaInfo,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_roomlist(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_roomlist_entries(RoomListSafeHandle @ptr,ulong @listener,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_roomlist_entries_with_dynamic_adapters(RoomListSafeHandle @ptr,uint @pageSize,ulong @listener,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_roomlist_loading_state(RoomListSafeHandle @ptr,ulong @listener,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RoomListItemSafeHandle uniffi_matrix_sdk_ffi_fn_method_roomlist_room(RoomListSafeHandle @ptr,RustBuffer @roomId,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_roomlistdynamicentriescontroller(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_roomlistdynamicentriescontroller_add_one_page(RoomListDynamicEntriesControllerSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_roomlistdynamicentriescontroller_reset_to_one_page(RoomListDynamicEntriesControllerSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_roomlistdynamicentriescontroller_set_filter(RoomListDynamicEntriesControllerSafeHandle @ptr,RustBuffer @kind,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_roomlistitem(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_roomlistitem_avatar_url(RoomListItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_roomlistitem_canonical_alias(RoomListItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_roomlistitem_full_room(RoomListItemSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RoomSafeHandle uniffi_matrix_sdk_ffi_fn_method_roomlistitem_full_room_blocking(RoomListItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_roomlistitem_has_unread_notifications(RoomListItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_roomlistitem_id(RoomListItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_roomlistitem_is_direct(RoomListItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_roomlistitem_latest_event(RoomListItemSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_roomlistitem_name(RoomListItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_roomlistitem_room_info(RoomListItemSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_roomlistitem_subscribe(RoomListItemSafeHandle @ptr,RustBuffer @settings,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern UnreadNotificationsCountSafeHandle uniffi_matrix_sdk_ffi_fn_method_roomlistitem_unread_notifications(RoomListItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_roomlistitem_unsubscribe(RoomListItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_roomlistservice(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_roomlistservice_all_rooms(RoomListServiceSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_roomlistservice_apply_input(RoomListServiceSafeHandle @ptr,RustBuffer @input
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_roomlistservice_invites(RoomListServiceSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RoomListItemSafeHandle uniffi_matrix_sdk_ffi_fn_method_roomlistservice_room(RoomListServiceSafeHandle @ptr,RustBuffer @roomId,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern TaskHandleSafeHandle uniffi_matrix_sdk_ffi_fn_method_roomlistservice_state(RoomListServiceSafeHandle @ptr,ulong @listener,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern TaskHandleSafeHandle uniffi_matrix_sdk_ffi_fn_method_roomlistservice_sync_indicator(RoomListServiceSafeHandle @ptr,uint @delayBeforeShowingInMs,uint @delayBeforeHidingInMs,ulong @listener,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_roommember(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_roommember_avatar_url(RoomMemberSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_roommember_can_ban(RoomMemberSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_roommember_can_invite(RoomMemberSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_roommember_can_kick(RoomMemberSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_roommember_can_redact(RoomMemberSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_roommember_can_send_message(RoomMemberSafeHandle @ptr,RustBuffer @event,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_roommember_can_send_state(RoomMemberSafeHandle @ptr,RustBuffer @stateEvent,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_roommember_can_trigger_room_notification(RoomMemberSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_roommember_display_name(RoomMemberSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_roommember_ignore(RoomMemberSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_roommember_is_account_user(RoomMemberSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_roommember_is_ignored(RoomMemberSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_roommember_is_name_ambiguous(RoomMemberSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_roommember_membership(RoomMemberSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern long uniffi_matrix_sdk_ffi_fn_method_roommember_normalized_power_level(RoomMemberSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern long uniffi_matrix_sdk_ffi_fn_method_roommember_power_level(RoomMemberSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_roommember_unignore(RoomMemberSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_roommember_user_id(RoomMemberSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_roommembersiterator(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern uint uniffi_matrix_sdk_ffi_fn_method_roommembersiterator_len(RoomMembersIteratorSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_roommembersiterator_next_chunk(RoomMembersIteratorSafeHandle @ptr,uint @chunkSize,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_sendattachmentjoinhandle(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_sendattachmentjoinhandle_cancel(SendAttachmentJoinHandleSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_sendattachmentjoinhandle_join(SendAttachmentJoinHandleSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_sessionverificationcontroller(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_sessionverificationcontroller_approve_verification(SessionVerificationControllerSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_sessionverificationcontroller_cancel_verification(SessionVerificationControllerSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_sessionverificationcontroller_decline_verification(SessionVerificationControllerSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_sessionverificationcontroller_is_verified(SessionVerificationControllerSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_sessionverificationcontroller_request_verification(SessionVerificationControllerSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_sessionverificationcontroller_set_delegate(SessionVerificationControllerSafeHandle @ptr,RustBuffer @delegate,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_sessionverificationcontroller_start_sas_verification(SessionVerificationControllerSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_sessionverificationemoji(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_sessionverificationemoji_description(SessionVerificationEmojiSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_sessionverificationemoji_symbol(SessionVerificationEmojiSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_span(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern SpanSafeHandle uniffi_matrix_sdk_ffi_fn_constructor_span_current(ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern SpanSafeHandle uniffi_matrix_sdk_ffi_fn_constructor_span_new(RustBuffer @file,RustBuffer @line,RustBuffer @level,RustBuffer @target,RustBuffer @name,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_span_enter(SpanSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_span_exit(SpanSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_span_is_none(SpanSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_syncservice(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RoomListServiceSafeHandle uniffi_matrix_sdk_ffi_fn_method_syncservice_room_list_service(SyncServiceSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_syncservice_start(SyncServiceSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern TaskHandleSafeHandle uniffi_matrix_sdk_ffi_fn_method_syncservice_state(SyncServiceSafeHandle @ptr,ulong @listener,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_syncservice_stop(SyncServiceSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_syncservicebuilder(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_syncservicebuilder_finish(SyncServiceBuilderSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern SyncServiceBuilderSafeHandle uniffi_matrix_sdk_ffi_fn_method_syncservicebuilder_with_cross_process_lock(SyncServiceBuilderSafeHandle @ptr,RustBuffer @appIdentifier,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_taskhandle(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_taskhandle_cancel(TaskHandleSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_taskhandle_is_finished(TaskHandleSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_timelinediff(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_timelinediff_append(TimelineDiffSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_timelinediff_change(TimelineDiffSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_timelinediff_insert(TimelineDiffSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_timelinediff_push_back(TimelineDiffSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_timelinediff_push_front(TimelineDiffSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_timelinediff_remove(TimelineDiffSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_timelinediff_reset(TimelineDiffSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_timelinediff_set(TimelineDiffSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_timelineevent(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_timelineevent_event_id(TimelineEventSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_timelineevent_event_type(TimelineEventSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_timelineevent_sender_id(TimelineEventSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ulong uniffi_matrix_sdk_ffi_fn_method_timelineevent_timestamp(TimelineEventSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_timelineitem(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_timelineitem_as_event(TimelineItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_timelineitem_as_virtual(TimelineItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_timelineitem_fmt_debug(TimelineItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ulong uniffi_matrix_sdk_ffi_fn_method_timelineitem_unique_id(TimelineItemSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_timelineitemcontent(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_timelineitemcontent_as_message(TimelineItemContentSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_method_timelineitemcontent_kind(TimelineItemContentSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_unreadnotificationscount(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte uniffi_matrix_sdk_ffi_fn_method_unreadnotificationscount_has_notifications(UnreadNotificationsCountSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern uint uniffi_matrix_sdk_ffi_fn_method_unreadnotificationscount_highlight_count(UnreadNotificationsCountSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern uint uniffi_matrix_sdk_ffi_fn_method_unreadnotificationscount_notification_count(UnreadNotificationsCountSafeHandle @ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_widgetdriver(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_widgetdriver_run(WidgetDriverSafeHandle @ptr,RoomSafeHandle @room,ulong @capabilitiesProvider
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_free_widgetdriverhandle(
+    IntPtr ptr,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_widgetdriverhandle_recv(WidgetDriverHandleSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_widgetdriverhandle_send(WidgetDriverHandleSafeHandle @ptr,RustBuffer @msg
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_init_callback_backpaginationstatuslistener(ForeignCallback @callbackStub,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_init_callback_clientdelegate(ForeignCallback @callbackStub,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_init_callback_clientsessiondelegate(ForeignCallback @callbackStub,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_init_callback_notificationsettingsdelegate(ForeignCallback @callbackStub,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_init_callback_progresswatcher(ForeignCallback @callbackStub,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_init_callback_roominfolistener(ForeignCallback @callbackStub,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_init_callback_roomlistentrieslistener(ForeignCallback @callbackStub,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_init_callback_roomlistloadingstatelistener(ForeignCallback @callbackStub,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_init_callback_roomlistservicestatelistener(ForeignCallback @callbackStub,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_init_callback_roomlistservicesyncindicatorlistener(ForeignCallback @callbackStub,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_init_callback_sessionverificationcontrollerdelegate(ForeignCallback @callbackStub,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_init_callback_syncservicestateobserver(ForeignCallback @callbackStub,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_init_callback_timelinelistener(ForeignCallback @callbackStub,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_init_callback_widgetcapabilitiesprovider(ForeignCallback @callbackStub,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_func_gen_transaction_id(ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_func_generate_webview_url(RustBuffer @widgetSettings,RoomSafeHandle @room,RustBuffer @props
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_func_log_event(RustBuffer @file,RustBuffer @line,RustBuffer @level,RustBuffer @target,RustBuffer @message,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_func_make_widget_driver(RustBuffer @settings,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern MediaSourceSafeHandle uniffi_matrix_sdk_ffi_fn_func_media_source_from_url(RustBuffer @url,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RoomMessageEventContentWithoutRelationSafeHandle uniffi_matrix_sdk_ffi_fn_func_message_event_content_from_html(RustBuffer @body,RustBuffer @htmlBody,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RoomMessageEventContentWithoutRelationSafeHandle uniffi_matrix_sdk_ffi_fn_func_message_event_content_from_html_as_emote(RustBuffer @body,RustBuffer @htmlBody,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RoomMessageEventContentWithoutRelationSafeHandle uniffi_matrix_sdk_ffi_fn_func_message_event_content_from_markdown(RustBuffer @md,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RoomMessageEventContentWithoutRelationSafeHandle uniffi_matrix_sdk_ffi_fn_func_message_event_content_from_markdown_as_emote(RustBuffer @md,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RoomMessageEventContentWithoutRelationSafeHandle uniffi_matrix_sdk_ffi_fn_func_message_event_content_new(RustBuffer @msgtype,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_func_new_virtual_element_call_widget(RustBuffer @props,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_func_sdk_git_sha(ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_func_setup_otlp_tracing(RustBuffer @config,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_func_setup_tracing(RustBuffer @config,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
     public static extern RustBuffer ffi_matrix_sdk_ffi_rustbuffer_alloc(int @size,ref RustCallStatus _uniffi_out_err
     );
 
@@ -460,7 +1794,271 @@ static class _UniFFILib {
     );
 
     [DllImport("matrix_sdk_ffi")]
-    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roommessageeventcontentwithoutrelation_with_mentions(
+    public static extern void ffi_matrix_sdk_ffi_rust_future_continuation_callback_set(IntPtr @callback
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_poll_u8(IntPtr @handle,IntPtr @uniffiCallback
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_cancel_u8(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_free_u8(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern byte ffi_matrix_sdk_ffi_rust_future_complete_u8(IntPtr @handle,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_poll_i8(IntPtr @handle,IntPtr @uniffiCallback
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_cancel_i8(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_free_i8(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern sbyte ffi_matrix_sdk_ffi_rust_future_complete_i8(IntPtr @handle,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_poll_u16(IntPtr @handle,IntPtr @uniffiCallback
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_cancel_u16(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_free_u16(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort ffi_matrix_sdk_ffi_rust_future_complete_u16(IntPtr @handle,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_poll_i16(IntPtr @handle,IntPtr @uniffiCallback
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_cancel_i16(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_free_i16(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern short ffi_matrix_sdk_ffi_rust_future_complete_i16(IntPtr @handle,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_poll_u32(IntPtr @handle,IntPtr @uniffiCallback
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_cancel_u32(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_free_u32(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern uint ffi_matrix_sdk_ffi_rust_future_complete_u32(IntPtr @handle,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_poll_i32(IntPtr @handle,IntPtr @uniffiCallback
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_cancel_i32(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_free_i32(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern int ffi_matrix_sdk_ffi_rust_future_complete_i32(IntPtr @handle,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_poll_u64(IntPtr @handle,IntPtr @uniffiCallback
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_cancel_u64(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_free_u64(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ulong ffi_matrix_sdk_ffi_rust_future_complete_u64(IntPtr @handle,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_poll_i64(IntPtr @handle,IntPtr @uniffiCallback
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_cancel_i64(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_free_i64(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern long ffi_matrix_sdk_ffi_rust_future_complete_i64(IntPtr @handle,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_poll_f32(IntPtr @handle,IntPtr @uniffiCallback
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_cancel_f32(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_free_f32(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern float ffi_matrix_sdk_ffi_rust_future_complete_f32(IntPtr @handle,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_poll_f64(IntPtr @handle,IntPtr @uniffiCallback
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_cancel_f64(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_free_f64(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern double ffi_matrix_sdk_ffi_rust_future_complete_f64(IntPtr @handle,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_poll_pointer(IntPtr @handle,IntPtr @uniffiCallback
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_cancel_pointer(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_free_pointer(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern SafeHandle ffi_matrix_sdk_ffi_rust_future_complete_pointer(IntPtr @handle,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_poll_rust_buffer(IntPtr @handle,IntPtr @uniffiCallback
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_cancel_rust_buffer(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_free_rust_buffer(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer ffi_matrix_sdk_ffi_rust_future_complete_rust_buffer(IntPtr @handle,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_poll_void(IntPtr @handle,IntPtr @uniffiCallback
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_cancel_void(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_free_void(IntPtr @handle
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void ffi_matrix_sdk_ffi_rust_future_complete_void(IntPtr @handle,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_func_gen_transaction_id(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_func_generate_webview_url(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_func_log_event(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_func_make_widget_driver(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_func_media_source_from_url(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_func_message_event_content_from_html(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_func_message_event_content_from_html_as_emote(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_func_message_event_content_from_markdown(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_func_message_event_content_from_markdown_as_emote(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_func_message_event_content_new(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_func_new_virtual_element_call_widget(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_func_sdk_git_sha(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_func_setup_otlp_tracing(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_func_setup_tracing(
     );
 
     [DllImport("matrix_sdk_ffi")]
@@ -472,7 +2070,1143 @@ static class _UniFFILib {
     );
 
     [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roommessageeventcontentwithoutrelation_with_mentions(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_authenticationservice_configure_homeserver(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_authenticationservice_homeserver_details(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_authenticationservice_login(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_authenticationservice_login_with_oidc_callback(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_authenticationservice_url_for_oidc_login(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_account_data(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_account_url(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_avatar_url(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_cached_avatar_url(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_create_room(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_device_id(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_display_name(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_get_dm_room(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_get_media_content(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_get_media_file(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_get_media_thumbnail(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_get_notification_settings(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_get_profile(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_get_session_verification_controller(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_homeserver(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_ignore_user(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_login(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_logout(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_notification_client(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_remove_avatar(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_restore_session(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_rooms(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_search_users(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_session(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_set_account_data(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_set_delegate(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_set_display_name(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_set_pusher(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_sync_service(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_unignore_user(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_upload_avatar(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_upload_media(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_client_user_id(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_base_path(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_build(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_disable_automatic_token_refresh(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_disable_ssl_verification(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_enable_cross_process_refresh_lock(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_homeserver_url(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_passphrase(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_proxy(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_server_name(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_server_versions(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_set_session_delegate(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_sliding_sync_proxy(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_user_agent(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_username(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_can_be_replied_to(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_content(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_debug_info(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_event_id(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_is_editable(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_is_local(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_is_own(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_is_remote(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_local_send_state(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_origin(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_reactions(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_read_receipts(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_sender(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_sender_profile(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_timestamp(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_transaction_id(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_homeserverlogindetails_supports_oidc_login(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_homeserverlogindetails_supports_password_login(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_homeserverlogindetails_url(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_mediafilehandle_path(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_mediafilehandle_persist(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_message_body(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_message_in_reply_to(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_message_is_edited(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_message_is_threaded(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_message_msgtype(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_notificationclient_get_notification(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_notificationclientbuilder_filter_by_push_rules(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_notificationclientbuilder_finish(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_contains_keywords_rules(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_get_default_room_notification_mode(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_get_room_notification_settings(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_get_rooms_with_user_defined_rules(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_get_user_defined_room_notification_mode(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_is_call_enabled(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_is_room_mention_enabled(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_is_user_mention_enabled(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_restore_default_room_notification_mode(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_set_call_enabled(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_set_default_room_notification_mode(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_set_delegate(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_set_room_mention_enabled(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_set_room_notification_mode(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_set_user_mention_enabled(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_unmute_room(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_oidcauthenticationdata_login_url(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_active_members_count(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_active_room_call_participants(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_add_timeline_listener(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_alternative_aliases(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_avatar_url(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_can_user_ban(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_can_user_invite(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_can_user_kick(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_can_user_redact(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_can_user_send_message(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_can_user_send_state(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_can_user_trigger_room_notification(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_cancel_send(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_canonical_alias(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_create_poll(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_display_name(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_edit(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_end_poll(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_fetch_details_for_event(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_fetch_members(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_get_event_timeline_item_by_event_id(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_get_timeline_event_content_by_event_id(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_has_active_room_call(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_id(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_ignore_user(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_invite_user_by_id(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_invited_members_count(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_inviter(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_is_direct(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_is_encrypted(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_is_public(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_is_space(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_is_tombstoned(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_join(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_joined_members_count(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_leave(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_member(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_member_avatar_url(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_member_display_name(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_members(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_membership(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_name(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_own_user_id(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_paginate_backwards(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_redact(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_remove_avatar(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_remove_timeline(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_report_content(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_retry_decryption(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_retry_send(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_room_info(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_send(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_send_audio(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_send_file(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_send_image(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_send_location(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_send_poll_response(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_send_read_receipt(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_send_reply(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_send_video(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_send_voice_message(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_set_name(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_set_topic(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_back_pagination_status(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_room_info_updates(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_toggle_reaction(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_topic(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_upload_avatar(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlist_entries(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlist_entries_with_dynamic_adapters(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlist_loading_state(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlist_room(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistdynamicentriescontroller_add_one_page(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistdynamicentriescontroller_reset_to_one_page(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistdynamicentriescontroller_set_filter(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_avatar_url(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_canonical_alias(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_full_room(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_full_room_blocking(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_has_unread_notifications(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_id(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_is_direct(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_latest_event(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_name(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_room_info(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_subscribe(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_unread_notifications(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_unsubscribe(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistservice_all_rooms(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistservice_apply_input(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistservice_invites(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistservice_room(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistservice_state(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistservice_sync_indicator(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roommember_avatar_url(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roommember_can_ban(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roommember_can_invite(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roommember_can_kick(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roommember_can_redact(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roommember_can_send_message(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roommember_can_send_state(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roommember_can_trigger_room_notification(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roommember_display_name(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roommember_ignore(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roommember_is_account_user(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roommember_is_ignored(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roommember_is_name_ambiguous(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roommember_membership(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roommember_normalized_power_level(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roommember_power_level(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roommember_unignore(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roommember_user_id(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roommembersiterator_len(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roommembersiterator_next_chunk(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_sendattachmentjoinhandle_cancel(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_sendattachmentjoinhandle_join(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_approve_verification(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_cancel_verification(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_decline_verification(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_is_verified(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_request_verification(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_set_delegate(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_start_sas_verification(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_sessionverificationemoji_description(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_sessionverificationemoji_symbol(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_span_enter(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_span_exit(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_span_is_none(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_syncservice_room_list_service(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_syncservice_start(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_syncservice_state(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_syncservice_stop(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_syncservicebuilder_finish(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_syncservicebuilder_with_cross_process_lock(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_taskhandle_cancel(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_taskhandle_is_finished(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_timelinediff_append(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_timelinediff_change(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_timelinediff_insert(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_timelinediff_push_back(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_timelinediff_push_front(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_timelinediff_remove(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_timelinediff_reset(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_timelinediff_set(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_timelineevent_event_id(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_timelineevent_event_type(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_timelineevent_sender_id(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_timelineevent_timestamp(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_timelineitem_as_event(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_timelineitem_as_virtual(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_timelineitem_fmt_debug(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_timelineitem_unique_id(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_timelineitemcontent_as_message(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_timelineitemcontent_kind(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_unreadnotificationscount_has_notifications(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_unreadnotificationscount_highlight_count(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_unreadnotificationscount_notification_count(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_widgetdriver_run(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_widgetdriverhandle_recv(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_widgetdriverhandle_send(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
     public static extern ushort uniffi_matrix_sdk_ffi_checksum_constructor_mediasource_from_json(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_constructor_authenticationservice_new(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_constructor_clientbuilder_new(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_constructor_span_current(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_constructor_span_new(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_backpaginationstatuslistener_on_update(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_clientdelegate_did_receive_auth_error(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_clientdelegate_did_refresh_tokens(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_clientsessiondelegate_retrieve_session_from_keychain(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_clientsessiondelegate_save_session_in_keychain(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_notificationsettingsdelegate_settings_did_change(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_progresswatcher_transmission_progress(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roominfolistener_call(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistentrieslistener_on_update(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistloadingstatelistener_on_update(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistservicestatelistener_on_update(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_roomlistservicesyncindicatorlistener_on_update(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontrollerdelegate_did_accept_verification_request(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontrollerdelegate_did_start_sas_verification(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontrollerdelegate_did_receive_verification_data(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontrollerdelegate_did_fail(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontrollerdelegate_did_cancel(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontrollerdelegate_did_finish(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_syncservicestateobserver_on_update(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_timelinelistener_on_update(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_widgetcapabilitiesprovider_acquire_capabilities(
     );
 
     [DllImport("matrix_sdk_ffi")]
@@ -483,34 +3217,1816 @@ static class _UniFFILib {
 
     static void uniffiCheckContractApiVersion() {
         var scaffolding_contract_version = _UniFFILib.ffi_matrix_sdk_ffi_uniffi_contract_version();
-        if (22 != scaffolding_contract_version) {
-            throw new UniffiContractVersionException($"Matrix.RustSdk.Bindings: uniffi bindings expected version `22`, library returned `{scaffolding_contract_version}`");
+        if (24 != scaffolding_contract_version) {
+            throw new UniffiContractVersionException($"Matrix.RustSdk.Bindings: uniffi bindings expected version `24`, library returned `{scaffolding_contract_version}`");
         }
     }
 
     static void uniffiCheckApiChecksums() {
         {
-            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roommessageeventcontentwithoutrelation_with_mentions();
-            if (checksum != 65407) {
-                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roommessageeventcontentwithoutrelation_with_mentions` checksum `65407`, library returned `{checksum}`");
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_func_gen_transaction_id();
+            if (checksum != 65533) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_func_gen_transaction_id` checksum `65533`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_func_generate_webview_url();
+            if (checksum != 16581) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_func_generate_webview_url` checksum `16581`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_func_log_event();
+            if (checksum != 58164) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_func_log_event` checksum `58164`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_func_make_widget_driver();
+            if (checksum != 16217) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_func_make_widget_driver` checksum `16217`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_func_media_source_from_url();
+            if (checksum != 28929) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_func_media_source_from_url` checksum `28929`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_func_message_event_content_from_html();
+            if (checksum != 48173) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_func_message_event_content_from_html` checksum `48173`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_func_message_event_content_from_html_as_emote();
+            if (checksum != 30627) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_func_message_event_content_from_html_as_emote` checksum `30627`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_func_message_event_content_from_markdown();
+            if (checksum != 5412) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_func_message_event_content_from_markdown` checksum `5412`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_func_message_event_content_from_markdown_as_emote();
+            if (checksum != 16575) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_func_message_event_content_from_markdown_as_emote` checksum `16575`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_func_message_event_content_new();
+            if (checksum != 60536) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_func_message_event_content_new` checksum `60536`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_func_new_virtual_element_call_widget();
+            if (checksum != 13275) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_func_new_virtual_element_call_widget` checksum `13275`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_func_sdk_git_sha();
+            if (checksum != 11183) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_func_sdk_git_sha` checksum `11183`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_func_setup_otlp_tracing();
+            if (checksum != 57774) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_func_setup_otlp_tracing` checksum `57774`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_func_setup_tracing();
+            if (checksum != 48899) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_func_setup_tracing` checksum `48899`, library returned `{checksum}`");
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_mediasource_to_json();
-            if (checksum != 52259) {
-                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_mediasource_to_json` checksum `52259`, library returned `{checksum}`");
+            if (checksum != 2998) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_mediasource_to_json` checksum `2998`, library returned `{checksum}`");
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_mediasource_url();
-            if (checksum != 9248) {
-                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_mediasource_url` checksum `9248`, library returned `{checksum}`");
+            if (checksum != 34026) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_mediasource_url` checksum `34026`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roommessageeventcontentwithoutrelation_with_mentions();
+            if (checksum != 48900) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roommessageeventcontentwithoutrelation_with_mentions` checksum `48900`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_authenticationservice_configure_homeserver();
+            if (checksum != 20936) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_authenticationservice_configure_homeserver` checksum `20936`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_authenticationservice_homeserver_details();
+            if (checksum != 30828) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_authenticationservice_homeserver_details` checksum `30828`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_authenticationservice_login();
+            if (checksum != 4340) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_authenticationservice_login` checksum `4340`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_authenticationservice_login_with_oidc_callback();
+            if (checksum != 25443) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_authenticationservice_login_with_oidc_callback` checksum `25443`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_authenticationservice_url_for_oidc_login();
+            if (checksum != 6390) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_authenticationservice_url_for_oidc_login` checksum `6390`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_account_data();
+            if (checksum != 37263) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_account_data` checksum `37263`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_account_url();
+            if (checksum != 57664) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_account_url` checksum `57664`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_avatar_url();
+            if (checksum != 13474) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_avatar_url` checksum `13474`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_cached_avatar_url();
+            if (checksum != 47976) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_cached_avatar_url` checksum `47976`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_create_room();
+            if (checksum != 9095) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_create_room` checksum `9095`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_device_id();
+            if (checksum != 30759) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_device_id` checksum `30759`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_display_name();
+            if (checksum != 57766) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_display_name` checksum `57766`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_get_dm_room();
+            if (checksum != 2581) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_get_dm_room` checksum `2581`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_get_media_content();
+            if (checksum != 25167) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_get_media_content` checksum `25167`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_get_media_file();
+            if (checksum != 60005) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_get_media_file` checksum `60005`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_get_media_thumbnail();
+            if (checksum != 51889) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_get_media_thumbnail` checksum `51889`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_get_notification_settings();
+            if (checksum != 43752) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_get_notification_settings` checksum `43752`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_get_profile();
+            if (checksum != 11465) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_get_profile` checksum `11465`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_get_session_verification_controller();
+            if (checksum != 25701) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_get_session_verification_controller` checksum `25701`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_homeserver();
+            if (checksum != 509) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_homeserver` checksum `509`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_ignore_user();
+            if (checksum != 53606) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_ignore_user` checksum `53606`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_login();
+            if (checksum != 62785) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_login` checksum `62785`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_logout();
+            if (checksum != 16841) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_logout` checksum `16841`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_notification_client();
+            if (checksum != 16860) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_notification_client` checksum `16860`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_remove_avatar();
+            if (checksum != 41701) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_remove_avatar` checksum `41701`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_restore_session();
+            if (checksum != 19558) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_restore_session` checksum `19558`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_rooms();
+            if (checksum != 61954) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_rooms` checksum `61954`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_search_users();
+            if (checksum != 1362) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_search_users` checksum `1362`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_session();
+            if (checksum != 56470) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_session` checksum `56470`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_set_account_data();
+            if (checksum != 32949) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_set_account_data` checksum `32949`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_set_delegate();
+            if (checksum != 29180) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_set_delegate` checksum `29180`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_set_display_name();
+            if (checksum != 45786) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_set_display_name` checksum `45786`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_set_pusher();
+            if (checksum != 9540) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_set_pusher` checksum `9540`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_sync_service();
+            if (checksum != 55738) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_sync_service` checksum `55738`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_unignore_user();
+            if (checksum != 6043) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_unignore_user` checksum `6043`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_upload_avatar();
+            if (checksum != 65133) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_upload_avatar` checksum `65133`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_upload_media();
+            if (checksum != 20769) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_upload_media` checksum `20769`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_user_id();
+            if (checksum != 55803) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_user_id` checksum `55803`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_base_path();
+            if (checksum != 13781) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_base_path` checksum `13781`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_build();
+            if (checksum != 56797) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_build` checksum `56797`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_disable_automatic_token_refresh();
+            if (checksum != 50220) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_disable_automatic_token_refresh` checksum `50220`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_disable_ssl_verification();
+            if (checksum != 1510) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_disable_ssl_verification` checksum `1510`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_enable_cross_process_refresh_lock();
+            if (checksum != 39606) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_enable_cross_process_refresh_lock` checksum `39606`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_homeserver_url();
+            if (checksum != 43790) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_homeserver_url` checksum `43790`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_passphrase();
+            if (checksum != 25291) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_passphrase` checksum `25291`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_proxy();
+            if (checksum != 61852) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_proxy` checksum `61852`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_server_name();
+            if (checksum != 46252) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_server_name` checksum `46252`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_server_versions();
+            if (checksum != 64538) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_server_versions` checksum `64538`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_set_session_delegate();
+            if (checksum != 7269) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_set_session_delegate` checksum `7269`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_sliding_sync_proxy();
+            if (checksum != 37450) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_sliding_sync_proxy` checksum `37450`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_user_agent();
+            if (checksum != 42913) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_user_agent` checksum `42913`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_username();
+            if (checksum != 64379) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_username` checksum `64379`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_can_be_replied_to();
+            if (checksum != 42286) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_can_be_replied_to` checksum `42286`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_content();
+            if (checksum != 1802) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_content` checksum `1802`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_debug_info();
+            if (checksum != 45087) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_debug_info` checksum `45087`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_event_id();
+            if (checksum != 57306) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_event_id` checksum `57306`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_is_editable();
+            if (checksum != 593) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_is_editable` checksum `593`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_is_local();
+            if (checksum != 47845) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_is_local` checksum `47845`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_is_own();
+            if (checksum != 18359) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_is_own` checksum `18359`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_is_remote();
+            if (checksum != 17688) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_is_remote` checksum `17688`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_local_send_state();
+            if (checksum != 22720) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_local_send_state` checksum `22720`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_origin();
+            if (checksum != 28263) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_origin` checksum `28263`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_reactions();
+            if (checksum != 64143) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_reactions` checksum `64143`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_read_receipts();
+            if (checksum != 40784) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_read_receipts` checksum `40784`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_sender();
+            if (checksum != 46892) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_sender` checksum `46892`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_sender_profile();
+            if (checksum != 42856) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_sender_profile` checksum `42856`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_timestamp();
+            if (checksum != 481) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_timestamp` checksum `481`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_transaction_id();
+            if (checksum != 36352) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_eventtimelineitem_transaction_id` checksum `36352`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_homeserverlogindetails_supports_oidc_login();
+            if (checksum != 51854) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_homeserverlogindetails_supports_oidc_login` checksum `51854`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_homeserverlogindetails_supports_password_login();
+            if (checksum != 6028) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_homeserverlogindetails_supports_password_login` checksum `6028`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_homeserverlogindetails_url();
+            if (checksum != 40398) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_homeserverlogindetails_url` checksum `40398`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_mediafilehandle_path();
+            if (checksum != 2500) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_mediafilehandle_path` checksum `2500`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_mediafilehandle_persist();
+            if (checksum != 4346) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_mediafilehandle_persist` checksum `4346`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_message_body();
+            if (checksum != 2560) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_message_body` checksum `2560`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_message_in_reply_to();
+            if (checksum != 1793) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_message_in_reply_to` checksum `1793`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_message_is_edited();
+            if (checksum != 3402) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_message_is_edited` checksum `3402`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_message_is_threaded();
+            if (checksum != 29945) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_message_is_threaded` checksum `29945`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_message_msgtype();
+            if (checksum != 35166) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_message_msgtype` checksum `35166`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationclient_get_notification();
+            if (checksum != 9907) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationclient_get_notification` checksum `9907`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationclientbuilder_filter_by_push_rules();
+            if (checksum != 10529) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationclientbuilder_filter_by_push_rules` checksum `10529`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationclientbuilder_finish();
+            if (checksum != 12382) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationclientbuilder_finish` checksum `12382`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_contains_keywords_rules();
+            if (checksum != 42972) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_contains_keywords_rules` checksum `42972`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_get_default_room_notification_mode();
+            if (checksum != 7288) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_get_default_room_notification_mode` checksum `7288`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_get_room_notification_settings();
+            if (checksum != 654) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_get_room_notification_settings` checksum `654`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_get_rooms_with_user_defined_rules();
+            if (checksum != 687) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_get_rooms_with_user_defined_rules` checksum `687`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_get_user_defined_room_notification_mode();
+            if (checksum != 40224) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_get_user_defined_room_notification_mode` checksum `40224`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_is_call_enabled();
+            if (checksum != 38110) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_is_call_enabled` checksum `38110`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_is_room_mention_enabled();
+            if (checksum != 36336) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_is_room_mention_enabled` checksum `36336`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_is_user_mention_enabled();
+            if (checksum != 9844) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_is_user_mention_enabled` checksum `9844`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_restore_default_room_notification_mode();
+            if (checksum != 43578) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_restore_default_room_notification_mode` checksum `43578`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_set_call_enabled();
+            if (checksum != 61774) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_set_call_enabled` checksum `61774`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_set_default_room_notification_mode();
+            if (checksum != 64886) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_set_default_room_notification_mode` checksum `64886`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_set_delegate();
+            if (checksum != 22622) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_set_delegate` checksum `22622`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_set_room_mention_enabled();
+            if (checksum != 50730) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_set_room_mention_enabled` checksum `50730`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_set_room_notification_mode();
+            if (checksum != 21294) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_set_room_notification_mode` checksum `21294`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_set_user_mention_enabled();
+            if (checksum != 63345) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_set_user_mention_enabled` checksum `63345`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_unmute_room();
+            if (checksum != 33146) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_unmute_room` checksum `33146`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_oidcauthenticationdata_login_url();
+            if (checksum != 2455) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_oidcauthenticationdata_login_url` checksum `2455`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_active_members_count();
+            if (checksum != 62367) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_active_members_count` checksum `62367`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_active_room_call_participants();
+            if (checksum != 5256) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_active_room_call_participants` checksum `5256`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_add_timeline_listener();
+            if (checksum != 43137) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_add_timeline_listener` checksum `43137`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_alternative_aliases();
+            if (checksum != 25219) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_alternative_aliases` checksum `25219`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_avatar_url();
+            if (checksum != 38267) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_avatar_url` checksum `38267`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_can_user_ban();
+            if (checksum != 47371) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_can_user_ban` checksum `47371`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_can_user_invite();
+            if (checksum != 62419) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_can_user_invite` checksum `62419`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_can_user_kick();
+            if (checksum != 47687) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_can_user_kick` checksum `47687`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_can_user_redact();
+            if (checksum != 54334) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_can_user_redact` checksum `54334`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_can_user_send_message();
+            if (checksum != 28210) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_can_user_send_message` checksum `28210`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_can_user_send_state();
+            if (checksum != 54763) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_can_user_send_state` checksum `54763`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_can_user_trigger_room_notification();
+            if (checksum != 8288) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_can_user_trigger_room_notification` checksum `8288`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_cancel_send();
+            if (checksum != 22141) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_cancel_send` checksum `22141`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_canonical_alias();
+            if (checksum != 15084) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_canonical_alias` checksum `15084`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_create_poll();
+            if (checksum != 62592) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_create_poll` checksum `62592`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_display_name();
+            if (checksum != 38216) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_display_name` checksum `38216`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_edit();
+            if (checksum != 38490) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_edit` checksum `38490`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_end_poll();
+            if (checksum != 42646) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_end_poll` checksum `42646`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_fetch_details_for_event();
+            if (checksum != 23233) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_fetch_details_for_event` checksum `23233`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_fetch_members();
+            if (checksum != 64110) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_fetch_members` checksum `64110`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_get_event_timeline_item_by_event_id();
+            if (checksum != 50554) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_get_event_timeline_item_by_event_id` checksum `50554`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_get_timeline_event_content_by_event_id();
+            if (checksum != 4338) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_get_timeline_event_content_by_event_id` checksum `4338`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_has_active_room_call();
+            if (checksum != 59850) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_has_active_room_call` checksum `59850`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_id();
+            if (checksum != 27132) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_id` checksum `27132`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_ignore_user();
+            if (checksum != 9941) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_ignore_user` checksum `9941`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_invite_user_by_id();
+            if (checksum != 12569) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_invite_user_by_id` checksum `12569`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_invited_members_count();
+            if (checksum != 31452) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_invited_members_count` checksum `31452`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_inviter();
+            if (checksum != 8327) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_inviter` checksum `8327`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_is_direct();
+            if (checksum != 46881) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_is_direct` checksum `46881`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_is_encrypted();
+            if (checksum != 29418) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_is_encrypted` checksum `29418`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_is_public();
+            if (checksum != 22937) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_is_public` checksum `22937`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_is_space();
+            if (checksum != 8495) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_is_space` checksum `8495`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_is_tombstoned();
+            if (checksum != 55887) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_is_tombstoned` checksum `55887`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_join();
+            if (checksum != 4883) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_join` checksum `4883`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_joined_members_count();
+            if (checksum != 44345) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_joined_members_count` checksum `44345`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_leave();
+            if (checksum != 11928) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_leave` checksum `11928`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_member();
+            if (checksum != 4975) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_member` checksum `4975`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_member_avatar_url();
+            if (checksum != 5937) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_member_avatar_url` checksum `5937`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_member_display_name();
+            if (checksum != 4559) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_member_display_name` checksum `4559`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_members();
+            if (checksum != 6390) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_members` checksum `6390`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_membership();
+            if (checksum != 17678) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_membership` checksum `17678`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_name();
+            if (checksum != 58791) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_name` checksum `58791`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_own_user_id();
+            if (checksum != 26241) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_own_user_id` checksum `26241`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_paginate_backwards();
+            if (checksum != 28035) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_paginate_backwards` checksum `28035`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_redact();
+            if (checksum != 12809) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_redact` checksum `12809`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_remove_avatar();
+            if (checksum != 24698) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_remove_avatar` checksum `24698`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_remove_timeline();
+            if (checksum != 13720) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_remove_timeline` checksum `13720`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_report_content();
+            if (checksum != 58629) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_report_content` checksum `58629`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_retry_decryption();
+            if (checksum != 17014) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_retry_decryption` checksum `17014`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_retry_send();
+            if (checksum != 39997) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_retry_send` checksum `39997`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_room_info();
+            if (checksum != 45186) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_room_info` checksum `45186`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_send();
+            if (checksum != 974) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send` checksum `974`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_send_audio();
+            if (checksum != 19498) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_audio` checksum `19498`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_send_file();
+            if (checksum != 54377) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_file` checksum `54377`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_send_image();
+            if (checksum != 56510) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_image` checksum `56510`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_send_location();
+            if (checksum != 25452) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_location` checksum `25452`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_send_poll_response();
+            if (checksum != 21289) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_poll_response` checksum `21289`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_send_read_receipt();
+            if (checksum != 6919) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_read_receipt` checksum `6919`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_send_reply();
+            if (checksum != 12091) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_reply` checksum `12091`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_send_video();
+            if (checksum != 38775) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_video` checksum `38775`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_send_voice_message();
+            if (checksum != 15857) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_voice_message` checksum `15857`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_set_name();
+            if (checksum != 56429) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_set_name` checksum `56429`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_set_topic();
+            if (checksum != 55348) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_set_topic` checksum `55348`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_back_pagination_status();
+            if (checksum != 27757) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_back_pagination_status` checksum `27757`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_room_info_updates();
+            if (checksum != 43609) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_room_info_updates` checksum `43609`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_toggle_reaction();
+            if (checksum != 25672) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_toggle_reaction` checksum `25672`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_topic();
+            if (checksum != 23413) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_topic` checksum `23413`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_upload_avatar();
+            if (checksum != 46437) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_upload_avatar` checksum `46437`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlist_entries();
+            if (checksum != 27911) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlist_entries` checksum `27911`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlist_entries_with_dynamic_adapters();
+            if (checksum != 30316) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlist_entries_with_dynamic_adapters` checksum `30316`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlist_loading_state();
+            if (checksum != 54823) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlist_loading_state` checksum `54823`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlist_room();
+            if (checksum != 60000) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlist_room` checksum `60000`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistdynamicentriescontroller_add_one_page();
+            if (checksum != 1980) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistdynamicentriescontroller_add_one_page` checksum `1980`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistdynamicentriescontroller_reset_to_one_page();
+            if (checksum != 48285) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistdynamicentriescontroller_reset_to_one_page` checksum `48285`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistdynamicentriescontroller_set_filter();
+            if (checksum != 20071) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistdynamicentriescontroller_set_filter` checksum `20071`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_avatar_url();
+            if (checksum != 23609) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_avatar_url` checksum `23609`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_canonical_alias();
+            if (checksum != 56187) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_canonical_alias` checksum `56187`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_full_room();
+            if (checksum != 12614) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_full_room` checksum `12614`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_full_room_blocking();
+            if (checksum != 53631) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_full_room_blocking` checksum `53631`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_has_unread_notifications();
+            if (checksum != 64858) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_has_unread_notifications` checksum `64858`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_id();
+            if (checksum != 35737) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_id` checksum `35737`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_is_direct();
+            if (checksum != 24829) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_is_direct` checksum `24829`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_latest_event();
+            if (checksum != 44019) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_latest_event` checksum `44019`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_name();
+            if (checksum != 5949) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_name` checksum `5949`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_room_info();
+            if (checksum != 17731) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_room_info` checksum `17731`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_subscribe();
+            if (checksum != 16638) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_subscribe` checksum `16638`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_unread_notifications();
+            if (checksum != 36955) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_unread_notifications` checksum `36955`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_unsubscribe();
+            if (checksum != 14844) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistitem_unsubscribe` checksum `14844`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistservice_all_rooms();
+            if (checksum != 37160) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistservice_all_rooms` checksum `37160`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistservice_apply_input();
+            if (checksum != 46775) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistservice_apply_input` checksum `46775`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistservice_invites();
+            if (checksum != 56087) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistservice_invites` checksum `56087`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistservice_room();
+            if (checksum != 48446) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistservice_room` checksum `48446`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistservice_state();
+            if (checksum != 7038) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistservice_state` checksum `7038`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistservice_sync_indicator();
+            if (checksum != 5536) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistservice_sync_indicator` checksum `5536`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roommember_avatar_url();
+            if (checksum != 9148) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roommember_avatar_url` checksum `9148`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roommember_can_ban();
+            if (checksum != 19267) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roommember_can_ban` checksum `19267`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roommember_can_invite();
+            if (checksum != 36172) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roommember_can_invite` checksum `36172`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roommember_can_kick();
+            if (checksum != 31109) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roommember_can_kick` checksum `31109`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roommember_can_redact();
+            if (checksum != 49727) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roommember_can_redact` checksum `49727`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roommember_can_send_message();
+            if (checksum != 14989) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roommember_can_send_message` checksum `14989`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roommember_can_send_state();
+            if (checksum != 43889) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roommember_can_send_state` checksum `43889`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roommember_can_trigger_room_notification();
+            if (checksum != 62393) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roommember_can_trigger_room_notification` checksum `62393`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roommember_display_name();
+            if (checksum != 28367) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roommember_display_name` checksum `28367`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roommember_ignore();
+            if (checksum != 32455) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roommember_ignore` checksum `32455`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roommember_is_account_user();
+            if (checksum != 37767) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roommember_is_account_user` checksum `37767`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roommember_is_ignored();
+            if (checksum != 46154) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roommember_is_ignored` checksum `46154`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roommember_is_name_ambiguous();
+            if (checksum != 65246) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roommember_is_name_ambiguous` checksum `65246`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roommember_membership();
+            if (checksum != 34335) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roommember_membership` checksum `34335`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roommember_normalized_power_level();
+            if (checksum != 49076) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roommember_normalized_power_level` checksum `49076`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roommember_power_level();
+            if (checksum != 17042) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roommember_power_level` checksum `17042`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roommember_unignore();
+            if (checksum != 56817) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roommember_unignore` checksum `56817`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roommember_user_id();
+            if (checksum != 19498) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roommember_user_id` checksum `19498`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roommembersiterator_len();
+            if (checksum != 32977) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roommembersiterator_len` checksum `32977`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roommembersiterator_next_chunk();
+            if (checksum != 35645) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roommembersiterator_next_chunk` checksum `35645`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sendattachmentjoinhandle_cancel();
+            if (checksum != 58929) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sendattachmentjoinhandle_cancel` checksum `58929`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sendattachmentjoinhandle_join();
+            if (checksum != 25237) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sendattachmentjoinhandle_join` checksum `25237`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_approve_verification();
+            if (checksum != 468) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_approve_verification` checksum `468`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_cancel_verification();
+            if (checksum != 63679) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_cancel_verification` checksum `63679`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_decline_verification();
+            if (checksum != 50627) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_decline_verification` checksum `50627`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_is_verified();
+            if (checksum != 3866) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_is_verified` checksum `3866`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_request_verification();
+            if (checksum != 51679) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_request_verification` checksum `51679`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_set_delegate();
+            if (checksum != 24735) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_set_delegate` checksum `24735`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_start_sas_verification();
+            if (checksum != 3726) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_start_sas_verification` checksum `3726`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sessionverificationemoji_description();
+            if (checksum != 55458) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sessionverificationemoji_description` checksum `55458`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sessionverificationemoji_symbol();
+            if (checksum != 1848) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sessionverificationemoji_symbol` checksum `1848`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_span_enter();
+            if (checksum != 56663) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_span_enter` checksum `56663`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_span_exit();
+            if (checksum != 6123) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_span_exit` checksum `6123`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_span_is_none();
+            if (checksum != 23839) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_span_is_none` checksum `23839`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_syncservice_room_list_service();
+            if (checksum != 18295) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_syncservice_room_list_service` checksum `18295`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_syncservice_start();
+            if (checksum != 4435) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_syncservice_start` checksum `4435`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_syncservice_state();
+            if (checksum != 15048) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_syncservice_state` checksum `15048`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_syncservice_stop();
+            if (checksum != 39770) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_syncservice_stop` checksum `39770`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_syncservicebuilder_finish();
+            if (checksum != 61604) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_syncservicebuilder_finish` checksum `61604`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_syncservicebuilder_with_cross_process_lock();
+            if (checksum != 29139) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_syncservicebuilder_with_cross_process_lock` checksum `29139`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_taskhandle_cancel();
+            if (checksum != 59047) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_taskhandle_cancel` checksum `59047`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_taskhandle_is_finished();
+            if (checksum != 3905) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_taskhandle_is_finished` checksum `3905`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timelinediff_append();
+            if (checksum != 24298) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timelinediff_append` checksum `24298`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timelinediff_change();
+            if (checksum != 50296) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timelinediff_change` checksum `50296`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timelinediff_insert();
+            if (checksum != 10002) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timelinediff_insert` checksum `10002`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timelinediff_push_back();
+            if (checksum != 35483) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timelinediff_push_back` checksum `35483`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timelinediff_push_front();
+            if (checksum != 40108) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timelinediff_push_front` checksum `40108`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timelinediff_remove();
+            if (checksum != 13408) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timelinediff_remove` checksum `13408`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timelinediff_reset();
+            if (checksum != 34789) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timelinediff_reset` checksum `34789`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timelinediff_set();
+            if (checksum != 45340) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timelinediff_set` checksum `45340`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timelineevent_event_id();
+            if (checksum != 20444) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timelineevent_event_id` checksum `20444`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timelineevent_event_type();
+            if (checksum != 52643) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timelineevent_event_type` checksum `52643`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timelineevent_sender_id();
+            if (checksum != 9141) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timelineevent_sender_id` checksum `9141`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timelineevent_timestamp();
+            if (checksum != 30335) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timelineevent_timestamp` checksum `30335`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timelineitem_as_event();
+            if (checksum != 755) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timelineitem_as_event` checksum `755`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timelineitem_as_virtual();
+            if (checksum != 10265) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timelineitem_as_virtual` checksum `10265`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timelineitem_fmt_debug();
+            if (checksum != 25731) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timelineitem_fmt_debug` checksum `25731`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timelineitem_unique_id();
+            if (checksum != 27999) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timelineitem_unique_id` checksum `27999`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timelineitemcontent_as_message();
+            if (checksum != 58545) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timelineitemcontent_as_message` checksum `58545`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timelineitemcontent_kind();
+            if (checksum != 60128) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timelineitemcontent_kind` checksum `60128`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_unreadnotificationscount_has_notifications();
+            if (checksum != 38874) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_unreadnotificationscount_has_notifications` checksum `38874`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_unreadnotificationscount_highlight_count();
+            if (checksum != 30763) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_unreadnotificationscount_highlight_count` checksum `30763`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_unreadnotificationscount_notification_count();
+            if (checksum != 10233) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_unreadnotificationscount_notification_count` checksum `10233`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_widgetdriver_run();
+            if (checksum != 39250) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_widgetdriver_run` checksum `39250`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_widgetdriverhandle_recv();
+            if (checksum != 25974) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_widgetdriverhandle_recv` checksum `25974`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_widgetdriverhandle_send();
+            if (checksum != 32739) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_widgetdriverhandle_send` checksum `32739`, library returned `{checksum}`");
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_constructor_mediasource_from_json();
-            if (checksum != 64601) {
-                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_constructor_mediasource_from_json` checksum `64601`, library returned `{checksum}`");
+            if (checksum != 31512) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_constructor_mediasource_from_json` checksum `31512`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_constructor_authenticationservice_new();
+            if (checksum != 41347) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_constructor_authenticationservice_new` checksum `41347`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_constructor_clientbuilder_new();
+            if (checksum != 53567) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_constructor_clientbuilder_new` checksum `53567`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_constructor_span_current();
+            if (checksum != 47163) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_constructor_span_current` checksum `47163`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_constructor_span_new();
+            if (checksum != 47854) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_constructor_span_new` checksum `47854`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_backpaginationstatuslistener_on_update();
+            if (checksum != 2582) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_backpaginationstatuslistener_on_update` checksum `2582`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_clientdelegate_did_receive_auth_error();
+            if (checksum != 54393) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientdelegate_did_receive_auth_error` checksum `54393`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_clientdelegate_did_refresh_tokens();
+            if (checksum != 32841) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientdelegate_did_refresh_tokens` checksum `32841`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_clientsessiondelegate_retrieve_session_from_keychain();
+            if (checksum != 8049) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientsessiondelegate_retrieve_session_from_keychain` checksum `8049`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_clientsessiondelegate_save_session_in_keychain();
+            if (checksum != 30188) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientsessiondelegate_save_session_in_keychain` checksum `30188`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationsettingsdelegate_settings_did_change();
+            if (checksum != 4921) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettingsdelegate_settings_did_change` checksum `4921`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_progresswatcher_transmission_progress();
+            if (checksum != 12165) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_progresswatcher_transmission_progress` checksum `12165`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roominfolistener_call();
+            if (checksum != 567) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roominfolistener_call` checksum `567`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistentrieslistener_on_update();
+            if (checksum != 36351) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistentrieslistener_on_update` checksum `36351`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistloadingstatelistener_on_update();
+            if (checksum != 53567) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistloadingstatelistener_on_update` checksum `53567`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistservicestatelistener_on_update();
+            if (checksum != 27905) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistservicestatelistener_on_update` checksum `27905`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomlistservicesyncindicatorlistener_on_update();
+            if (checksum != 63691) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomlistservicesyncindicatorlistener_on_update` checksum `63691`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontrollerdelegate_did_accept_verification_request();
+            if (checksum != 59777) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontrollerdelegate_did_accept_verification_request` checksum `59777`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontrollerdelegate_did_start_sas_verification();
+            if (checksum != 15715) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontrollerdelegate_did_start_sas_verification` checksum `15715`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontrollerdelegate_did_receive_verification_data();
+            if (checksum != 46941) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontrollerdelegate_did_receive_verification_data` checksum `46941`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontrollerdelegate_did_fail();
+            if (checksum != 52235) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontrollerdelegate_did_fail` checksum `52235`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontrollerdelegate_did_cancel();
+            if (checksum != 52154) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontrollerdelegate_did_cancel` checksum `52154`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontrollerdelegate_did_finish();
+            if (checksum != 45558) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontrollerdelegate_did_finish` checksum `45558`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_syncservicestateobserver_on_update();
+            if (checksum != 52830) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_syncservicestateobserver_on_update` checksum `52830`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timelinelistener_on_update();
+            if (checksum != 974) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timelinelistener_on_update` checksum `974`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_widgetcapabilitiesprovider_acquire_capabilities();
+            if (checksum != 47314) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_widgetcapabilitiesprovider_acquire_capabilities` checksum `47314`, library returned `{checksum}`");
             }
         }
     }
@@ -520,6 +5036,188 @@ static class _UniFFILib {
 
 #pragma warning disable 8625
 
+
+
+
+class FfiConverterUInt8: FfiConverter<byte, byte> {
+    public static FfiConverterUInt8 INSTANCE = new FfiConverterUInt8();
+
+    public override byte Lift(byte value) {
+        return value;
+    }
+
+    public override byte Read(BigEndianStream stream) {
+        return stream.ReadByte();
+    }
+
+    public override byte Lower(byte value) {
+        return value;
+    }
+
+    public override int AllocationSize(byte value) {
+        return 1;
+    }
+
+    public override void Write(byte value, BigEndianStream stream) {
+        stream.WriteByte(value);
+    }
+}
+
+
+
+class FfiConverterUInt16: FfiConverter<ushort, ushort> {
+    public static FfiConverterUInt16 INSTANCE = new FfiConverterUInt16();
+
+    public override ushort Lift(ushort value) {
+        return value;
+    }
+
+    public override ushort Read(BigEndianStream stream) {
+        return stream.ReadUShort();
+    }
+
+    public override ushort Lower(ushort value) {
+        return value;
+    }
+
+    public override int AllocationSize(ushort value) {
+        return 2;
+    }
+
+    public override void Write(ushort value, BigEndianStream stream) {
+        stream.WriteUShort(value);
+    }
+}
+
+
+
+class FfiConverterUInt32: FfiConverter<uint, uint> {
+    public static FfiConverterUInt32 INSTANCE = new FfiConverterUInt32();
+
+    public override uint Lift(uint value) {
+        return value;
+    }
+
+    public override uint Read(BigEndianStream stream) {
+        return stream.ReadUInt();
+    }
+
+    public override uint Lower(uint value) {
+        return value;
+    }
+
+    public override int AllocationSize(uint value) {
+        return 4;
+    }
+
+    public override void Write(uint value, BigEndianStream stream) {
+        stream.WriteUInt(value);
+    }
+}
+
+
+
+class FfiConverterInt32: FfiConverter<int, int> {
+    public static FfiConverterInt32 INSTANCE = new FfiConverterInt32();
+
+    public override int Lift(int value) {
+        return value;
+    }
+
+    public override int Read(BigEndianStream stream) {
+        return stream.ReadInt();
+    }
+
+    public override int Lower(int value) {
+        return value;
+    }
+
+    public override int AllocationSize(int value) {
+        return 4;
+    }
+
+    public override void Write(int value, BigEndianStream stream) {
+        stream.WriteInt(value);
+    }
+}
+
+
+
+class FfiConverterUInt64: FfiConverter<ulong, ulong> {
+    public static FfiConverterUInt64 INSTANCE = new FfiConverterUInt64();
+
+    public override ulong Lift(ulong value) {
+        return value;
+    }
+
+    public override ulong Read(BigEndianStream stream) {
+        return stream.ReadULong();
+    }
+
+    public override ulong Lower(ulong value) {
+        return value;
+    }
+
+    public override int AllocationSize(ulong value) {
+        return 8;
+    }
+
+    public override void Write(ulong value, BigEndianStream stream) {
+        stream.WriteULong(value);
+    }
+}
+
+
+
+class FfiConverterInt64: FfiConverter<long, long> {
+    public static FfiConverterInt64 INSTANCE = new FfiConverterInt64();
+
+    public override long Lift(long value) {
+        return value;
+    }
+
+    public override long Read(BigEndianStream stream) {
+        return stream.ReadLong();
+    }
+
+    public override long Lower(long value) {
+        return value;
+    }
+
+    public override int AllocationSize(long value) {
+        return 8;
+    }
+
+    public override void Write(long value, BigEndianStream stream) {
+        stream.WriteLong(value);
+    }
+}
+
+
+
+class FfiConverterDouble: FfiConverter<double, double> {
+    public static FfiConverterDouble INSTANCE = new FfiConverterDouble();
+
+    public override double Lift(double value) {
+        return value;
+    }
+
+    public override double Read(BigEndianStream stream) {
+        return stream.ReadDouble();
+    }
+
+    public override double Lower(double value) {
+        return value;
+    }
+
+    public override int AllocationSize(double value) {
+        return 8;
+    }
+
+    public override void Write(double value, BigEndianStream stream) {
+        stream.WriteDouble(value);
+    }
+}
 
 
 
@@ -591,6 +5289,73 @@ class FfiConverterString: FfiConverter<string, RustBuffer> {
         var bytes = System.Text.Encoding.UTF8.GetBytes(value);
         stream.WriteInt(bytes.Length);
         stream.WriteBytes(bytes);
+    }
+}
+
+
+
+
+class FfiConverterSequenceUInt8: FfiConverterRustBuffer<List<byte>> {
+    public static FfiConverterSequenceUInt8 INSTANCE = new FfiConverterSequenceUInt8();
+
+    public override List<byte> Read(BigEndianStream stream) {
+        var length = stream.ReadInt();
+        var result = new List<byte>(length);
+        for (int i = 0; i < length; i++) {
+            result.Add(FfiConverterUInt8.INSTANCE.Read(stream));
+        }
+        return result;
+    }
+
+    public override int AllocationSize(List<byte> value) {
+        var sizeForLength = 4;
+
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            return sizeForLength;
+        }
+
+        var sizeForItems = value.Select(item => FfiConverterUInt8.INSTANCE.AllocationSize(item)).Sum();
+        return sizeForLength + sizeForItems;
+    }
+
+    public override void Write(List<byte> value, BigEndianStream stream) {
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            stream.WriteInt(0);
+            return;
+        }
+
+        stream.WriteInt(value.Count);
+        value.ForEach(item => FfiConverterUInt8.INSTANCE.Write(item, stream));
+    }
+}
+
+
+
+
+class FfiConverterDuration: FfiConverterRustBuffer<TimeSpan> {
+    public static FfiConverterDuration INSTANCE = new FfiConverterDuration();
+
+    // https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/TimeSpan.cs
+    private const uint NanosecondsPerTick = 100;
+
+    public override TimeSpan Read(BigEndianStream stream) {
+        var seconds = stream.ReadULong();
+        var nanoseconds = stream.ReadUInt();
+        var ticks = seconds * TimeSpan.TicksPerSecond;
+        ticks += nanoseconds / NanosecondsPerTick;
+        return new TimeSpan(Convert.ToInt64(ticks));
+    }
+
+    public override int AllocationSize(TimeSpan value) {
+        // 8 bytes for seconds, 4 bytes for nanoseconds
+        return 12;
+    }
+
+    public override void Write(TimeSpan value, BigEndianStream stream) {
+        stream.WriteULong(Convert.ToUInt64(value.Ticks / TimeSpan.TicksPerSecond));
+        stream.WriteUInt(Convert.ToUInt32(value.Ticks % TimeSpan.TicksPerSecond * NanosecondsPerTick));
     }
 }
 
@@ -681,6 +5446,1043 @@ static class FFIObjectUtil {
         }
     }
 }
+public interface IAuthenticationService {
+    
+    /// <exception cref="AuthenticationException"></exception>
+    void ConfigureHomeserver(String @serverNameOrHomeserverUrl);
+    
+    HomeserverLoginDetails? HomeserverDetails();
+    
+    /// <exception cref="AuthenticationException"></exception>
+    Client Login(String @username, String @password, String? @initialDeviceName, String? @deviceId);
+    
+    /// <exception cref="AuthenticationException"></exception>
+    Client LoginWithOidcCallback(OidcAuthenticationData @authenticationData, String @callbackUrl);
+    
+    /// <exception cref="AuthenticationException"></exception>
+    OidcAuthenticationData UrlForOidcLogin();
+    
+}
+
+public class AuthenticationServiceSafeHandle: FFISafeHandle {
+    public AuthenticationServiceSafeHandle(): base() {
+    }
+    public AuthenticationServiceSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_authenticationservice(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class AuthenticationService: FFIObject<AuthenticationServiceSafeHandle>, IAuthenticationService {
+    public AuthenticationService(AuthenticationServiceSafeHandle pointer): base(pointer) {}
+    public AuthenticationService(String @basePath, String? @passphrase, String? @userAgent, OidcConfiguration? @oidcConfiguration, String? @customSlidingSyncProxy, ClientSessionDelegate? @sessionDelegate, String? @crossProcessRefreshLockId) :
+        this(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_constructor_authenticationservice_new(FfiConverterString.INSTANCE.Lower(@basePath), FfiConverterOptionalString.INSTANCE.Lower(@passphrase), FfiConverterOptionalString.INSTANCE.Lower(@userAgent), FfiConverterOptionalTypeOidcConfiguration.INSTANCE.Lower(@oidcConfiguration), FfiConverterOptionalString.INSTANCE.Lower(@customSlidingSyncProxy), FfiConverterOptionalTypeClientSessionDelegate.INSTANCE.Lower(@sessionDelegate), FfiConverterOptionalString.INSTANCE.Lower(@crossProcessRefreshLockId), ref _status)
+)) {}
+
+    
+    /// <exception cref="AuthenticationException"></exception>
+    public void ConfigureHomeserver(String @serverNameOrHomeserverUrl) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeAuthenticationException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_authenticationservice_configure_homeserver(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@serverNameOrHomeserverUrl), ref _status)
+);
+    }
+    
+    
+    public HomeserverLoginDetails? HomeserverDetails() {
+        return FfiConverterOptionalTypeHomeserverLoginDetails.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_authenticationservice_homeserver_details(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="AuthenticationException"></exception>
+    public Client Login(String @username, String @password, String? @initialDeviceName, String? @deviceId) {
+        return FfiConverterTypeClient.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeAuthenticationException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_authenticationservice_login(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@username), FfiConverterString.INSTANCE.Lower(@password), FfiConverterOptionalString.INSTANCE.Lower(@initialDeviceName), FfiConverterOptionalString.INSTANCE.Lower(@deviceId), ref _status)
+));
+    }
+    
+    /// <exception cref="AuthenticationException"></exception>
+    public Client LoginWithOidcCallback(OidcAuthenticationData @authenticationData, String @callbackUrl) {
+        return FfiConverterTypeClient.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeAuthenticationException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_authenticationservice_login_with_oidc_callback(this.GetHandle(), FfiConverterTypeOidcAuthenticationData.INSTANCE.Lower(@authenticationData), FfiConverterString.INSTANCE.Lower(@callbackUrl), ref _status)
+));
+    }
+    
+    /// <exception cref="AuthenticationException"></exception>
+    public OidcAuthenticationData UrlForOidcLogin() {
+        return FfiConverterTypeOidcAuthenticationData.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeAuthenticationException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_authenticationservice_url_for_oidc_login(this.GetHandle(),  ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeAuthenticationService: FfiConverter<AuthenticationService, AuthenticationServiceSafeHandle> {
+    public static FfiConverterTypeAuthenticationService INSTANCE = new FfiConverterTypeAuthenticationService();
+
+    public override AuthenticationServiceSafeHandle Lower(AuthenticationService value) {
+        return value.GetHandle();
+    }
+
+    public override AuthenticationService Lift(AuthenticationServiceSafeHandle value) {
+        return new AuthenticationService(value);
+    }
+
+    public override AuthenticationService Read(BigEndianStream stream) {
+        return Lift(new AuthenticationServiceSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(AuthenticationService value) {
+        return 8;
+    }
+
+    public override void Write(AuthenticationService value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface IClient {
+    
+    /// <exception cref="ClientException"></exception>
+    String? AccountData(String @eventType);
+    
+    /// <exception cref="ClientException"></exception>
+    String? AccountUrl(AccountManagementAction? @action);
+    
+    /// <exception cref="ClientException"></exception>
+    String? AvatarUrl();
+    
+    /// <exception cref="ClientException"></exception>
+    String? CachedAvatarUrl();
+    
+    /// <exception cref="ClientException"></exception>
+    String CreateRoom(CreateRoomParameters @request);
+    
+    /// <exception cref="ClientException"></exception>
+    String DeviceId();
+    
+    /// <exception cref="ClientException"></exception>
+    String DisplayName();
+    
+    /// <exception cref="ClientException"></exception>
+    Room? GetDmRoom(String @userId);
+    
+    /// <exception cref="ClientException"></exception>
+    List<byte> GetMediaContent(MediaSource @mediaSource);
+    
+    /// <exception cref="ClientException"></exception>
+    MediaFileHandle GetMediaFile(MediaSource @mediaSource, String? @body, String @mimeType, bool @useCache, String? @tempDir);
+    
+    /// <exception cref="ClientException"></exception>
+    List<byte> GetMediaThumbnail(MediaSource @mediaSource, ulong @width, ulong @height);
+    
+    NotificationSettings GetNotificationSettings();
+    
+    /// <exception cref="ClientException"></exception>
+    UserProfile GetProfile(String @userId);
+    
+    /// <exception cref="ClientException"></exception>
+    SessionVerificationController GetSessionVerificationController();
+    
+    String Homeserver();
+    
+    /// <exception cref="ClientException"></exception>
+    void IgnoreUser(String @userId);
+    
+    /// <exception cref="ClientException"></exception>
+    void Login(String @username, String @password, String? @initialDeviceName, String? @deviceId);
+    
+    /// <exception cref="ClientException"></exception>
+    String? Logout();
+    
+    /// <exception cref="ClientException"></exception>
+    NotificationClientBuilder NotificationClient(NotificationProcessSetup @processSetup);
+    
+    /// <exception cref="ClientException"></exception>
+    void RemoveAvatar();
+    
+    /// <exception cref="ClientException"></exception>
+    void RestoreSession(Session @session);
+    
+    List<Room> Rooms();
+    
+    /// <exception cref="ClientException"></exception>
+    SearchUsersResults SearchUsers(String @searchTerm, ulong @limit);
+    
+    /// <exception cref="ClientException"></exception>
+    Session Session();
+    
+    /// <exception cref="ClientException"></exception>
+    void SetAccountData(String @eventType, String @content);
+    
+    TaskHandle? SetDelegate(ClientDelegate? @delegate);
+    
+    /// <exception cref="ClientException"></exception>
+    void SetDisplayName(String @name);
+    
+    /// <exception cref="ClientException"></exception>
+    void SetPusher(PusherIdentifiers @identifiers, PusherKind @kind, String @appDisplayName, String @deviceDisplayName, String? @profileTag, String @lang);
+    
+    SyncServiceBuilder SyncService();
+    
+    /// <exception cref="ClientException"></exception>
+    void UnignoreUser(String @userId);
+    
+    /// <exception cref="ClientException"></exception>
+    void UploadAvatar(String @mimeType, List<byte> @data);
+    
+    /// <exception cref="ClientException"></exception>
+    String UploadMedia(String @mimeType, List<byte> @data, ProgressWatcher? @progressWatcher);
+    
+    /// <exception cref="ClientException"></exception>
+    String UserId();
+    
+}
+
+public class ClientSafeHandle: FFISafeHandle {
+    public ClientSafeHandle(): base() {
+    }
+    public ClientSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_client(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class Client: FFIObject<ClientSafeHandle>, IClient {
+    public Client(ClientSafeHandle pointer): base(pointer) {}
+
+    
+    /// <exception cref="ClientException"></exception>
+    public String? AccountData(String @eventType) {
+        return FfiConverterOptionalString.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_account_data(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@eventType), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public String? AccountUrl(AccountManagementAction? @action) {
+        return FfiConverterOptionalString.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_account_url(this.GetHandle(), FfiConverterOptionalTypeAccountManagementAction.INSTANCE.Lower(@action), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public String? AvatarUrl() {
+        return FfiConverterOptionalString.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_avatar_url(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public String? CachedAvatarUrl() {
+        return FfiConverterOptionalString.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_cached_avatar_url(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public String CreateRoom(CreateRoomParameters @request) {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_create_room(this.GetHandle(), FfiConverterTypeCreateRoomParameters.INSTANCE.Lower(@request), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public String DeviceId() {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_device_id(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public String DisplayName() {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_display_name(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public Room? GetDmRoom(String @userId) {
+        return FfiConverterOptionalTypeRoom.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_get_dm_room(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@userId), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public List<byte> GetMediaContent(MediaSource @mediaSource) {
+        return FfiConverterSequenceUInt8.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_get_media_content(this.GetHandle(), FfiConverterTypeMediaSource.INSTANCE.Lower(@mediaSource), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public MediaFileHandle GetMediaFile(MediaSource @mediaSource, String? @body, String @mimeType, bool @useCache, String? @tempDir) {
+        return FfiConverterTypeMediaFileHandle.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_get_media_file(this.GetHandle(), FfiConverterTypeMediaSource.INSTANCE.Lower(@mediaSource), FfiConverterOptionalString.INSTANCE.Lower(@body), FfiConverterString.INSTANCE.Lower(@mimeType), FfiConverterBoolean.INSTANCE.Lower(@useCache), FfiConverterOptionalString.INSTANCE.Lower(@tempDir), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public List<byte> GetMediaThumbnail(MediaSource @mediaSource, ulong @width, ulong @height) {
+        return FfiConverterSequenceUInt8.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_get_media_thumbnail(this.GetHandle(), FfiConverterTypeMediaSource.INSTANCE.Lower(@mediaSource), FfiConverterUInt64.INSTANCE.Lower(@width), FfiConverterUInt64.INSTANCE.Lower(@height), ref _status)
+));
+    }
+    
+    public NotificationSettings GetNotificationSettings() {
+        return FfiConverterTypeNotificationSettings.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_get_notification_settings(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public UserProfile GetProfile(String @userId) {
+        return FfiConverterTypeUserProfile.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_get_profile(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@userId), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public SessionVerificationController GetSessionVerificationController() {
+        return FfiConverterTypeSessionVerificationController.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_get_session_verification_controller(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public String Homeserver() {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_homeserver(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public void IgnoreUser(String @userId) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_ignore_user(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@userId), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public void Login(String @username, String @password, String? @initialDeviceName, String? @deviceId) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_login(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@username), FfiConverterString.INSTANCE.Lower(@password), FfiConverterOptionalString.INSTANCE.Lower(@initialDeviceName), FfiConverterOptionalString.INSTANCE.Lower(@deviceId), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public String? Logout() {
+        return FfiConverterOptionalString.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_logout(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public NotificationClientBuilder NotificationClient(NotificationProcessSetup @processSetup) {
+        return FfiConverterTypeNotificationClientBuilder.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_notification_client(this.GetHandle(), FfiConverterTypeNotificationProcessSetup.INSTANCE.Lower(@processSetup), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public void RemoveAvatar() {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_remove_avatar(this.GetHandle(),  ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public void RestoreSession(Session @session) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_restore_session(this.GetHandle(), FfiConverterTypeSession.INSTANCE.Lower(@session), ref _status)
+);
+    }
+    
+    
+    public List<Room> Rooms() {
+        return FfiConverterSequenceTypeRoom.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_rooms(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public SearchUsersResults SearchUsers(String @searchTerm, ulong @limit) {
+        return FfiConverterTypeSearchUsersResults.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_search_users(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@searchTerm), FfiConverterUInt64.INSTANCE.Lower(@limit), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public Session Session() {
+        return FfiConverterTypeSession.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_session(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public void SetAccountData(String @eventType, String @content) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_set_account_data(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@eventType), FfiConverterString.INSTANCE.Lower(@content), ref _status)
+);
+    }
+    
+    
+    public TaskHandle? SetDelegate(ClientDelegate? @delegate) {
+        return FfiConverterOptionalTypeTaskHandle.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_set_delegate(this.GetHandle(), FfiConverterOptionalTypeClientDelegate.INSTANCE.Lower(@delegate), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public void SetDisplayName(String @name) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_set_display_name(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@name), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public void SetPusher(PusherIdentifiers @identifiers, PusherKind @kind, String @appDisplayName, String @deviceDisplayName, String? @profileTag, String @lang) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_set_pusher(this.GetHandle(), FfiConverterTypePusherIdentifiers.INSTANCE.Lower(@identifiers), FfiConverterTypePusherKind.INSTANCE.Lower(@kind), FfiConverterString.INSTANCE.Lower(@appDisplayName), FfiConverterString.INSTANCE.Lower(@deviceDisplayName), FfiConverterOptionalString.INSTANCE.Lower(@profileTag), FfiConverterString.INSTANCE.Lower(@lang), ref _status)
+);
+    }
+    
+    
+    public SyncServiceBuilder SyncService() {
+        return FfiConverterTypeSyncServiceBuilder.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_sync_service(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public void UnignoreUser(String @userId) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_unignore_user(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@userId), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public void UploadAvatar(String @mimeType, List<byte> @data) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_upload_avatar(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@mimeType), FfiConverterSequenceUInt8.INSTANCE.Lower(@data), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public String UploadMedia(String @mimeType, List<byte> @data, ProgressWatcher? @progressWatcher) {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_upload_media(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@mimeType), FfiConverterSequenceUInt8.INSTANCE.Lower(@data), FfiConverterOptionalTypeProgressWatcher.INSTANCE.Lower(@progressWatcher), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public String UserId() {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_user_id(this.GetHandle(),  ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeClient: FfiConverter<Client, ClientSafeHandle> {
+    public static FfiConverterTypeClient INSTANCE = new FfiConverterTypeClient();
+
+    public override ClientSafeHandle Lower(Client value) {
+        return value.GetHandle();
+    }
+
+    public override Client Lift(ClientSafeHandle value) {
+        return new Client(value);
+    }
+
+    public override Client Read(BigEndianStream stream) {
+        return Lift(new ClientSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(Client value) {
+        return 8;
+    }
+
+    public override void Write(Client value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface IClientBuilder {
+    
+    ClientBuilder BasePath(String @path);
+    
+    /// <exception cref="ClientException"></exception>
+    Client Build();
+    
+    ClientBuilder DisableAutomaticTokenRefresh();
+    
+    ClientBuilder DisableSslVerification();
+    
+    ClientBuilder EnableCrossProcessRefreshLock(String @processId, ClientSessionDelegate @sessionDelegate);
+    
+    ClientBuilder HomeserverUrl(String @url);
+    
+    ClientBuilder Passphrase(String? @passphrase);
+    
+    ClientBuilder Proxy(String @url);
+    
+    ClientBuilder ServerName(String @serverName);
+    
+    ClientBuilder ServerVersions(List<String> @versions);
+    
+    ClientBuilder SetSessionDelegate(ClientSessionDelegate @sessionDelegate);
+    
+    ClientBuilder SlidingSyncProxy(String? @slidingSyncProxy);
+    
+    ClientBuilder UserAgent(String @userAgent);
+    
+    ClientBuilder Username(String @username);
+    
+}
+
+public class ClientBuilderSafeHandle: FFISafeHandle {
+    public ClientBuilderSafeHandle(): base() {
+    }
+    public ClientBuilderSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_clientbuilder(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class ClientBuilder: FFIObject<ClientBuilderSafeHandle>, IClientBuilder {
+    public ClientBuilder(ClientBuilderSafeHandle pointer): base(pointer) {}
+    public ClientBuilder() :
+        this(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_constructor_clientbuilder_new( ref _status)
+)) {}
+
+    
+    public ClientBuilder BasePath(String @path) {
+        return FfiConverterTypeClientBuilder.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_clientbuilder_base_path(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@path), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public Client Build() {
+        return FfiConverterTypeClient.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_clientbuilder_build(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public ClientBuilder DisableAutomaticTokenRefresh() {
+        return FfiConverterTypeClientBuilder.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_clientbuilder_disable_automatic_token_refresh(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public ClientBuilder DisableSslVerification() {
+        return FfiConverterTypeClientBuilder.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_clientbuilder_disable_ssl_verification(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public ClientBuilder EnableCrossProcessRefreshLock(String @processId, ClientSessionDelegate @sessionDelegate) {
+        return FfiConverterTypeClientBuilder.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_clientbuilder_enable_cross_process_refresh_lock(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@processId), FfiConverterTypeClientSessionDelegate.INSTANCE.Lower(@sessionDelegate), ref _status)
+));
+    }
+    
+    public ClientBuilder HomeserverUrl(String @url) {
+        return FfiConverterTypeClientBuilder.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_clientbuilder_homeserver_url(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@url), ref _status)
+));
+    }
+    
+    public ClientBuilder Passphrase(String? @passphrase) {
+        return FfiConverterTypeClientBuilder.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_clientbuilder_passphrase(this.GetHandle(), FfiConverterOptionalString.INSTANCE.Lower(@passphrase), ref _status)
+));
+    }
+    
+    public ClientBuilder Proxy(String @url) {
+        return FfiConverterTypeClientBuilder.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_clientbuilder_proxy(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@url), ref _status)
+));
+    }
+    
+    public ClientBuilder ServerName(String @serverName) {
+        return FfiConverterTypeClientBuilder.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_clientbuilder_server_name(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@serverName), ref _status)
+));
+    }
+    
+    public ClientBuilder ServerVersions(List<String> @versions) {
+        return FfiConverterTypeClientBuilder.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_clientbuilder_server_versions(this.GetHandle(), FfiConverterSequenceString.INSTANCE.Lower(@versions), ref _status)
+));
+    }
+    
+    public ClientBuilder SetSessionDelegate(ClientSessionDelegate @sessionDelegate) {
+        return FfiConverterTypeClientBuilder.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_clientbuilder_set_session_delegate(this.GetHandle(), FfiConverterTypeClientSessionDelegate.INSTANCE.Lower(@sessionDelegate), ref _status)
+));
+    }
+    
+    public ClientBuilder SlidingSyncProxy(String? @slidingSyncProxy) {
+        return FfiConverterTypeClientBuilder.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_clientbuilder_sliding_sync_proxy(this.GetHandle(), FfiConverterOptionalString.INSTANCE.Lower(@slidingSyncProxy), ref _status)
+));
+    }
+    
+    public ClientBuilder UserAgent(String @userAgent) {
+        return FfiConverterTypeClientBuilder.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_clientbuilder_user_agent(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@userAgent), ref _status)
+));
+    }
+    
+    public ClientBuilder Username(String @username) {
+        return FfiConverterTypeClientBuilder.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_clientbuilder_username(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@username), ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeClientBuilder: FfiConverter<ClientBuilder, ClientBuilderSafeHandle> {
+    public static FfiConverterTypeClientBuilder INSTANCE = new FfiConverterTypeClientBuilder();
+
+    public override ClientBuilderSafeHandle Lower(ClientBuilder value) {
+        return value.GetHandle();
+    }
+
+    public override ClientBuilder Lift(ClientBuilderSafeHandle value) {
+        return new ClientBuilder(value);
+    }
+
+    public override ClientBuilder Read(BigEndianStream stream) {
+        return Lift(new ClientBuilderSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(ClientBuilder value) {
+        return 8;
+    }
+
+    public override void Write(ClientBuilder value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface IEventTimelineItem {
+    
+    bool CanBeRepliedTo();
+    
+    TimelineItemContent Content();
+    
+    EventTimelineItemDebugInfo DebugInfo();
+    
+    String? EventId();
+    
+    bool IsEditable();
+    
+    bool IsLocal();
+    
+    bool IsOwn();
+    
+    bool IsRemote();
+    
+    EventSendState? LocalSendState();
+    
+    EventItemOrigin? Origin();
+    
+    List<Reaction> Reactions();
+    
+    Dictionary<String, Receipt> ReadReceipts();
+    
+    String Sender();
+    
+    ProfileDetails SenderProfile();
+    
+    ulong Timestamp();
+    
+    String? TransactionId();
+    
+}
+
+public class EventTimelineItemSafeHandle: FFISafeHandle {
+    public EventTimelineItemSafeHandle(): base() {
+    }
+    public EventTimelineItemSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_eventtimelineitem(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class EventTimelineItem: FFIObject<EventTimelineItemSafeHandle>, IEventTimelineItem {
+    public EventTimelineItem(EventTimelineItemSafeHandle pointer): base(pointer) {}
+
+    
+    public bool CanBeRepliedTo() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_can_be_replied_to(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public TimelineItemContent Content() {
+        return FfiConverterTypeTimelineItemContent.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_content(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public EventTimelineItemDebugInfo DebugInfo() {
+        return FfiConverterTypeEventTimelineItemDebugInfo.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_debug_info(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public String? EventId() {
+        return FfiConverterOptionalString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_event_id(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public bool IsEditable() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_is_editable(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public bool IsLocal() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_is_local(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public bool IsOwn() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_is_own(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public bool IsRemote() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_is_remote(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public EventSendState? LocalSendState() {
+        return FfiConverterOptionalTypeEventSendState.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_local_send_state(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public EventItemOrigin? Origin() {
+        return FfiConverterOptionalTypeEventItemOrigin.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_origin(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public List<Reaction> Reactions() {
+        return FfiConverterSequenceTypeReaction.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_reactions(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public Dictionary<String, Receipt> ReadReceipts() {
+        return FfiConverterDictionaryStringTypeReceipt.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_read_receipts(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public String Sender() {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_sender(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public ProfileDetails SenderProfile() {
+        return FfiConverterTypeProfileDetails.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_sender_profile(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public ulong Timestamp() {
+        return FfiConverterUInt64.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_timestamp(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public String? TransactionId() {
+        return FfiConverterOptionalString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_eventtimelineitem_transaction_id(this.GetHandle(),  ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeEventTimelineItem: FfiConverter<EventTimelineItem, EventTimelineItemSafeHandle> {
+    public static FfiConverterTypeEventTimelineItem INSTANCE = new FfiConverterTypeEventTimelineItem();
+
+    public override EventTimelineItemSafeHandle Lower(EventTimelineItem value) {
+        return value.GetHandle();
+    }
+
+    public override EventTimelineItem Lift(EventTimelineItemSafeHandle value) {
+        return new EventTimelineItem(value);
+    }
+
+    public override EventTimelineItem Read(BigEndianStream stream) {
+        return Lift(new EventTimelineItemSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(EventTimelineItem value) {
+        return 8;
+    }
+
+    public override void Write(EventTimelineItem value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface IHomeserverLoginDetails {
+    
+    bool SupportsOidcLogin();
+    
+    bool SupportsPasswordLogin();
+    
+    String Url();
+    
+}
+
+public class HomeserverLoginDetailsSafeHandle: FFISafeHandle {
+    public HomeserverLoginDetailsSafeHandle(): base() {
+    }
+    public HomeserverLoginDetailsSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_homeserverlogindetails(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class HomeserverLoginDetails: FFIObject<HomeserverLoginDetailsSafeHandle>, IHomeserverLoginDetails {
+    public HomeserverLoginDetails(HomeserverLoginDetailsSafeHandle pointer): base(pointer) {}
+
+    
+    public bool SupportsOidcLogin() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_homeserverlogindetails_supports_oidc_login(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public bool SupportsPasswordLogin() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_homeserverlogindetails_supports_password_login(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public String Url() {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_homeserverlogindetails_url(this.GetHandle(),  ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeHomeserverLoginDetails: FfiConverter<HomeserverLoginDetails, HomeserverLoginDetailsSafeHandle> {
+    public static FfiConverterTypeHomeserverLoginDetails INSTANCE = new FfiConverterTypeHomeserverLoginDetails();
+
+    public override HomeserverLoginDetailsSafeHandle Lower(HomeserverLoginDetails value) {
+        return value.GetHandle();
+    }
+
+    public override HomeserverLoginDetails Lift(HomeserverLoginDetailsSafeHandle value) {
+        return new HomeserverLoginDetails(value);
+    }
+
+    public override HomeserverLoginDetails Read(BigEndianStream stream) {
+        return Lift(new HomeserverLoginDetailsSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(HomeserverLoginDetails value) {
+        return 8;
+    }
+
+    public override void Write(HomeserverLoginDetails value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface IMediaFileHandle {
+    
+    /// <exception cref="ClientException"></exception>
+    String Path();
+    
+    /// <exception cref="ClientException"></exception>
+    bool Persist(String @path);
+    
+}
+
+public class MediaFileHandleSafeHandle: FFISafeHandle {
+    public MediaFileHandleSafeHandle(): base() {
+    }
+    public MediaFileHandleSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_mediafilehandle(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class MediaFileHandle: FFIObject<MediaFileHandleSafeHandle>, IMediaFileHandle {
+    public MediaFileHandle(MediaFileHandleSafeHandle pointer): base(pointer) {}
+
+    
+    /// <exception cref="ClientException"></exception>
+    public String Path() {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_mediafilehandle_path(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public bool Persist(String @path) {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_mediafilehandle_persist(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@path), ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeMediaFileHandle: FfiConverter<MediaFileHandle, MediaFileHandleSafeHandle> {
+    public static FfiConverterTypeMediaFileHandle INSTANCE = new FfiConverterTypeMediaFileHandle();
+
+    public override MediaFileHandleSafeHandle Lower(MediaFileHandle value) {
+        return value.GetHandle();
+    }
+
+    public override MediaFileHandle Lift(MediaFileHandleSafeHandle value) {
+        return new MediaFileHandle(value);
+    }
+
+    public override MediaFileHandle Read(BigEndianStream stream) {
+        return Lift(new MediaFileHandleSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(MediaFileHandle value) {
+        return 8;
+    }
+
+    public override void Write(MediaFileHandle value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
 public interface IMediaSource {
     
     String ToJson();
@@ -758,6 +6560,1975 @@ class FfiConverterTypeMediaSource: FfiConverter<MediaSource, MediaSourceSafeHand
 
 
 
+public interface IMessage {
+    
+    String Body();
+    
+    InReplyToDetails? InReplyTo();
+    
+    bool IsEdited();
+    
+    bool IsThreaded();
+    
+    MessageType Msgtype();
+    
+}
+
+public class MessageSafeHandle: FFISafeHandle {
+    public MessageSafeHandle(): base() {
+    }
+    public MessageSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_message(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class Message: FFIObject<MessageSafeHandle>, IMessage {
+    public Message(MessageSafeHandle pointer): base(pointer) {}
+
+    
+    public String Body() {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_message_body(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public InReplyToDetails? InReplyTo() {
+        return FfiConverterOptionalTypeInReplyToDetails.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_message_in_reply_to(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public bool IsEdited() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_message_is_edited(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public bool IsThreaded() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_message_is_threaded(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public MessageType Msgtype() {
+        return FfiConverterTypeMessageType.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_message_msgtype(this.GetHandle(),  ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeMessage: FfiConverter<Message, MessageSafeHandle> {
+    public static FfiConverterTypeMessage INSTANCE = new FfiConverterTypeMessage();
+
+    public override MessageSafeHandle Lower(Message value) {
+        return value.GetHandle();
+    }
+
+    public override Message Lift(MessageSafeHandle value) {
+        return new Message(value);
+    }
+
+    public override Message Read(BigEndianStream stream) {
+        return Lift(new MessageSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(Message value) {
+        return 8;
+    }
+
+    public override void Write(Message value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface INotificationClient {
+    
+    /// <exception cref="ClientException"></exception>
+    NotificationItem? GetNotification(String @roomId, String @eventId);
+    
+}
+
+public class NotificationClientSafeHandle: FFISafeHandle {
+    public NotificationClientSafeHandle(): base() {
+    }
+    public NotificationClientSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_notificationclient(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class NotificationClient: FFIObject<NotificationClientSafeHandle>, INotificationClient {
+    public NotificationClient(NotificationClientSafeHandle pointer): base(pointer) {}
+
+    
+    /// <exception cref="ClientException"></exception>
+    public NotificationItem? GetNotification(String @roomId, String @eventId) {
+        return FfiConverterOptionalTypeNotificationItem.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_notificationclient_get_notification(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@roomId), FfiConverterString.INSTANCE.Lower(@eventId), ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeNotificationClient: FfiConverter<NotificationClient, NotificationClientSafeHandle> {
+    public static FfiConverterTypeNotificationClient INSTANCE = new FfiConverterTypeNotificationClient();
+
+    public override NotificationClientSafeHandle Lower(NotificationClient value) {
+        return value.GetHandle();
+    }
+
+    public override NotificationClient Lift(NotificationClientSafeHandle value) {
+        return new NotificationClient(value);
+    }
+
+    public override NotificationClient Read(BigEndianStream stream) {
+        return Lift(new NotificationClientSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(NotificationClient value) {
+        return 8;
+    }
+
+    public override void Write(NotificationClient value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface INotificationClientBuilder {
+    
+    NotificationClientBuilder FilterByPushRules();
+    
+    NotificationClient Finish();
+    
+}
+
+public class NotificationClientBuilderSafeHandle: FFISafeHandle {
+    public NotificationClientBuilderSafeHandle(): base() {
+    }
+    public NotificationClientBuilderSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_notificationclientbuilder(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class NotificationClientBuilder: FFIObject<NotificationClientBuilderSafeHandle>, INotificationClientBuilder {
+    public NotificationClientBuilder(NotificationClientBuilderSafeHandle pointer): base(pointer) {}
+
+    
+    public NotificationClientBuilder FilterByPushRules() {
+        return FfiConverterTypeNotificationClientBuilder.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_notificationclientbuilder_filter_by_push_rules(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public NotificationClient Finish() {
+        return FfiConverterTypeNotificationClient.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_notificationclientbuilder_finish(this.GetHandle(),  ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeNotificationClientBuilder: FfiConverter<NotificationClientBuilder, NotificationClientBuilderSafeHandle> {
+    public static FfiConverterTypeNotificationClientBuilder INSTANCE = new FfiConverterTypeNotificationClientBuilder();
+
+    public override NotificationClientBuilderSafeHandle Lower(NotificationClientBuilder value) {
+        return value.GetHandle();
+    }
+
+    public override NotificationClientBuilder Lift(NotificationClientBuilderSafeHandle value) {
+        return new NotificationClientBuilder(value);
+    }
+
+    public override NotificationClientBuilder Read(BigEndianStream stream) {
+        return Lift(new NotificationClientBuilderSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(NotificationClientBuilder value) {
+        return 8;
+    }
+
+    public override void Write(NotificationClientBuilder value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface INotificationSettings {
+    
+    bool ContainsKeywordsRules();
+    
+    RoomNotificationMode GetDefaultRoomNotificationMode(bool @isEncrypted, bool @isOneToOne);
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    RoomNotificationSettings GetRoomNotificationSettings(String @roomId, bool @isEncrypted, bool @isOneToOne);
+    
+    List<String> GetRoomsWithUserDefinedRules(bool? @enabled);
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    RoomNotificationMode? GetUserDefinedRoomNotificationMode(String @roomId);
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    bool IsCallEnabled();
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    bool IsRoomMentionEnabled();
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    bool IsUserMentionEnabled();
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    void RestoreDefaultRoomNotificationMode(String @roomId);
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    void SetCallEnabled(bool @enabled);
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    void SetDefaultRoomNotificationMode(bool @isEncrypted, bool @isOneToOne, RoomNotificationMode @mode);
+    
+    void SetDelegate(NotificationSettingsDelegate? @delegate);
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    void SetRoomMentionEnabled(bool @enabled);
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    void SetRoomNotificationMode(String @roomId, RoomNotificationMode @mode);
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    void SetUserMentionEnabled(bool @enabled);
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    void UnmuteRoom(String @roomId, bool @isEncrypted, bool @isOneToOne);
+    
+}
+
+public class NotificationSettingsSafeHandle: FFISafeHandle {
+    public NotificationSettingsSafeHandle(): base() {
+    }
+    public NotificationSettingsSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_notificationsettings(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class NotificationSettings: FFIObject<NotificationSettingsSafeHandle>, INotificationSettings {
+    public NotificationSettings(NotificationSettingsSafeHandle pointer): base(pointer) {}
+
+    
+    public bool ContainsKeywordsRules() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_notificationsettings_contains_keywords_rules(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public RoomNotificationMode GetDefaultRoomNotificationMode(bool @isEncrypted, bool @isOneToOne) {
+        return FfiConverterTypeRoomNotificationMode.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_notificationsettings_get_default_room_notification_mode(this.GetHandle(), FfiConverterBoolean.INSTANCE.Lower(@isEncrypted), FfiConverterBoolean.INSTANCE.Lower(@isOneToOne), ref _status)
+));
+    }
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    public RoomNotificationSettings GetRoomNotificationSettings(String @roomId, bool @isEncrypted, bool @isOneToOne) {
+        return FfiConverterTypeRoomNotificationSettings.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeNotificationSettingsException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_notificationsettings_get_room_notification_settings(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@roomId), FfiConverterBoolean.INSTANCE.Lower(@isEncrypted), FfiConverterBoolean.INSTANCE.Lower(@isOneToOne), ref _status)
+));
+    }
+    
+    public List<String> GetRoomsWithUserDefinedRules(bool? @enabled) {
+        return FfiConverterSequenceString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_notificationsettings_get_rooms_with_user_defined_rules(this.GetHandle(), FfiConverterOptionalBoolean.INSTANCE.Lower(@enabled), ref _status)
+));
+    }
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    public RoomNotificationMode? GetUserDefinedRoomNotificationMode(String @roomId) {
+        return FfiConverterOptionalTypeRoomNotificationMode.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeNotificationSettingsException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_notificationsettings_get_user_defined_room_notification_mode(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@roomId), ref _status)
+));
+    }
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    public bool IsCallEnabled() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeNotificationSettingsException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_notificationsettings_is_call_enabled(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    public bool IsRoomMentionEnabled() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeNotificationSettingsException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_notificationsettings_is_room_mention_enabled(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    public bool IsUserMentionEnabled() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeNotificationSettingsException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_notificationsettings_is_user_mention_enabled(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    public void RestoreDefaultRoomNotificationMode(String @roomId) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeNotificationSettingsException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_notificationsettings_restore_default_room_notification_mode(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@roomId), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    public void SetCallEnabled(bool @enabled) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeNotificationSettingsException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_notificationsettings_set_call_enabled(this.GetHandle(), FfiConverterBoolean.INSTANCE.Lower(@enabled), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    public void SetDefaultRoomNotificationMode(bool @isEncrypted, bool @isOneToOne, RoomNotificationMode @mode) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeNotificationSettingsException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_notificationsettings_set_default_room_notification_mode(this.GetHandle(), FfiConverterBoolean.INSTANCE.Lower(@isEncrypted), FfiConverterBoolean.INSTANCE.Lower(@isOneToOne), FfiConverterTypeRoomNotificationMode.INSTANCE.Lower(@mode), ref _status)
+);
+    }
+    
+    
+    public void SetDelegate(NotificationSettingsDelegate? @delegate) {
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_notificationsettings_set_delegate(this.GetHandle(), FfiConverterOptionalTypeNotificationSettingsDelegate.INSTANCE.Lower(@delegate), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    public void SetRoomMentionEnabled(bool @enabled) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeNotificationSettingsException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_notificationsettings_set_room_mention_enabled(this.GetHandle(), FfiConverterBoolean.INSTANCE.Lower(@enabled), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    public void SetRoomNotificationMode(String @roomId, RoomNotificationMode @mode) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeNotificationSettingsException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_notificationsettings_set_room_notification_mode(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@roomId), FfiConverterTypeRoomNotificationMode.INSTANCE.Lower(@mode), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    public void SetUserMentionEnabled(bool @enabled) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeNotificationSettingsException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_notificationsettings_set_user_mention_enabled(this.GetHandle(), FfiConverterBoolean.INSTANCE.Lower(@enabled), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="NotificationSettingsException"></exception>
+    public void UnmuteRoom(String @roomId, bool @isEncrypted, bool @isOneToOne) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeNotificationSettingsException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_notificationsettings_unmute_room(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@roomId), FfiConverterBoolean.INSTANCE.Lower(@isEncrypted), FfiConverterBoolean.INSTANCE.Lower(@isOneToOne), ref _status)
+);
+    }
+    
+    
+
+    
+}
+
+class FfiConverterTypeNotificationSettings: FfiConverter<NotificationSettings, NotificationSettingsSafeHandle> {
+    public static FfiConverterTypeNotificationSettings INSTANCE = new FfiConverterTypeNotificationSettings();
+
+    public override NotificationSettingsSafeHandle Lower(NotificationSettings value) {
+        return value.GetHandle();
+    }
+
+    public override NotificationSettings Lift(NotificationSettingsSafeHandle value) {
+        return new NotificationSettings(value);
+    }
+
+    public override NotificationSettings Read(BigEndianStream stream) {
+        return Lift(new NotificationSettingsSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(NotificationSettings value) {
+        return 8;
+    }
+
+    public override void Write(NotificationSettings value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface IOidcAuthenticationData {
+    
+    String LoginUrl();
+    
+}
+
+public class OidcAuthenticationDataSafeHandle: FFISafeHandle {
+    public OidcAuthenticationDataSafeHandle(): base() {
+    }
+    public OidcAuthenticationDataSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_oidcauthenticationdata(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class OidcAuthenticationData: FFIObject<OidcAuthenticationDataSafeHandle>, IOidcAuthenticationData {
+    public OidcAuthenticationData(OidcAuthenticationDataSafeHandle pointer): base(pointer) {}
+
+    
+    public String LoginUrl() {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_oidcauthenticationdata_login_url(this.GetHandle(),  ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeOidcAuthenticationData: FfiConverter<OidcAuthenticationData, OidcAuthenticationDataSafeHandle> {
+    public static FfiConverterTypeOidcAuthenticationData INSTANCE = new FfiConverterTypeOidcAuthenticationData();
+
+    public override OidcAuthenticationDataSafeHandle Lower(OidcAuthenticationData value) {
+        return value.GetHandle();
+    }
+
+    public override OidcAuthenticationData Lift(OidcAuthenticationDataSafeHandle value) {
+        return new OidcAuthenticationData(value);
+    }
+
+    public override OidcAuthenticationData Read(BigEndianStream stream) {
+        return Lift(new OidcAuthenticationDataSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(OidcAuthenticationData value) {
+        return 8;
+    }
+
+    public override void Write(OidcAuthenticationData value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface IRoom {
+    
+    ulong ActiveMembersCount();
+    
+    List<String> ActiveRoomCallParticipants();
+    
+    RoomTimelineListenerResult AddTimelineListener(TimelineListener @listener);
+    
+    List<String> AlternativeAliases();
+    
+    String? AvatarUrl();
+    
+    /// <exception cref="ClientException"></exception>
+    bool CanUserBan(String @userId);
+    
+    /// <exception cref="ClientException"></exception>
+    bool CanUserInvite(String @userId);
+    
+    /// <exception cref="ClientException"></exception>
+    bool CanUserKick(String @userId);
+    
+    /// <exception cref="ClientException"></exception>
+    bool CanUserRedact(String @userId);
+    
+    /// <exception cref="ClientException"></exception>
+    bool CanUserSendMessage(String @userId, MessageLikeEventType @message);
+    
+    /// <exception cref="ClientException"></exception>
+    bool CanUserSendState(String @userId, StateEventType @stateEvent);
+    
+    /// <exception cref="ClientException"></exception>
+    bool CanUserTriggerRoomNotification(String @userId);
+    
+    void CancelSend(String @txnId);
+    
+    String? CanonicalAlias();
+    
+    /// <exception cref="ClientException"></exception>
+    void CreatePoll(String @question, List<String> @answers, byte @maxSelections, PollKind @pollKind);
+    
+    /// <exception cref="ClientException"></exception>
+    String DisplayName();
+    
+    /// <exception cref="ClientException"></exception>
+    void Edit(RoomMessageEventContentWithoutRelation @newContent, EventTimelineItem @editItem);
+    
+    /// <exception cref="ClientException"></exception>
+    void EndPoll(String @pollStartId, String @text);
+    
+    /// <exception cref="ClientException"></exception>
+    void FetchDetailsForEvent(String @eventId);
+    
+    /// <exception cref="ClientException"></exception>
+    void FetchMembers();
+    
+    /// <exception cref="ClientException"></exception>
+    EventTimelineItem GetEventTimelineItemByEventId(String @eventId);
+    
+    /// <exception cref="ClientException"></exception>
+    RoomMessageEventContentWithoutRelation GetTimelineEventContentByEventId(String @eventId);
+    
+    bool HasActiveRoomCall();
+    
+    String Id();
+    
+    /// <exception cref="ClientException"></exception>
+    void IgnoreUser(String @userId);
+    
+    /// <exception cref="ClientException"></exception>
+    void InviteUserById(String @userId);
+    
+    ulong InvitedMembersCount();
+    
+    RoomMember? Inviter();
+    
+    bool IsDirect();
+    
+    /// <exception cref="ClientException"></exception>
+    bool IsEncrypted();
+    
+    bool IsPublic();
+    
+    bool IsSpace();
+    
+    bool IsTombstoned();
+    
+    /// <exception cref="ClientException"></exception>
+    void Join();
+    
+    ulong JoinedMembersCount();
+    
+    /// <exception cref="ClientException"></exception>
+    void Leave();
+    
+    /// <exception cref="ClientException"></exception>
+    RoomMember Member(String @userId);
+    
+    /// <exception cref="ClientException"></exception>
+    String? MemberAvatarUrl(String @userId);
+    
+    /// <exception cref="ClientException"></exception>
+    String? MemberDisplayName(String @userId);
+    
+    /// <exception cref="ClientException"></exception>
+    RoomMembersIterator Members();
+    
+    Membership Membership();
+    
+    String? Name();
+    
+    String OwnUserId();
+    
+    /// <exception cref="ClientException"></exception>
+    void PaginateBackwards(PaginationOptions @opts);
+    
+    /// <exception cref="ClientException"></exception>
+    void Redact(String @eventId, String? @reason);
+    
+    /// <exception cref="ClientException"></exception>
+    void RemoveAvatar();
+    
+    void RemoveTimeline();
+    
+    /// <exception cref="ClientException"></exception>
+    void ReportContent(String @eventId, int? @score, String? @reason);
+    
+    void RetryDecryption(List<String> @sessionIds);
+    
+    void RetrySend(String @txnId);
+    
+    /// <exception cref="ClientException"></exception>
+    RoomInfo RoomInfo();
+    
+    void Send(RoomMessageEventContentWithoutRelation @msg);
+    
+    SendAttachmentJoinHandle SendAudio(String @url, AudioInfo @audioInfo, ProgressWatcher? @progressWatcher);
+    
+    SendAttachmentJoinHandle SendFile(String @url, FileInfo @fileInfo, ProgressWatcher? @progressWatcher);
+    
+    SendAttachmentJoinHandle SendImage(String @url, String @thumbnailUrl, ImageInfo @imageInfo, ProgressWatcher? @progressWatcher);
+    
+    void SendLocation(String @body, String @geoUri, String? @description, byte? @zoomLevel, AssetType? @assetType);
+    
+    /// <exception cref="ClientException"></exception>
+    void SendPollResponse(String @pollStartId, List<String> @answers);
+    
+    /// <exception cref="ClientException"></exception>
+    void SendReadReceipt(String @eventId);
+    
+    /// <exception cref="ClientException"></exception>
+    void SendReply(RoomMessageEventContentWithoutRelation @msg, EventTimelineItem @replyItem);
+    
+    SendAttachmentJoinHandle SendVideo(String @url, String @thumbnailUrl, VideoInfo @videoInfo, ProgressWatcher? @progressWatcher);
+    
+    SendAttachmentJoinHandle SendVoiceMessage(String @url, AudioInfo @audioInfo, List<ushort> @waveform, ProgressWatcher? @progressWatcher);
+    
+    /// <exception cref="ClientException"></exception>
+    void SetName(String @name);
+    
+    /// <exception cref="ClientException"></exception>
+    void SetTopic(String @topic);
+    
+    /// <exception cref="ClientException"></exception>
+    TaskHandle SubscribeToBackPaginationStatus(BackPaginationStatusListener @listener);
+    
+    TaskHandle SubscribeToRoomInfoUpdates(RoomInfoListener @listener);
+    
+    /// <exception cref="ClientException"></exception>
+    void ToggleReaction(String @eventId, String @key);
+    
+    String? Topic();
+    
+    /// <exception cref="ClientException"></exception>
+    void UploadAvatar(String @mimeType, List<byte> @data, ImageInfo? @mediaInfo);
+    
+}
+
+public class RoomSafeHandle: FFISafeHandle {
+    public RoomSafeHandle(): base() {
+    }
+    public RoomSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_room(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class Room: FFIObject<RoomSafeHandle>, IRoom {
+    public Room(RoomSafeHandle pointer): base(pointer) {}
+
+    
+    public ulong ActiveMembersCount() {
+        return FfiConverterUInt64.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_active_members_count(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public List<String> ActiveRoomCallParticipants() {
+        return FfiConverterSequenceString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_active_room_call_participants(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public RoomTimelineListenerResult AddTimelineListener(TimelineListener @listener) {
+        return FfiConverterTypeRoomTimelineListenerResult.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_add_timeline_listener(this.GetHandle(), FfiConverterTypeTimelineListener.INSTANCE.Lower(@listener), ref _status)
+));
+    }
+    
+    public List<String> AlternativeAliases() {
+        return FfiConverterSequenceString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_alternative_aliases(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public String? AvatarUrl() {
+        return FfiConverterOptionalString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_avatar_url(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public bool CanUserBan(String @userId) {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_can_user_ban(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@userId), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public bool CanUserInvite(String @userId) {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_can_user_invite(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@userId), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public bool CanUserKick(String @userId) {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_can_user_kick(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@userId), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public bool CanUserRedact(String @userId) {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_can_user_redact(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@userId), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public bool CanUserSendMessage(String @userId, MessageLikeEventType @message) {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_can_user_send_message(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@userId), FfiConverterTypeMessageLikeEventType.INSTANCE.Lower(@message), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public bool CanUserSendState(String @userId, StateEventType @stateEvent) {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_can_user_send_state(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@userId), FfiConverterTypeStateEventType.INSTANCE.Lower(@stateEvent), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public bool CanUserTriggerRoomNotification(String @userId) {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_can_user_trigger_room_notification(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@userId), ref _status)
+));
+    }
+    
+    public void CancelSend(String @txnId) {
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_cancel_send(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@txnId), ref _status)
+);
+    }
+    
+    
+    public String? CanonicalAlias() {
+        return FfiConverterOptionalString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_canonical_alias(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public void CreatePoll(String @question, List<String> @answers, byte @maxSelections, PollKind @pollKind) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_create_poll(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@question), FfiConverterSequenceString.INSTANCE.Lower(@answers), FfiConverterUInt8.INSTANCE.Lower(@maxSelections), FfiConverterTypePollKind.INSTANCE.Lower(@pollKind), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public String DisplayName() {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_display_name(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public void Edit(RoomMessageEventContentWithoutRelation @newContent, EventTimelineItem @editItem) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_edit(this.GetHandle(), FfiConverterTypeRoomMessageEventContentWithoutRelation.INSTANCE.Lower(@newContent), FfiConverterTypeEventTimelineItem.INSTANCE.Lower(@editItem), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public void EndPoll(String @pollStartId, String @text) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_end_poll(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@pollStartId), FfiConverterString.INSTANCE.Lower(@text), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public void FetchDetailsForEvent(String @eventId) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_fetch_details_for_event(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@eventId), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public void FetchMembers() {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_fetch_members(this.GetHandle(),  ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public EventTimelineItem GetEventTimelineItemByEventId(String @eventId) {
+        return FfiConverterTypeEventTimelineItem.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_get_event_timeline_item_by_event_id(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@eventId), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public RoomMessageEventContentWithoutRelation GetTimelineEventContentByEventId(String @eventId) {
+        return FfiConverterTypeRoomMessageEventContentWithoutRelation.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_get_timeline_event_content_by_event_id(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@eventId), ref _status)
+));
+    }
+    
+    public bool HasActiveRoomCall() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_has_active_room_call(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public String Id() {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_id(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public void IgnoreUser(String @userId) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_ignore_user(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@userId), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public void InviteUserById(String @userId) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_invite_user_by_id(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@userId), ref _status)
+);
+    }
+    
+    
+    public ulong InvitedMembersCount() {
+        return FfiConverterUInt64.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_invited_members_count(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public RoomMember? Inviter() {
+        return FfiConverterOptionalTypeRoomMember.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_inviter(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public bool IsDirect() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_is_direct(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public bool IsEncrypted() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_is_encrypted(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public bool IsPublic() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_is_public(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public bool IsSpace() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_is_space(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public bool IsTombstoned() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_is_tombstoned(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public void Join() {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_join(this.GetHandle(),  ref _status)
+);
+    }
+    
+    
+    public ulong JoinedMembersCount() {
+        return FfiConverterUInt64.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_joined_members_count(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public void Leave() {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_leave(this.GetHandle(),  ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public RoomMember Member(String @userId) {
+        return FfiConverterTypeRoomMember.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_member(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@userId), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public String? MemberAvatarUrl(String @userId) {
+        return FfiConverterOptionalString.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_member_avatar_url(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@userId), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public String? MemberDisplayName(String @userId) {
+        return FfiConverterOptionalString.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_member_display_name(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@userId), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public RoomMembersIterator Members() {
+        return FfiConverterTypeRoomMembersIterator.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_members(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public Membership Membership() {
+        return FfiConverterTypeMembership.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_membership(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public String? Name() {
+        return FfiConverterOptionalString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_name(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public String OwnUserId() {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_own_user_id(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public void PaginateBackwards(PaginationOptions @opts) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_paginate_backwards(this.GetHandle(), FfiConverterTypePaginationOptions.INSTANCE.Lower(@opts), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public void Redact(String @eventId, String? @reason) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_redact(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@eventId), FfiConverterOptionalString.INSTANCE.Lower(@reason), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public void RemoveAvatar() {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_remove_avatar(this.GetHandle(),  ref _status)
+);
+    }
+    
+    
+    public void RemoveTimeline() {
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_remove_timeline(this.GetHandle(),  ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public void ReportContent(String @eventId, int? @score, String? @reason) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_report_content(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@eventId), FfiConverterOptionalInt32.INSTANCE.Lower(@score), FfiConverterOptionalString.INSTANCE.Lower(@reason), ref _status)
+);
+    }
+    
+    
+    public void RetryDecryption(List<String> @sessionIds) {
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_retry_decryption(this.GetHandle(), FfiConverterSequenceString.INSTANCE.Lower(@sessionIds), ref _status)
+);
+    }
+    
+    
+    public void RetrySend(String @txnId) {
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_retry_send(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@txnId), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public RoomInfo RoomInfo() {
+        return FfiConverterTypeRoomInfo.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_room_info(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public void Send(RoomMessageEventContentWithoutRelation @msg) {
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_send(this.GetHandle(), FfiConverterTypeRoomMessageEventContentWithoutRelation.INSTANCE.Lower(@msg), ref _status)
+);
+    }
+    
+    
+    public SendAttachmentJoinHandle SendAudio(String @url, AudioInfo @audioInfo, ProgressWatcher? @progressWatcher) {
+        return FfiConverterTypeSendAttachmentJoinHandle.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_send_audio(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@url), FfiConverterTypeAudioInfo.INSTANCE.Lower(@audioInfo), FfiConverterOptionalTypeProgressWatcher.INSTANCE.Lower(@progressWatcher), ref _status)
+));
+    }
+    
+    public SendAttachmentJoinHandle SendFile(String @url, FileInfo @fileInfo, ProgressWatcher? @progressWatcher) {
+        return FfiConverterTypeSendAttachmentJoinHandle.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_send_file(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@url), FfiConverterTypeFileInfo.INSTANCE.Lower(@fileInfo), FfiConverterOptionalTypeProgressWatcher.INSTANCE.Lower(@progressWatcher), ref _status)
+));
+    }
+    
+    public SendAttachmentJoinHandle SendImage(String @url, String @thumbnailUrl, ImageInfo @imageInfo, ProgressWatcher? @progressWatcher) {
+        return FfiConverterTypeSendAttachmentJoinHandle.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_send_image(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@url), FfiConverterString.INSTANCE.Lower(@thumbnailUrl), FfiConverterTypeImageInfo.INSTANCE.Lower(@imageInfo), FfiConverterOptionalTypeProgressWatcher.INSTANCE.Lower(@progressWatcher), ref _status)
+));
+    }
+    
+    public void SendLocation(String @body, String @geoUri, String? @description, byte? @zoomLevel, AssetType? @assetType) {
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_send_location(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@body), FfiConverterString.INSTANCE.Lower(@geoUri), FfiConverterOptionalString.INSTANCE.Lower(@description), FfiConverterOptionalUInt8.INSTANCE.Lower(@zoomLevel), FfiConverterOptionalTypeAssetType.INSTANCE.Lower(@assetType), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public void SendPollResponse(String @pollStartId, List<String> @answers) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_send_poll_response(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@pollStartId), FfiConverterSequenceString.INSTANCE.Lower(@answers), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public void SendReadReceipt(String @eventId) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_send_read_receipt(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@eventId), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public void SendReply(RoomMessageEventContentWithoutRelation @msg, EventTimelineItem @replyItem) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_send_reply(this.GetHandle(), FfiConverterTypeRoomMessageEventContentWithoutRelation.INSTANCE.Lower(@msg), FfiConverterTypeEventTimelineItem.INSTANCE.Lower(@replyItem), ref _status)
+);
+    }
+    
+    
+    public SendAttachmentJoinHandle SendVideo(String @url, String @thumbnailUrl, VideoInfo @videoInfo, ProgressWatcher? @progressWatcher) {
+        return FfiConverterTypeSendAttachmentJoinHandle.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_send_video(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@url), FfiConverterString.INSTANCE.Lower(@thumbnailUrl), FfiConverterTypeVideoInfo.INSTANCE.Lower(@videoInfo), FfiConverterOptionalTypeProgressWatcher.INSTANCE.Lower(@progressWatcher), ref _status)
+));
+    }
+    
+    public SendAttachmentJoinHandle SendVoiceMessage(String @url, AudioInfo @audioInfo, List<ushort> @waveform, ProgressWatcher? @progressWatcher) {
+        return FfiConverterTypeSendAttachmentJoinHandle.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_send_voice_message(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@url), FfiConverterTypeAudioInfo.INSTANCE.Lower(@audioInfo), FfiConverterSequenceUInt16.INSTANCE.Lower(@waveform), FfiConverterOptionalTypeProgressWatcher.INSTANCE.Lower(@progressWatcher), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public void SetName(String @name) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_set_name(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@name), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public void SetTopic(String @topic) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_set_topic(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@topic), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public TaskHandle SubscribeToBackPaginationStatus(BackPaginationStatusListener @listener) {
+        return FfiConverterTypeTaskHandle.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_subscribe_to_back_pagination_status(this.GetHandle(), FfiConverterTypeBackPaginationStatusListener.INSTANCE.Lower(@listener), ref _status)
+));
+    }
+    
+    public TaskHandle SubscribeToRoomInfoUpdates(RoomInfoListener @listener) {
+        return FfiConverterTypeTaskHandle.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_subscribe_to_room_info_updates(this.GetHandle(), FfiConverterTypeRoomInfoListener.INSTANCE.Lower(@listener), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public void ToggleReaction(String @eventId, String @key) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_toggle_reaction(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@eventId), FfiConverterString.INSTANCE.Lower(@key), ref _status)
+);
+    }
+    
+    
+    public String? Topic() {
+        return FfiConverterOptionalString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_topic(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public void UploadAvatar(String @mimeType, List<byte> @data, ImageInfo? @mediaInfo) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_upload_avatar(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@mimeType), FfiConverterSequenceUInt8.INSTANCE.Lower(@data), FfiConverterOptionalTypeImageInfo.INSTANCE.Lower(@mediaInfo), ref _status)
+);
+    }
+    
+    
+
+    
+}
+
+class FfiConverterTypeRoom: FfiConverter<Room, RoomSafeHandle> {
+    public static FfiConverterTypeRoom INSTANCE = new FfiConverterTypeRoom();
+
+    public override RoomSafeHandle Lower(Room value) {
+        return value.GetHandle();
+    }
+
+    public override Room Lift(RoomSafeHandle value) {
+        return new Room(value);
+    }
+
+    public override Room Read(BigEndianStream stream) {
+        return Lift(new RoomSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(Room value) {
+        return 8;
+    }
+
+    public override void Write(Room value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface IRoomList {
+    
+    RoomListEntriesResult Entries(RoomListEntriesListener @listener);
+    
+    RoomListEntriesWithDynamicAdaptersResult EntriesWithDynamicAdapters(uint @pageSize, RoomListEntriesListener @listener);
+    
+    /// <exception cref="RoomListException"></exception>
+    RoomListLoadingStateResult LoadingState(RoomListLoadingStateListener @listener);
+    
+    /// <exception cref="RoomListException"></exception>
+    RoomListItem Room(String @roomId);
+    
+}
+
+public class RoomListSafeHandle: FFISafeHandle {
+    public RoomListSafeHandle(): base() {
+    }
+    public RoomListSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_roomlist(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class RoomList: FFIObject<RoomListSafeHandle>, IRoomList {
+    public RoomList(RoomListSafeHandle pointer): base(pointer) {}
+
+    
+    public RoomListEntriesResult Entries(RoomListEntriesListener @listener) {
+        return FfiConverterTypeRoomListEntriesResult.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlist_entries(this.GetHandle(), FfiConverterTypeRoomListEntriesListener.INSTANCE.Lower(@listener), ref _status)
+));
+    }
+    
+    public RoomListEntriesWithDynamicAdaptersResult EntriesWithDynamicAdapters(uint @pageSize, RoomListEntriesListener @listener) {
+        return FfiConverterTypeRoomListEntriesWithDynamicAdaptersResult.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlist_entries_with_dynamic_adapters(this.GetHandle(), FfiConverterUInt32.INSTANCE.Lower(@pageSize), FfiConverterTypeRoomListEntriesListener.INSTANCE.Lower(@listener), ref _status)
+));
+    }
+    
+    /// <exception cref="RoomListException"></exception>
+    public RoomListLoadingStateResult LoadingState(RoomListLoadingStateListener @listener) {
+        return FfiConverterTypeRoomListLoadingStateResult.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeRoomListException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlist_loading_state(this.GetHandle(), FfiConverterTypeRoomListLoadingStateListener.INSTANCE.Lower(@listener), ref _status)
+));
+    }
+    
+    /// <exception cref="RoomListException"></exception>
+    public RoomListItem Room(String @roomId) {
+        return FfiConverterTypeRoomListItem.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeRoomListException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlist_room(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@roomId), ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeRoomList: FfiConverter<RoomList, RoomListSafeHandle> {
+    public static FfiConverterTypeRoomList INSTANCE = new FfiConverterTypeRoomList();
+
+    public override RoomListSafeHandle Lower(RoomList value) {
+        return value.GetHandle();
+    }
+
+    public override RoomList Lift(RoomListSafeHandle value) {
+        return new RoomList(value);
+    }
+
+    public override RoomList Read(BigEndianStream stream) {
+        return Lift(new RoomListSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(RoomList value) {
+        return 8;
+    }
+
+    public override void Write(RoomList value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface IRoomListDynamicEntriesController {
+    
+    void AddOnePage();
+    
+    void ResetToOnePage();
+    
+    bool SetFilter(RoomListEntriesDynamicFilterKind @kind);
+    
+}
+
+public class RoomListDynamicEntriesControllerSafeHandle: FFISafeHandle {
+    public RoomListDynamicEntriesControllerSafeHandle(): base() {
+    }
+    public RoomListDynamicEntriesControllerSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_roomlistdynamicentriescontroller(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class RoomListDynamicEntriesController: FFIObject<RoomListDynamicEntriesControllerSafeHandle>, IRoomListDynamicEntriesController {
+    public RoomListDynamicEntriesController(RoomListDynamicEntriesControllerSafeHandle pointer): base(pointer) {}
+
+    
+    public void AddOnePage() {
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlistdynamicentriescontroller_add_one_page(this.GetHandle(),  ref _status)
+);
+    }
+    
+    
+    public void ResetToOnePage() {
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlistdynamicentriescontroller_reset_to_one_page(this.GetHandle(),  ref _status)
+);
+    }
+    
+    
+    public bool SetFilter(RoomListEntriesDynamicFilterKind @kind) {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlistdynamicentriescontroller_set_filter(this.GetHandle(), FfiConverterTypeRoomListEntriesDynamicFilterKind.INSTANCE.Lower(@kind), ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeRoomListDynamicEntriesController: FfiConverter<RoomListDynamicEntriesController, RoomListDynamicEntriesControllerSafeHandle> {
+    public static FfiConverterTypeRoomListDynamicEntriesController INSTANCE = new FfiConverterTypeRoomListDynamicEntriesController();
+
+    public override RoomListDynamicEntriesControllerSafeHandle Lower(RoomListDynamicEntriesController value) {
+        return value.GetHandle();
+    }
+
+    public override RoomListDynamicEntriesController Lift(RoomListDynamicEntriesControllerSafeHandle value) {
+        return new RoomListDynamicEntriesController(value);
+    }
+
+    public override RoomListDynamicEntriesController Read(BigEndianStream stream) {
+        return Lift(new RoomListDynamicEntriesControllerSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(RoomListDynamicEntriesController value) {
+        return 8;
+    }
+
+    public override void Write(RoomListDynamicEntriesController value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface IRoomListItem {
+    
+    String? AvatarUrl();
+    
+    String? CanonicalAlias();
+    
+    Room FullRoom();
+    
+    Room FullRoomBlocking();
+    
+    bool HasUnreadNotifications();
+    
+    String Id();
+    
+    bool IsDirect();
+    
+    EventTimelineItem? LatestEvent();
+    
+    String? Name();
+    
+    /// <exception cref="ClientException"></exception>
+    RoomInfo RoomInfo();
+    
+    void Subscribe(RoomSubscription? @settings);
+    
+    UnreadNotificationsCount UnreadNotifications();
+    
+    void Unsubscribe();
+    
+}
+
+public class RoomListItemSafeHandle: FFISafeHandle {
+    public RoomListItemSafeHandle(): base() {
+    }
+    public RoomListItemSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_roomlistitem(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class RoomListItem: FFIObject<RoomListItemSafeHandle>, IRoomListItem {
+    public RoomListItem(RoomListItemSafeHandle pointer): base(pointer) {}
+
+    
+    public String? AvatarUrl() {
+        return FfiConverterOptionalString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlistitem_avatar_url(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public String? CanonicalAlias() {
+        return FfiConverterOptionalString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlistitem_canonical_alias(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public Room FullRoom() {
+        return FfiConverterTypeRoom.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlistitem_full_room(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public Room FullRoomBlocking() {
+        return FfiConverterTypeRoom.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlistitem_full_room_blocking(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public bool HasUnreadNotifications() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlistitem_has_unread_notifications(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public String Id() {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlistitem_id(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public bool IsDirect() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlistitem_is_direct(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public EventTimelineItem? LatestEvent() {
+        return FfiConverterOptionalTypeEventTimelineItem.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlistitem_latest_event(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public String? Name() {
+        return FfiConverterOptionalString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlistitem_name(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public RoomInfo RoomInfo() {
+        return FfiConverterTypeRoomInfo.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlistitem_room_info(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public void Subscribe(RoomSubscription? @settings) {
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlistitem_subscribe(this.GetHandle(), FfiConverterOptionalTypeRoomSubscription.INSTANCE.Lower(@settings), ref _status)
+);
+    }
+    
+    
+    public UnreadNotificationsCount UnreadNotifications() {
+        return FfiConverterTypeUnreadNotificationsCount.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlistitem_unread_notifications(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public void Unsubscribe() {
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlistitem_unsubscribe(this.GetHandle(),  ref _status)
+);
+    }
+    
+    
+
+    
+}
+
+class FfiConverterTypeRoomListItem: FfiConverter<RoomListItem, RoomListItemSafeHandle> {
+    public static FfiConverterTypeRoomListItem INSTANCE = new FfiConverterTypeRoomListItem();
+
+    public override RoomListItemSafeHandle Lower(RoomListItem value) {
+        return value.GetHandle();
+    }
+
+    public override RoomListItem Lift(RoomListItemSafeHandle value) {
+        return new RoomListItem(value);
+    }
+
+    public override RoomListItem Read(BigEndianStream stream) {
+        return Lift(new RoomListItemSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(RoomListItem value) {
+        return 8;
+    }
+
+    public override void Write(RoomListItem value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface IRoomListService {
+    
+    /// <exception cref="RoomListException"></exception>
+    RoomList AllRooms();
+    
+    /// <exception cref="RoomListException"></exception>
+    void ApplyInput(RoomListInput @input);
+    
+    /// <exception cref="RoomListException"></exception>
+    RoomList Invites();
+    
+    /// <exception cref="RoomListException"></exception>
+    RoomListItem Room(String @roomId);
+    
+    TaskHandle State(RoomListServiceStateListener @listener);
+    
+    TaskHandle SyncIndicator(uint @delayBeforeShowingInMs, uint @delayBeforeHidingInMs, RoomListServiceSyncIndicatorListener @listener);
+    
+}
+
+public class RoomListServiceSafeHandle: FFISafeHandle {
+    public RoomListServiceSafeHandle(): base() {
+    }
+    public RoomListServiceSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_roomlistservice(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class RoomListService: FFIObject<RoomListServiceSafeHandle>, IRoomListService {
+    public RoomListService(RoomListServiceSafeHandle pointer): base(pointer) {}
+
+    
+    /// <exception cref="RoomListException"></exception>
+    public RoomList AllRooms() {
+        return FfiConverterTypeRoomList.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeRoomListException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlistservice_all_rooms(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="RoomListException"></exception>
+    public void ApplyInput(RoomListInput @input) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeRoomListException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlistservice_apply_input(this.GetHandle(), FfiConverterTypeRoomListInput.INSTANCE.Lower(@input), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="RoomListException"></exception>
+    public RoomList Invites() {
+        return FfiConverterTypeRoomList.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeRoomListException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlistservice_invites(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="RoomListException"></exception>
+    public RoomListItem Room(String @roomId) {
+        return FfiConverterTypeRoomListItem.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeRoomListException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlistservice_room(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@roomId), ref _status)
+));
+    }
+    
+    public TaskHandle State(RoomListServiceStateListener @listener) {
+        return FfiConverterTypeTaskHandle.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlistservice_state(this.GetHandle(), FfiConverterTypeRoomListServiceStateListener.INSTANCE.Lower(@listener), ref _status)
+));
+    }
+    
+    public TaskHandle SyncIndicator(uint @delayBeforeShowingInMs, uint @delayBeforeHidingInMs, RoomListServiceSyncIndicatorListener @listener) {
+        return FfiConverterTypeTaskHandle.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roomlistservice_sync_indicator(this.GetHandle(), FfiConverterUInt32.INSTANCE.Lower(@delayBeforeShowingInMs), FfiConverterUInt32.INSTANCE.Lower(@delayBeforeHidingInMs), FfiConverterTypeRoomListServiceSyncIndicatorListener.INSTANCE.Lower(@listener), ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeRoomListService: FfiConverter<RoomListService, RoomListServiceSafeHandle> {
+    public static FfiConverterTypeRoomListService INSTANCE = new FfiConverterTypeRoomListService();
+
+    public override RoomListServiceSafeHandle Lower(RoomListService value) {
+        return value.GetHandle();
+    }
+
+    public override RoomListService Lift(RoomListServiceSafeHandle value) {
+        return new RoomListService(value);
+    }
+
+    public override RoomListService Read(BigEndianStream stream) {
+        return Lift(new RoomListServiceSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(RoomListService value) {
+        return 8;
+    }
+
+    public override void Write(RoomListService value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface IRoomMember {
+    
+    String? AvatarUrl();
+    
+    bool CanBan();
+    
+    bool CanInvite();
+    
+    bool CanKick();
+    
+    bool CanRedact();
+    
+    bool CanSendMessage(MessageLikeEventType @event);
+    
+    bool CanSendState(StateEventType @stateEvent);
+    
+    bool CanTriggerRoomNotification();
+    
+    String? DisplayName();
+    
+    /// <exception cref="ClientException"></exception>
+    void Ignore();
+    
+    bool IsAccountUser();
+    
+    bool IsIgnored();
+    
+    bool IsNameAmbiguous();
+    
+    MembershipState Membership();
+    
+    long NormalizedPowerLevel();
+    
+    long PowerLevel();
+    
+    /// <exception cref="ClientException"></exception>
+    void Unignore();
+    
+    String UserId();
+    
+}
+
+public class RoomMemberSafeHandle: FFISafeHandle {
+    public RoomMemberSafeHandle(): base() {
+    }
+    public RoomMemberSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_roommember(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class RoomMember: FFIObject<RoomMemberSafeHandle>, IRoomMember {
+    public RoomMember(RoomMemberSafeHandle pointer): base(pointer) {}
+
+    
+    public String? AvatarUrl() {
+        return FfiConverterOptionalString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roommember_avatar_url(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public bool CanBan() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roommember_can_ban(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public bool CanInvite() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roommember_can_invite(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public bool CanKick() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roommember_can_kick(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public bool CanRedact() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roommember_can_redact(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public bool CanSendMessage(MessageLikeEventType @event) {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roommember_can_send_message(this.GetHandle(), FfiConverterTypeMessageLikeEventType.INSTANCE.Lower(@event), ref _status)
+));
+    }
+    
+    public bool CanSendState(StateEventType @stateEvent) {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roommember_can_send_state(this.GetHandle(), FfiConverterTypeStateEventType.INSTANCE.Lower(@stateEvent), ref _status)
+));
+    }
+    
+    public bool CanTriggerRoomNotification() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roommember_can_trigger_room_notification(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public String? DisplayName() {
+        return FfiConverterOptionalString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roommember_display_name(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public void Ignore() {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roommember_ignore(this.GetHandle(),  ref _status)
+);
+    }
+    
+    
+    public bool IsAccountUser() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roommember_is_account_user(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public bool IsIgnored() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roommember_is_ignored(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public bool IsNameAmbiguous() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roommember_is_name_ambiguous(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public MembershipState Membership() {
+        return FfiConverterTypeMembershipState.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roommember_membership(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public long NormalizedPowerLevel() {
+        return FfiConverterInt64.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roommember_normalized_power_level(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public long PowerLevel() {
+        return FfiConverterInt64.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roommember_power_level(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public void Unignore() {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roommember_unignore(this.GetHandle(),  ref _status)
+);
+    }
+    
+    
+    public String UserId() {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roommember_user_id(this.GetHandle(),  ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeRoomMember: FfiConverter<RoomMember, RoomMemberSafeHandle> {
+    public static FfiConverterTypeRoomMember INSTANCE = new FfiConverterTypeRoomMember();
+
+    public override RoomMemberSafeHandle Lower(RoomMember value) {
+        return value.GetHandle();
+    }
+
+    public override RoomMember Lift(RoomMemberSafeHandle value) {
+        return new RoomMember(value);
+    }
+
+    public override RoomMember Read(BigEndianStream stream) {
+        return Lift(new RoomMemberSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(RoomMember value) {
+        return 8;
+    }
+
+    public override void Write(RoomMember value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface IRoomMembersIterator {
+    
+    uint Len();
+    
+    List<RoomMember>? NextChunk(uint @chunkSize);
+    
+}
+
+public class RoomMembersIteratorSafeHandle: FFISafeHandle {
+    public RoomMembersIteratorSafeHandle(): base() {
+    }
+    public RoomMembersIteratorSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_roommembersiterator(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class RoomMembersIterator: FFIObject<RoomMembersIteratorSafeHandle>, IRoomMembersIterator {
+    public RoomMembersIterator(RoomMembersIteratorSafeHandle pointer): base(pointer) {}
+
+    
+    public uint Len() {
+        return FfiConverterUInt32.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roommembersiterator_len(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public List<RoomMember>? NextChunk(uint @chunkSize) {
+        return FfiConverterOptionalSequenceTypeRoomMember.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_roommembersiterator_next_chunk(this.GetHandle(), FfiConverterUInt32.INSTANCE.Lower(@chunkSize), ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeRoomMembersIterator: FfiConverter<RoomMembersIterator, RoomMembersIteratorSafeHandle> {
+    public static FfiConverterTypeRoomMembersIterator INSTANCE = new FfiConverterTypeRoomMembersIterator();
+
+    public override RoomMembersIteratorSafeHandle Lower(RoomMembersIterator value) {
+        return value.GetHandle();
+    }
+
+    public override RoomMembersIterator Lift(RoomMembersIteratorSafeHandle value) {
+        return new RoomMembersIterator(value);
+    }
+
+    public override RoomMembersIterator Read(BigEndianStream stream) {
+        return Lift(new RoomMembersIteratorSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(RoomMembersIterator value) {
+        return 8;
+    }
+
+    public override void Write(RoomMembersIterator value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
 public interface IRoomMessageEventContentWithoutRelation {
     
     RoomMessageEventContentWithoutRelation WithMentions(Mentions @mentions);
@@ -817,6 +8588,1755 @@ class FfiConverterTypeRoomMessageEventContentWithoutRelation: FfiConverter<RoomM
 
 
 
+public interface ISendAttachmentJoinHandle {
+    
+    void Cancel();
+    
+    /// <exception cref="RoomException"></exception>
+    void Join();
+    
+}
+
+public class SendAttachmentJoinHandleSafeHandle: FFISafeHandle {
+    public SendAttachmentJoinHandleSafeHandle(): base() {
+    }
+    public SendAttachmentJoinHandleSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_sendattachmentjoinhandle(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class SendAttachmentJoinHandle: FFIObject<SendAttachmentJoinHandleSafeHandle>, ISendAttachmentJoinHandle {
+    public SendAttachmentJoinHandle(SendAttachmentJoinHandleSafeHandle pointer): base(pointer) {}
+
+    
+    public void Cancel() {
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_sendattachmentjoinhandle_cancel(this.GetHandle(),  ref _status)
+);
+    }
+    
+    
+    /// <exception cref="RoomException"></exception>
+    public void Join() {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeRoomException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_sendattachmentjoinhandle_join(this.GetHandle(),  ref _status)
+);
+    }
+    
+    
+
+    
+}
+
+class FfiConverterTypeSendAttachmentJoinHandle: FfiConverter<SendAttachmentJoinHandle, SendAttachmentJoinHandleSafeHandle> {
+    public static FfiConverterTypeSendAttachmentJoinHandle INSTANCE = new FfiConverterTypeSendAttachmentJoinHandle();
+
+    public override SendAttachmentJoinHandleSafeHandle Lower(SendAttachmentJoinHandle value) {
+        return value.GetHandle();
+    }
+
+    public override SendAttachmentJoinHandle Lift(SendAttachmentJoinHandleSafeHandle value) {
+        return new SendAttachmentJoinHandle(value);
+    }
+
+    public override SendAttachmentJoinHandle Read(BigEndianStream stream) {
+        return Lift(new SendAttachmentJoinHandleSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(SendAttachmentJoinHandle value) {
+        return 8;
+    }
+
+    public override void Write(SendAttachmentJoinHandle value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface ISessionVerificationController {
+    
+    /// <exception cref="ClientException"></exception>
+    void ApproveVerification();
+    
+    /// <exception cref="ClientException"></exception>
+    void CancelVerification();
+    
+    /// <exception cref="ClientException"></exception>
+    void DeclineVerification();
+    
+    /// <exception cref="ClientException"></exception>
+    bool IsVerified();
+    
+    /// <exception cref="ClientException"></exception>
+    void RequestVerification();
+    
+    void SetDelegate(SessionVerificationControllerDelegate? @delegate);
+    
+    /// <exception cref="ClientException"></exception>
+    void StartSasVerification();
+    
+}
+
+public class SessionVerificationControllerSafeHandle: FFISafeHandle {
+    public SessionVerificationControllerSafeHandle(): base() {
+    }
+    public SessionVerificationControllerSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_sessionverificationcontroller(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class SessionVerificationController: FFIObject<SessionVerificationControllerSafeHandle>, ISessionVerificationController {
+    public SessionVerificationController(SessionVerificationControllerSafeHandle pointer): base(pointer) {}
+
+    
+    /// <exception cref="ClientException"></exception>
+    public void ApproveVerification() {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_sessionverificationcontroller_approve_verification(this.GetHandle(),  ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public void CancelVerification() {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_sessionverificationcontroller_cancel_verification(this.GetHandle(),  ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public void DeclineVerification() {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_sessionverificationcontroller_decline_verification(this.GetHandle(),  ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public bool IsVerified() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_sessionverificationcontroller_is_verified(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public void RequestVerification() {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_sessionverificationcontroller_request_verification(this.GetHandle(),  ref _status)
+);
+    }
+    
+    
+    public void SetDelegate(SessionVerificationControllerDelegate? @delegate) {
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_sessionverificationcontroller_set_delegate(this.GetHandle(), FfiConverterOptionalTypeSessionVerificationControllerDelegate.INSTANCE.Lower(@delegate), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public void StartSasVerification() {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_sessionverificationcontroller_start_sas_verification(this.GetHandle(),  ref _status)
+);
+    }
+    
+    
+
+    
+}
+
+class FfiConverterTypeSessionVerificationController: FfiConverter<SessionVerificationController, SessionVerificationControllerSafeHandle> {
+    public static FfiConverterTypeSessionVerificationController INSTANCE = new FfiConverterTypeSessionVerificationController();
+
+    public override SessionVerificationControllerSafeHandle Lower(SessionVerificationController value) {
+        return value.GetHandle();
+    }
+
+    public override SessionVerificationController Lift(SessionVerificationControllerSafeHandle value) {
+        return new SessionVerificationController(value);
+    }
+
+    public override SessionVerificationController Read(BigEndianStream stream) {
+        return Lift(new SessionVerificationControllerSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(SessionVerificationController value) {
+        return 8;
+    }
+
+    public override void Write(SessionVerificationController value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface ISessionVerificationEmoji {
+    
+    String Description();
+    
+    String Symbol();
+    
+}
+
+public class SessionVerificationEmojiSafeHandle: FFISafeHandle {
+    public SessionVerificationEmojiSafeHandle(): base() {
+    }
+    public SessionVerificationEmojiSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_sessionverificationemoji(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class SessionVerificationEmoji: FFIObject<SessionVerificationEmojiSafeHandle>, ISessionVerificationEmoji {
+    public SessionVerificationEmoji(SessionVerificationEmojiSafeHandle pointer): base(pointer) {}
+
+    
+    public String Description() {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_sessionverificationemoji_description(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public String Symbol() {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_sessionverificationemoji_symbol(this.GetHandle(),  ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeSessionVerificationEmoji: FfiConverter<SessionVerificationEmoji, SessionVerificationEmojiSafeHandle> {
+    public static FfiConverterTypeSessionVerificationEmoji INSTANCE = new FfiConverterTypeSessionVerificationEmoji();
+
+    public override SessionVerificationEmojiSafeHandle Lower(SessionVerificationEmoji value) {
+        return value.GetHandle();
+    }
+
+    public override SessionVerificationEmoji Lift(SessionVerificationEmojiSafeHandle value) {
+        return new SessionVerificationEmoji(value);
+    }
+
+    public override SessionVerificationEmoji Read(BigEndianStream stream) {
+        return Lift(new SessionVerificationEmojiSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(SessionVerificationEmoji value) {
+        return 8;
+    }
+
+    public override void Write(SessionVerificationEmoji value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface ISpan {
+    
+    void Enter();
+    
+    void Exit();
+    
+    bool IsNone();
+    
+}
+
+public class SpanSafeHandle: FFISafeHandle {
+    public SpanSafeHandle(): base() {
+    }
+    public SpanSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_span(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class Span: FFIObject<SpanSafeHandle>, ISpan {
+    public Span(SpanSafeHandle pointer): base(pointer) {}
+    public Span(String @file, uint? @line, LogLevel @level, String @target, String @name) :
+        this(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_constructor_span_new(FfiConverterString.INSTANCE.Lower(@file), FfiConverterOptionalUInt32.INSTANCE.Lower(@line), FfiConverterTypeLogLevel.INSTANCE.Lower(@level), FfiConverterString.INSTANCE.Lower(@target), FfiConverterString.INSTANCE.Lower(@name), ref _status)
+)) {}
+
+    
+    public void Enter() {
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_span_enter(this.GetHandle(),  ref _status)
+);
+    }
+    
+    
+    public void Exit() {
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_span_exit(this.GetHandle(),  ref _status)
+);
+    }
+    
+    
+    public bool IsNone() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_span_is_none(this.GetHandle(),  ref _status)
+));
+    }
+    
+
+    
+    public static Span Current() {
+        return new Span(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_constructor_span_current( ref _status)
+));
+    }
+    
+    
+}
+
+class FfiConverterTypeSpan: FfiConverter<Span, SpanSafeHandle> {
+    public static FfiConverterTypeSpan INSTANCE = new FfiConverterTypeSpan();
+
+    public override SpanSafeHandle Lower(Span value) {
+        return value.GetHandle();
+    }
+
+    public override Span Lift(SpanSafeHandle value) {
+        return new Span(value);
+    }
+
+    public override Span Read(BigEndianStream stream) {
+        return Lift(new SpanSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(Span value) {
+        return 8;
+    }
+
+    public override void Write(Span value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface ISyncService {
+    
+    RoomListService RoomListService();
+    
+    void Start();
+    
+    TaskHandle State(SyncServiceStateObserver @listener);
+    
+    /// <exception cref="ClientException"></exception>
+    void Stop();
+    
+}
+
+public class SyncServiceSafeHandle: FFISafeHandle {
+    public SyncServiceSafeHandle(): base() {
+    }
+    public SyncServiceSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_syncservice(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class SyncService: FFIObject<SyncServiceSafeHandle>, ISyncService {
+    public SyncService(SyncServiceSafeHandle pointer): base(pointer) {}
+
+    
+    public RoomListService RoomListService() {
+        return FfiConverterTypeRoomListService.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_syncservice_room_list_service(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public void Start() {
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_syncservice_start(this.GetHandle(),  ref _status)
+);
+    }
+    
+    
+    public TaskHandle State(SyncServiceStateObserver @listener) {
+        return FfiConverterTypeTaskHandle.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_syncservice_state(this.GetHandle(), FfiConverterTypeSyncServiceStateObserver.INSTANCE.Lower(@listener), ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public void Stop() {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_syncservice_stop(this.GetHandle(),  ref _status)
+);
+    }
+    
+    
+
+    
+}
+
+class FfiConverterTypeSyncService: FfiConverter<SyncService, SyncServiceSafeHandle> {
+    public static FfiConverterTypeSyncService INSTANCE = new FfiConverterTypeSyncService();
+
+    public override SyncServiceSafeHandle Lower(SyncService value) {
+        return value.GetHandle();
+    }
+
+    public override SyncService Lift(SyncServiceSafeHandle value) {
+        return new SyncService(value);
+    }
+
+    public override SyncService Read(BigEndianStream stream) {
+        return Lift(new SyncServiceSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(SyncService value) {
+        return 8;
+    }
+
+    public override void Write(SyncService value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface ISyncServiceBuilder {
+    
+    /// <exception cref="ClientException"></exception>
+    SyncService Finish();
+    
+    SyncServiceBuilder WithCrossProcessLock(String? @appIdentifier);
+    
+}
+
+public class SyncServiceBuilderSafeHandle: FFISafeHandle {
+    public SyncServiceBuilderSafeHandle(): base() {
+    }
+    public SyncServiceBuilderSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_syncservicebuilder(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class SyncServiceBuilder: FFIObject<SyncServiceBuilderSafeHandle>, ISyncServiceBuilder {
+    public SyncServiceBuilder(SyncServiceBuilderSafeHandle pointer): base(pointer) {}
+
+    
+    /// <exception cref="ClientException"></exception>
+    public SyncService Finish() {
+        return FfiConverterTypeSyncService.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_syncservicebuilder_finish(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public SyncServiceBuilder WithCrossProcessLock(String? @appIdentifier) {
+        return FfiConverterTypeSyncServiceBuilder.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_syncservicebuilder_with_cross_process_lock(this.GetHandle(), FfiConverterOptionalString.INSTANCE.Lower(@appIdentifier), ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeSyncServiceBuilder: FfiConverter<SyncServiceBuilder, SyncServiceBuilderSafeHandle> {
+    public static FfiConverterTypeSyncServiceBuilder INSTANCE = new FfiConverterTypeSyncServiceBuilder();
+
+    public override SyncServiceBuilderSafeHandle Lower(SyncServiceBuilder value) {
+        return value.GetHandle();
+    }
+
+    public override SyncServiceBuilder Lift(SyncServiceBuilderSafeHandle value) {
+        return new SyncServiceBuilder(value);
+    }
+
+    public override SyncServiceBuilder Read(BigEndianStream stream) {
+        return Lift(new SyncServiceBuilderSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(SyncServiceBuilder value) {
+        return 8;
+    }
+
+    public override void Write(SyncServiceBuilder value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface ITaskHandle {
+    
+    void Cancel();
+    
+    bool IsFinished();
+    
+}
+
+public class TaskHandleSafeHandle: FFISafeHandle {
+    public TaskHandleSafeHandle(): base() {
+    }
+    public TaskHandleSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_taskhandle(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class TaskHandle: FFIObject<TaskHandleSafeHandle>, ITaskHandle {
+    public TaskHandle(TaskHandleSafeHandle pointer): base(pointer) {}
+
+    
+    public void Cancel() {
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_taskhandle_cancel(this.GetHandle(),  ref _status)
+);
+    }
+    
+    
+    public bool IsFinished() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_taskhandle_is_finished(this.GetHandle(),  ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeTaskHandle: FfiConverter<TaskHandle, TaskHandleSafeHandle> {
+    public static FfiConverterTypeTaskHandle INSTANCE = new FfiConverterTypeTaskHandle();
+
+    public override TaskHandleSafeHandle Lower(TaskHandle value) {
+        return value.GetHandle();
+    }
+
+    public override TaskHandle Lift(TaskHandleSafeHandle value) {
+        return new TaskHandle(value);
+    }
+
+    public override TaskHandle Read(BigEndianStream stream) {
+        return Lift(new TaskHandleSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(TaskHandle value) {
+        return 8;
+    }
+
+    public override void Write(TaskHandle value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface ITimelineDiff {
+    
+    List<TimelineItem>? Append();
+    
+    TimelineChange Change();
+    
+    InsertData? Insert();
+    
+    TimelineItem? PushBack();
+    
+    TimelineItem? PushFront();
+    
+    uint? Remove();
+    
+    List<TimelineItem>? Reset();
+    
+    SetData? Set();
+    
+}
+
+public class TimelineDiffSafeHandle: FFISafeHandle {
+    public TimelineDiffSafeHandle(): base() {
+    }
+    public TimelineDiffSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_timelinediff(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class TimelineDiff: FFIObject<TimelineDiffSafeHandle>, ITimelineDiff {
+    public TimelineDiff(TimelineDiffSafeHandle pointer): base(pointer) {}
+
+    
+    public List<TimelineItem>? Append() {
+        return FfiConverterOptionalSequenceTypeTimelineItem.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_timelinediff_append(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public TimelineChange Change() {
+        return FfiConverterTypeTimelineChange.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_timelinediff_change(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public InsertData? Insert() {
+        return FfiConverterOptionalTypeInsertData.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_timelinediff_insert(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public TimelineItem? PushBack() {
+        return FfiConverterOptionalTypeTimelineItem.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_timelinediff_push_back(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public TimelineItem? PushFront() {
+        return FfiConverterOptionalTypeTimelineItem.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_timelinediff_push_front(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public uint? Remove() {
+        return FfiConverterOptionalUInt32.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_timelinediff_remove(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public List<TimelineItem>? Reset() {
+        return FfiConverterOptionalSequenceTypeTimelineItem.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_timelinediff_reset(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public SetData? Set() {
+        return FfiConverterOptionalTypeSetData.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_timelinediff_set(this.GetHandle(),  ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeTimelineDiff: FfiConverter<TimelineDiff, TimelineDiffSafeHandle> {
+    public static FfiConverterTypeTimelineDiff INSTANCE = new FfiConverterTypeTimelineDiff();
+
+    public override TimelineDiffSafeHandle Lower(TimelineDiff value) {
+        return value.GetHandle();
+    }
+
+    public override TimelineDiff Lift(TimelineDiffSafeHandle value) {
+        return new TimelineDiff(value);
+    }
+
+    public override TimelineDiff Read(BigEndianStream stream) {
+        return Lift(new TimelineDiffSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(TimelineDiff value) {
+        return 8;
+    }
+
+    public override void Write(TimelineDiff value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface ITimelineEvent {
+    
+    String EventId();
+    
+    /// <exception cref="ClientException"></exception>
+    TimelineEventType EventType();
+    
+    String SenderId();
+    
+    ulong Timestamp();
+    
+}
+
+public class TimelineEventSafeHandle: FFISafeHandle {
+    public TimelineEventSafeHandle(): base() {
+    }
+    public TimelineEventSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_timelineevent(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class TimelineEvent: FFIObject<TimelineEventSafeHandle>, ITimelineEvent {
+    public TimelineEvent(TimelineEventSafeHandle pointer): base(pointer) {}
+
+    
+    public String EventId() {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_timelineevent_event_id(this.GetHandle(),  ref _status)
+));
+    }
+    
+    /// <exception cref="ClientException"></exception>
+    public TimelineEventType EventType() {
+        return FfiConverterTypeTimelineEventType.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_timelineevent_event_type(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public String SenderId() {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_timelineevent_sender_id(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public ulong Timestamp() {
+        return FfiConverterUInt64.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_timelineevent_timestamp(this.GetHandle(),  ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeTimelineEvent: FfiConverter<TimelineEvent, TimelineEventSafeHandle> {
+    public static FfiConverterTypeTimelineEvent INSTANCE = new FfiConverterTypeTimelineEvent();
+
+    public override TimelineEventSafeHandle Lower(TimelineEvent value) {
+        return value.GetHandle();
+    }
+
+    public override TimelineEvent Lift(TimelineEventSafeHandle value) {
+        return new TimelineEvent(value);
+    }
+
+    public override TimelineEvent Read(BigEndianStream stream) {
+        return Lift(new TimelineEventSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(TimelineEvent value) {
+        return 8;
+    }
+
+    public override void Write(TimelineEvent value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface ITimelineItem {
+    
+    EventTimelineItem? AsEvent();
+    
+    VirtualTimelineItem? AsVirtual();
+    
+    String FmtDebug();
+    
+    ulong UniqueId();
+    
+}
+
+public class TimelineItemSafeHandle: FFISafeHandle {
+    public TimelineItemSafeHandle(): base() {
+    }
+    public TimelineItemSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_timelineitem(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class TimelineItem: FFIObject<TimelineItemSafeHandle>, ITimelineItem {
+    public TimelineItem(TimelineItemSafeHandle pointer): base(pointer) {}
+
+    
+    public EventTimelineItem? AsEvent() {
+        return FfiConverterOptionalTypeEventTimelineItem.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_timelineitem_as_event(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public VirtualTimelineItem? AsVirtual() {
+        return FfiConverterOptionalTypeVirtualTimelineItem.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_timelineitem_as_virtual(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public String FmtDebug() {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_timelineitem_fmt_debug(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public ulong UniqueId() {
+        return FfiConverterUInt64.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_timelineitem_unique_id(this.GetHandle(),  ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeTimelineItem: FfiConverter<TimelineItem, TimelineItemSafeHandle> {
+    public static FfiConverterTypeTimelineItem INSTANCE = new FfiConverterTypeTimelineItem();
+
+    public override TimelineItemSafeHandle Lower(TimelineItem value) {
+        return value.GetHandle();
+    }
+
+    public override TimelineItem Lift(TimelineItemSafeHandle value) {
+        return new TimelineItem(value);
+    }
+
+    public override TimelineItem Read(BigEndianStream stream) {
+        return Lift(new TimelineItemSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(TimelineItem value) {
+        return 8;
+    }
+
+    public override void Write(TimelineItem value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface ITimelineItemContent {
+    
+    Message? AsMessage();
+    
+    TimelineItemContentKind Kind();
+    
+}
+
+public class TimelineItemContentSafeHandle: FFISafeHandle {
+    public TimelineItemContentSafeHandle(): base() {
+    }
+    public TimelineItemContentSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_timelineitemcontent(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class TimelineItemContent: FFIObject<TimelineItemContentSafeHandle>, ITimelineItemContent {
+    public TimelineItemContent(TimelineItemContentSafeHandle pointer): base(pointer) {}
+
+    
+    public Message? AsMessage() {
+        return FfiConverterOptionalTypeMessage.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_timelineitemcontent_as_message(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public TimelineItemContentKind Kind() {
+        return FfiConverterTypeTimelineItemContentKind.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_timelineitemcontent_kind(this.GetHandle(),  ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeTimelineItemContent: FfiConverter<TimelineItemContent, TimelineItemContentSafeHandle> {
+    public static FfiConverterTypeTimelineItemContent INSTANCE = new FfiConverterTypeTimelineItemContent();
+
+    public override TimelineItemContentSafeHandle Lower(TimelineItemContent value) {
+        return value.GetHandle();
+    }
+
+    public override TimelineItemContent Lift(TimelineItemContentSafeHandle value) {
+        return new TimelineItemContent(value);
+    }
+
+    public override TimelineItemContent Read(BigEndianStream stream) {
+        return Lift(new TimelineItemContentSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(TimelineItemContent value) {
+        return 8;
+    }
+
+    public override void Write(TimelineItemContent value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface IUnreadNotificationsCount {
+    
+    bool HasNotifications();
+    
+    uint HighlightCount();
+    
+    uint NotificationCount();
+    
+}
+
+public class UnreadNotificationsCountSafeHandle: FFISafeHandle {
+    public UnreadNotificationsCountSafeHandle(): base() {
+    }
+    public UnreadNotificationsCountSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_unreadnotificationscount(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class UnreadNotificationsCount: FFIObject<UnreadNotificationsCountSafeHandle>, IUnreadNotificationsCount {
+    public UnreadNotificationsCount(UnreadNotificationsCountSafeHandle pointer): base(pointer) {}
+
+    
+    public bool HasNotifications() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_unreadnotificationscount_has_notifications(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public uint HighlightCount() {
+        return FfiConverterUInt32.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_unreadnotificationscount_highlight_count(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public uint NotificationCount() {
+        return FfiConverterUInt32.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_unreadnotificationscount_notification_count(this.GetHandle(),  ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeUnreadNotificationsCount: FfiConverter<UnreadNotificationsCount, UnreadNotificationsCountSafeHandle> {
+    public static FfiConverterTypeUnreadNotificationsCount INSTANCE = new FfiConverterTypeUnreadNotificationsCount();
+
+    public override UnreadNotificationsCountSafeHandle Lower(UnreadNotificationsCount value) {
+        return value.GetHandle();
+    }
+
+    public override UnreadNotificationsCount Lift(UnreadNotificationsCountSafeHandle value) {
+        return new UnreadNotificationsCount(value);
+    }
+
+    public override UnreadNotificationsCount Read(BigEndianStream stream) {
+        return Lift(new UnreadNotificationsCountSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(UnreadNotificationsCount value) {
+        return 8;
+    }
+
+    public override void Write(UnreadNotificationsCount value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface IWidgetDriver {
+    
+    void Run(Room @room, WidgetCapabilitiesProvider @capabilitiesProvider);
+    
+}
+
+public class WidgetDriverSafeHandle: FFISafeHandle {
+    public WidgetDriverSafeHandle(): base() {
+    }
+    public WidgetDriverSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_widgetdriver(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class WidgetDriver: FFIObject<WidgetDriverSafeHandle>, IWidgetDriver {
+    public WidgetDriver(WidgetDriverSafeHandle pointer): base(pointer) {}
+
+    
+    public void Run(Room @room, WidgetCapabilitiesProvider @capabilitiesProvider) {
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_widgetdriver_run(this.GetHandle(), FfiConverterTypeRoom.INSTANCE.Lower(@room), FfiConverterTypeWidgetCapabilitiesProvider.INSTANCE.Lower(@capabilitiesProvider), ref _status)
+);
+    }
+    
+    
+
+    
+}
+
+class FfiConverterTypeWidgetDriver: FfiConverter<WidgetDriver, WidgetDriverSafeHandle> {
+    public static FfiConverterTypeWidgetDriver INSTANCE = new FfiConverterTypeWidgetDriver();
+
+    public override WidgetDriverSafeHandle Lower(WidgetDriver value) {
+        return value.GetHandle();
+    }
+
+    public override WidgetDriver Lift(WidgetDriverSafeHandle value) {
+        return new WidgetDriver(value);
+    }
+
+    public override WidgetDriver Read(BigEndianStream stream) {
+        return Lift(new WidgetDriverSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(WidgetDriver value) {
+        return 8;
+    }
+
+    public override void Write(WidgetDriver value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public interface IWidgetDriverHandle {
+    
+    String? Recv();
+    
+    bool Send(String @msg);
+    
+}
+
+public class WidgetDriverHandleSafeHandle: FFISafeHandle {
+    public WidgetDriverHandleSafeHandle(): base() {
+    }
+    public WidgetDriverHandleSafeHandle(IntPtr pointer): base(pointer) {
+    }
+    override protected bool ReleaseHandle() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_widgetdriverhandle(this.handle, ref status);
+        });
+        return true;
+    }
+}
+public class WidgetDriverHandle: FFIObject<WidgetDriverHandleSafeHandle>, IWidgetDriverHandle {
+    public WidgetDriverHandle(WidgetDriverHandleSafeHandle pointer): base(pointer) {}
+
+    
+    public String? Recv() {
+        return FfiConverterOptionalString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_widgetdriverhandle_recv(this.GetHandle(),  ref _status)
+));
+    }
+    
+    public bool Send(String @msg) {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_widgetdriverhandle_send(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@msg), ref _status)
+));
+    }
+    
+
+    
+}
+
+class FfiConverterTypeWidgetDriverHandle: FfiConverter<WidgetDriverHandle, WidgetDriverHandleSafeHandle> {
+    public static FfiConverterTypeWidgetDriverHandle INSTANCE = new FfiConverterTypeWidgetDriverHandle();
+
+    public override WidgetDriverHandleSafeHandle Lower(WidgetDriverHandle value) {
+        return value.GetHandle();
+    }
+
+    public override WidgetDriverHandle Lift(WidgetDriverHandleSafeHandle value) {
+        return new WidgetDriverHandle(value);
+    }
+
+    public override WidgetDriverHandle Read(BigEndianStream stream) {
+        return Lift(new WidgetDriverHandleSafeHandle(new IntPtr(stream.ReadLong())));
+    }
+
+    public override int AllocationSize(WidgetDriverHandle value) {
+        return 8;
+    }
+
+    public override void Write(WidgetDriverHandle value, BigEndianStream stream) {
+        stream.WriteLong(Lower(value).DangerousGetRawFfiValue().ToInt64());
+    }
+}
+
+
+
+public record AudioInfo (
+    TimeSpan? @duration, 
+    ulong? @size, 
+    String? @mimetype
+) {
+}
+
+class FfiConverterTypeAudioInfo: FfiConverterRustBuffer<AudioInfo> {
+    public static FfiConverterTypeAudioInfo INSTANCE = new FfiConverterTypeAudioInfo();
+
+    public override AudioInfo Read(BigEndianStream stream) {
+        return new AudioInfo(
+            FfiConverterOptionalDuration.INSTANCE.Read(stream),
+            FfiConverterOptionalUInt64.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(AudioInfo value) {
+        return
+            FfiConverterOptionalDuration.INSTANCE.AllocationSize(value.@duration) +
+            FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.@size) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@mimetype);
+    }
+
+    public override void Write(AudioInfo value, BigEndianStream stream) {
+            FfiConverterOptionalDuration.INSTANCE.Write(value.@duration, stream);
+            FfiConverterOptionalUInt64.INSTANCE.Write(value.@size, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@mimetype, stream);
+    }
+}
+
+
+
+public record AudioMessageContent (
+    String @body, 
+    MediaSource @source, 
+    AudioInfo? @info, 
+    UnstableAudioDetailsContent? @audio, 
+    UnstableVoiceContent? @voice
+) : IDisposable {
+    public void Dispose() {
+    FFIObjectUtil.DisposeAll(
+            this.@body,
+            this.@source,
+            this.@info,
+            this.@audio,
+            this.@voice);
+    }
+}
+
+class FfiConverterTypeAudioMessageContent: FfiConverterRustBuffer<AudioMessageContent> {
+    public static FfiConverterTypeAudioMessageContent INSTANCE = new FfiConverterTypeAudioMessageContent();
+
+    public override AudioMessageContent Read(BigEndianStream stream) {
+        return new AudioMessageContent(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterTypeMediaSource.INSTANCE.Read(stream),
+            FfiConverterOptionalTypeAudioInfo.INSTANCE.Read(stream),
+            FfiConverterOptionalTypeUnstableAudioDetailsContent.INSTANCE.Read(stream),
+            FfiConverterOptionalTypeUnstableVoiceContent.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(AudioMessageContent value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@body) +
+            FfiConverterTypeMediaSource.INSTANCE.AllocationSize(value.@source) +
+            FfiConverterOptionalTypeAudioInfo.INSTANCE.AllocationSize(value.@info) +
+            FfiConverterOptionalTypeUnstableAudioDetailsContent.INSTANCE.AllocationSize(value.@audio) +
+            FfiConverterOptionalTypeUnstableVoiceContent.INSTANCE.AllocationSize(value.@voice);
+    }
+
+    public override void Write(AudioMessageContent value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@body, stream);
+            FfiConverterTypeMediaSource.INSTANCE.Write(value.@source, stream);
+            FfiConverterOptionalTypeAudioInfo.INSTANCE.Write(value.@info, stream);
+            FfiConverterOptionalTypeUnstableAudioDetailsContent.INSTANCE.Write(value.@audio, stream);
+            FfiConverterOptionalTypeUnstableVoiceContent.INSTANCE.Write(value.@voice, stream);
+    }
+}
+
+
+
+public record ClientProperties (
+    String @clientId, 
+    String? @languageTag, 
+    String? @theme
+) {
+}
+
+class FfiConverterTypeClientProperties: FfiConverterRustBuffer<ClientProperties> {
+    public static FfiConverterTypeClientProperties INSTANCE = new FfiConverterTypeClientProperties();
+
+    public override ClientProperties Read(BigEndianStream stream) {
+        return new ClientProperties(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(ClientProperties value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@clientId) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@languageTag) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@theme);
+    }
+
+    public override void Write(ClientProperties value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@clientId, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@languageTag, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@theme, stream);
+    }
+}
+
+
+
+public record CreateRoomParameters (
+    String? @name, 
+    String? @topic = null, 
+    bool @isEncrypted, 
+    bool @isDirect = false, 
+    RoomVisibility @visibility, 
+    RoomPreset @preset, 
+    List<String>? @invite = null, 
+    String? @avatar = null
+) {
+}
+
+class FfiConverterTypeCreateRoomParameters: FfiConverterRustBuffer<CreateRoomParameters> {
+    public static FfiConverterTypeCreateRoomParameters INSTANCE = new FfiConverterTypeCreateRoomParameters();
+
+    public override CreateRoomParameters Read(BigEndianStream stream) {
+        return new CreateRoomParameters(
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterBoolean.INSTANCE.Read(stream),
+            FfiConverterBoolean.INSTANCE.Read(stream),
+            FfiConverterTypeRoomVisibility.INSTANCE.Read(stream),
+            FfiConverterTypeRoomPreset.INSTANCE.Read(stream),
+            FfiConverterOptionalSequenceString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(CreateRoomParameters value) {
+        return
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@name) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@topic) +
+            FfiConverterBoolean.INSTANCE.AllocationSize(value.@isEncrypted) +
+            FfiConverterBoolean.INSTANCE.AllocationSize(value.@isDirect) +
+            FfiConverterTypeRoomVisibility.INSTANCE.AllocationSize(value.@visibility) +
+            FfiConverterTypeRoomPreset.INSTANCE.AllocationSize(value.@preset) +
+            FfiConverterOptionalSequenceString.INSTANCE.AllocationSize(value.@invite) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@avatar);
+    }
+
+    public override void Write(CreateRoomParameters value, BigEndianStream stream) {
+            FfiConverterOptionalString.INSTANCE.Write(value.@name, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@topic, stream);
+            FfiConverterBoolean.INSTANCE.Write(value.@isEncrypted, stream);
+            FfiConverterBoolean.INSTANCE.Write(value.@isDirect, stream);
+            FfiConverterTypeRoomVisibility.INSTANCE.Write(value.@visibility, stream);
+            FfiConverterTypeRoomPreset.INSTANCE.Write(value.@preset, stream);
+            FfiConverterOptionalSequenceString.INSTANCE.Write(value.@invite, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@avatar, stream);
+    }
+}
+
+
+
+public record EmoteMessageContent (
+    String @body, 
+    FormattedBody? @formatted
+) {
+}
+
+class FfiConverterTypeEmoteMessageContent: FfiConverterRustBuffer<EmoteMessageContent> {
+    public static FfiConverterTypeEmoteMessageContent INSTANCE = new FfiConverterTypeEmoteMessageContent();
+
+    public override EmoteMessageContent Read(BigEndianStream stream) {
+        return new EmoteMessageContent(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterOptionalTypeFormattedBody.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(EmoteMessageContent value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@body) +
+            FfiConverterOptionalTypeFormattedBody.INSTANCE.AllocationSize(value.@formatted);
+    }
+
+    public override void Write(EmoteMessageContent value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@body, stream);
+            FfiConverterOptionalTypeFormattedBody.INSTANCE.Write(value.@formatted, stream);
+    }
+}
+
+
+
+public record EventTimelineItemDebugInfo (
+    String @model, 
+    String? @originalJson, 
+    String? @latestEditJson
+) {
+}
+
+class FfiConverterTypeEventTimelineItemDebugInfo: FfiConverterRustBuffer<EventTimelineItemDebugInfo> {
+    public static FfiConverterTypeEventTimelineItemDebugInfo INSTANCE = new FfiConverterTypeEventTimelineItemDebugInfo();
+
+    public override EventTimelineItemDebugInfo Read(BigEndianStream stream) {
+        return new EventTimelineItemDebugInfo(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(EventTimelineItemDebugInfo value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@model) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@originalJson) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@latestEditJson);
+    }
+
+    public override void Write(EventTimelineItemDebugInfo value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@model, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@originalJson, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@latestEditJson, stream);
+    }
+}
+
+
+
+public record FileInfo (
+    String? @mimetype, 
+    ulong? @size, 
+    ThumbnailInfo? @thumbnailInfo, 
+    MediaSource? @thumbnailSource
+) : IDisposable {
+    public void Dispose() {
+    FFIObjectUtil.DisposeAll(
+            this.@mimetype,
+            this.@size,
+            this.@thumbnailInfo,
+            this.@thumbnailSource);
+    }
+}
+
+class FfiConverterTypeFileInfo: FfiConverterRustBuffer<FileInfo> {
+    public static FfiConverterTypeFileInfo INSTANCE = new FfiConverterTypeFileInfo();
+
+    public override FileInfo Read(BigEndianStream stream) {
+        return new FileInfo(
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterOptionalUInt64.INSTANCE.Read(stream),
+            FfiConverterOptionalTypeThumbnailInfo.INSTANCE.Read(stream),
+            FfiConverterOptionalTypeMediaSource.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(FileInfo value) {
+        return
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@mimetype) +
+            FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.@size) +
+            FfiConverterOptionalTypeThumbnailInfo.INSTANCE.AllocationSize(value.@thumbnailInfo) +
+            FfiConverterOptionalTypeMediaSource.INSTANCE.AllocationSize(value.@thumbnailSource);
+    }
+
+    public override void Write(FileInfo value, BigEndianStream stream) {
+            FfiConverterOptionalString.INSTANCE.Write(value.@mimetype, stream);
+            FfiConverterOptionalUInt64.INSTANCE.Write(value.@size, stream);
+            FfiConverterOptionalTypeThumbnailInfo.INSTANCE.Write(value.@thumbnailInfo, stream);
+            FfiConverterOptionalTypeMediaSource.INSTANCE.Write(value.@thumbnailSource, stream);
+    }
+}
+
+
+
+public record FileMessageContent (
+    String @body, 
+    String? @filename, 
+    MediaSource @source, 
+    FileInfo? @info
+) : IDisposable {
+    public void Dispose() {
+    FFIObjectUtil.DisposeAll(
+            this.@body,
+            this.@filename,
+            this.@source,
+            this.@info);
+    }
+}
+
+class FfiConverterTypeFileMessageContent: FfiConverterRustBuffer<FileMessageContent> {
+    public static FfiConverterTypeFileMessageContent INSTANCE = new FfiConverterTypeFileMessageContent();
+
+    public override FileMessageContent Read(BigEndianStream stream) {
+        return new FileMessageContent(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterTypeMediaSource.INSTANCE.Read(stream),
+            FfiConverterOptionalTypeFileInfo.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(FileMessageContent value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@body) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@filename) +
+            FfiConverterTypeMediaSource.INSTANCE.AllocationSize(value.@source) +
+            FfiConverterOptionalTypeFileInfo.INSTANCE.AllocationSize(value.@info);
+    }
+
+    public override void Write(FileMessageContent value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@body, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@filename, stream);
+            FfiConverterTypeMediaSource.INSTANCE.Write(value.@source, stream);
+            FfiConverterOptionalTypeFileInfo.INSTANCE.Write(value.@info, stream);
+    }
+}
+
+
+
+public record FormattedBody (
+    MessageFormat @format, 
+    String @body
+) {
+}
+
+class FfiConverterTypeFormattedBody: FfiConverterRustBuffer<FormattedBody> {
+    public static FfiConverterTypeFormattedBody INSTANCE = new FfiConverterTypeFormattedBody();
+
+    public override FormattedBody Read(BigEndianStream stream) {
+        return new FormattedBody(
+            FfiConverterTypeMessageFormat.INSTANCE.Read(stream),
+            FfiConverterString.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(FormattedBody value) {
+        return
+            FfiConverterTypeMessageFormat.INSTANCE.AllocationSize(value.@format) +
+            FfiConverterString.INSTANCE.AllocationSize(value.@body);
+    }
+
+    public override void Write(FormattedBody value, BigEndianStream stream) {
+            FfiConverterTypeMessageFormat.INSTANCE.Write(value.@format, stream);
+            FfiConverterString.INSTANCE.Write(value.@body, stream);
+    }
+}
+
+
+
+public record HttpPusherData (
+    String @url, 
+    PushFormat? @format, 
+    String? @defaultPayload
+) {
+}
+
+class FfiConverterTypeHttpPusherData: FfiConverterRustBuffer<HttpPusherData> {
+    public static FfiConverterTypeHttpPusherData INSTANCE = new FfiConverterTypeHttpPusherData();
+
+    public override HttpPusherData Read(BigEndianStream stream) {
+        return new HttpPusherData(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterOptionalTypePushFormat.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(HttpPusherData value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@url) +
+            FfiConverterOptionalTypePushFormat.INSTANCE.AllocationSize(value.@format) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@defaultPayload);
+    }
+
+    public override void Write(HttpPusherData value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@url, stream);
+            FfiConverterOptionalTypePushFormat.INSTANCE.Write(value.@format, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@defaultPayload, stream);
+    }
+}
+
+
+
+public record ImageInfo (
+    ulong? @height, 
+    ulong? @width, 
+    String? @mimetype, 
+    ulong? @size, 
+    ThumbnailInfo? @thumbnailInfo, 
+    MediaSource? @thumbnailSource, 
+    String? @blurhash
+) : IDisposable {
+    public void Dispose() {
+    FFIObjectUtil.DisposeAll(
+            this.@height,
+            this.@width,
+            this.@mimetype,
+            this.@size,
+            this.@thumbnailInfo,
+            this.@thumbnailSource,
+            this.@blurhash);
+    }
+}
+
+class FfiConverterTypeImageInfo: FfiConverterRustBuffer<ImageInfo> {
+    public static FfiConverterTypeImageInfo INSTANCE = new FfiConverterTypeImageInfo();
+
+    public override ImageInfo Read(BigEndianStream stream) {
+        return new ImageInfo(
+            FfiConverterOptionalUInt64.INSTANCE.Read(stream),
+            FfiConverterOptionalUInt64.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterOptionalUInt64.INSTANCE.Read(stream),
+            FfiConverterOptionalTypeThumbnailInfo.INSTANCE.Read(stream),
+            FfiConverterOptionalTypeMediaSource.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(ImageInfo value) {
+        return
+            FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.@height) +
+            FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.@width) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@mimetype) +
+            FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.@size) +
+            FfiConverterOptionalTypeThumbnailInfo.INSTANCE.AllocationSize(value.@thumbnailInfo) +
+            FfiConverterOptionalTypeMediaSource.INSTANCE.AllocationSize(value.@thumbnailSource) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@blurhash);
+    }
+
+    public override void Write(ImageInfo value, BigEndianStream stream) {
+            FfiConverterOptionalUInt64.INSTANCE.Write(value.@height, stream);
+            FfiConverterOptionalUInt64.INSTANCE.Write(value.@width, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@mimetype, stream);
+            FfiConverterOptionalUInt64.INSTANCE.Write(value.@size, stream);
+            FfiConverterOptionalTypeThumbnailInfo.INSTANCE.Write(value.@thumbnailInfo, stream);
+            FfiConverterOptionalTypeMediaSource.INSTANCE.Write(value.@thumbnailSource, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@blurhash, stream);
+    }
+}
+
+
+
+public record ImageMessageContent (
+    String @body, 
+    MediaSource @source, 
+    ImageInfo? @info
+) : IDisposable {
+    public void Dispose() {
+    FFIObjectUtil.DisposeAll(
+            this.@body,
+            this.@source,
+            this.@info);
+    }
+}
+
+class FfiConverterTypeImageMessageContent: FfiConverterRustBuffer<ImageMessageContent> {
+    public static FfiConverterTypeImageMessageContent INSTANCE = new FfiConverterTypeImageMessageContent();
+
+    public override ImageMessageContent Read(BigEndianStream stream) {
+        return new ImageMessageContent(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterTypeMediaSource.INSTANCE.Read(stream),
+            FfiConverterOptionalTypeImageInfo.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(ImageMessageContent value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@body) +
+            FfiConverterTypeMediaSource.INSTANCE.AllocationSize(value.@source) +
+            FfiConverterOptionalTypeImageInfo.INSTANCE.AllocationSize(value.@info);
+    }
+
+    public override void Write(ImageMessageContent value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@body, stream);
+            FfiConverterTypeMediaSource.INSTANCE.Write(value.@source, stream);
+            FfiConverterOptionalTypeImageInfo.INSTANCE.Write(value.@info, stream);
+    }
+}
+
+
+
+public record InReplyToDetails (
+    String @eventId, 
+    RepliedToEventDetails @event
+) : IDisposable {
+    public void Dispose() {
+    FFIObjectUtil.DisposeAll(
+            this.@eventId,
+            this.@event);
+    }
+}
+
+class FfiConverterTypeInReplyToDetails: FfiConverterRustBuffer<InReplyToDetails> {
+    public static FfiConverterTypeInReplyToDetails INSTANCE = new FfiConverterTypeInReplyToDetails();
+
+    public override InReplyToDetails Read(BigEndianStream stream) {
+        return new InReplyToDetails(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterTypeRepliedToEventDetails.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(InReplyToDetails value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@eventId) +
+            FfiConverterTypeRepliedToEventDetails.INSTANCE.AllocationSize(value.@event);
+    }
+
+    public override void Write(InReplyToDetails value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@eventId, stream);
+            FfiConverterTypeRepliedToEventDetails.INSTANCE.Write(value.@event, stream);
+    }
+}
+
+
+
+public record InsertData (
+    uint @index, 
+    TimelineItem @item
+) : IDisposable {
+    public void Dispose() {
+    FFIObjectUtil.DisposeAll(
+            this.@index,
+            this.@item);
+    }
+}
+
+class FfiConverterTypeInsertData: FfiConverterRustBuffer<InsertData> {
+    public static FfiConverterTypeInsertData INSTANCE = new FfiConverterTypeInsertData();
+
+    public override InsertData Read(BigEndianStream stream) {
+        return new InsertData(
+            FfiConverterUInt32.INSTANCE.Read(stream),
+            FfiConverterTypeTimelineItem.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(InsertData value) {
+        return
+            FfiConverterUInt32.INSTANCE.AllocationSize(value.@index) +
+            FfiConverterTypeTimelineItem.INSTANCE.AllocationSize(value.@item);
+    }
+
+    public override void Write(InsertData value, BigEndianStream stream) {
+            FfiConverterUInt32.INSTANCE.Write(value.@index, stream);
+            FfiConverterTypeTimelineItem.INSTANCE.Write(value.@item, stream);
+    }
+}
+
+
+
+public record LocationContent (
+    String @body, 
+    String @geoUri, 
+    String? @description, 
+    byte? @zoomLevel, 
+    AssetType? @asset
+) {
+}
+
+class FfiConverterTypeLocationContent: FfiConverterRustBuffer<LocationContent> {
+    public static FfiConverterTypeLocationContent INSTANCE = new FfiConverterTypeLocationContent();
+
+    public override LocationContent Read(BigEndianStream stream) {
+        return new LocationContent(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterOptionalUInt8.INSTANCE.Read(stream),
+            FfiConverterOptionalTypeAssetType.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(LocationContent value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@body) +
+            FfiConverterString.INSTANCE.AllocationSize(value.@geoUri) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@description) +
+            FfiConverterOptionalUInt8.INSTANCE.AllocationSize(value.@zoomLevel) +
+            FfiConverterOptionalTypeAssetType.INSTANCE.AllocationSize(value.@asset);
+    }
+
+    public override void Write(LocationContent value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@body, stream);
+            FfiConverterString.INSTANCE.Write(value.@geoUri, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@description, stream);
+            FfiConverterOptionalUInt8.INSTANCE.Write(value.@zoomLevel, stream);
+            FfiConverterOptionalTypeAssetType.INSTANCE.Write(value.@asset, stream);
+    }
+}
+
+
+
 public record Mentions (
     List<String> @userIds, 
     bool @room
@@ -842,6 +10362,1701 @@ class FfiConverterTypeMentions: FfiConverterRustBuffer<Mentions> {
     public override void Write(Mentions value, BigEndianStream stream) {
             FfiConverterSequenceString.INSTANCE.Write(value.@userIds, stream);
             FfiConverterBoolean.INSTANCE.Write(value.@room, stream);
+    }
+}
+
+
+
+public record NoticeMessageContent (
+    String @body, 
+    FormattedBody? @formatted
+) {
+}
+
+class FfiConverterTypeNoticeMessageContent: FfiConverterRustBuffer<NoticeMessageContent> {
+    public static FfiConverterTypeNoticeMessageContent INSTANCE = new FfiConverterTypeNoticeMessageContent();
+
+    public override NoticeMessageContent Read(BigEndianStream stream) {
+        return new NoticeMessageContent(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterOptionalTypeFormattedBody.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(NoticeMessageContent value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@body) +
+            FfiConverterOptionalTypeFormattedBody.INSTANCE.AllocationSize(value.@formatted);
+    }
+
+    public override void Write(NoticeMessageContent value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@body, stream);
+            FfiConverterOptionalTypeFormattedBody.INSTANCE.Write(value.@formatted, stream);
+    }
+}
+
+
+
+public record NotificationItem (
+    NotificationEvent @event, 
+    NotificationSenderInfo @senderInfo, 
+    NotificationRoomInfo @roomInfo, 
+    bool? @isNoisy, 
+    bool? @hasMention
+) : IDisposable {
+    public void Dispose() {
+    FFIObjectUtil.DisposeAll(
+            this.@event,
+            this.@senderInfo,
+            this.@roomInfo,
+            this.@isNoisy,
+            this.@hasMention);
+    }
+}
+
+class FfiConverterTypeNotificationItem: FfiConverterRustBuffer<NotificationItem> {
+    public static FfiConverterTypeNotificationItem INSTANCE = new FfiConverterTypeNotificationItem();
+
+    public override NotificationItem Read(BigEndianStream stream) {
+        return new NotificationItem(
+            FfiConverterTypeNotificationEvent.INSTANCE.Read(stream),
+            FfiConverterTypeNotificationSenderInfo.INSTANCE.Read(stream),
+            FfiConverterTypeNotificationRoomInfo.INSTANCE.Read(stream),
+            FfiConverterOptionalBoolean.INSTANCE.Read(stream),
+            FfiConverterOptionalBoolean.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(NotificationItem value) {
+        return
+            FfiConverterTypeNotificationEvent.INSTANCE.AllocationSize(value.@event) +
+            FfiConverterTypeNotificationSenderInfo.INSTANCE.AllocationSize(value.@senderInfo) +
+            FfiConverterTypeNotificationRoomInfo.INSTANCE.AllocationSize(value.@roomInfo) +
+            FfiConverterOptionalBoolean.INSTANCE.AllocationSize(value.@isNoisy) +
+            FfiConverterOptionalBoolean.INSTANCE.AllocationSize(value.@hasMention);
+    }
+
+    public override void Write(NotificationItem value, BigEndianStream stream) {
+            FfiConverterTypeNotificationEvent.INSTANCE.Write(value.@event, stream);
+            FfiConverterTypeNotificationSenderInfo.INSTANCE.Write(value.@senderInfo, stream);
+            FfiConverterTypeNotificationRoomInfo.INSTANCE.Write(value.@roomInfo, stream);
+            FfiConverterOptionalBoolean.INSTANCE.Write(value.@isNoisy, stream);
+            FfiConverterOptionalBoolean.INSTANCE.Write(value.@hasMention, stream);
+    }
+}
+
+
+
+public record NotificationRoomInfo (
+    String @displayName, 
+    String? @avatarUrl, 
+    String? @canonicalAlias, 
+    ulong @joinedMembersCount, 
+    bool? @isEncrypted, 
+    bool @isDirect
+) {
+}
+
+class FfiConverterTypeNotificationRoomInfo: FfiConverterRustBuffer<NotificationRoomInfo> {
+    public static FfiConverterTypeNotificationRoomInfo INSTANCE = new FfiConverterTypeNotificationRoomInfo();
+
+    public override NotificationRoomInfo Read(BigEndianStream stream) {
+        return new NotificationRoomInfo(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterUInt64.INSTANCE.Read(stream),
+            FfiConverterOptionalBoolean.INSTANCE.Read(stream),
+            FfiConverterBoolean.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(NotificationRoomInfo value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@displayName) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@avatarUrl) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@canonicalAlias) +
+            FfiConverterUInt64.INSTANCE.AllocationSize(value.@joinedMembersCount) +
+            FfiConverterOptionalBoolean.INSTANCE.AllocationSize(value.@isEncrypted) +
+            FfiConverterBoolean.INSTANCE.AllocationSize(value.@isDirect);
+    }
+
+    public override void Write(NotificationRoomInfo value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@displayName, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@avatarUrl, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@canonicalAlias, stream);
+            FfiConverterUInt64.INSTANCE.Write(value.@joinedMembersCount, stream);
+            FfiConverterOptionalBoolean.INSTANCE.Write(value.@isEncrypted, stream);
+            FfiConverterBoolean.INSTANCE.Write(value.@isDirect, stream);
+    }
+}
+
+
+
+public record NotificationSenderInfo (
+    String? @displayName, 
+    String? @avatarUrl
+) {
+}
+
+class FfiConverterTypeNotificationSenderInfo: FfiConverterRustBuffer<NotificationSenderInfo> {
+    public static FfiConverterTypeNotificationSenderInfo INSTANCE = new FfiConverterTypeNotificationSenderInfo();
+
+    public override NotificationSenderInfo Read(BigEndianStream stream) {
+        return new NotificationSenderInfo(
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(NotificationSenderInfo value) {
+        return
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@displayName) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@avatarUrl);
+    }
+
+    public override void Write(NotificationSenderInfo value, BigEndianStream stream) {
+            FfiConverterOptionalString.INSTANCE.Write(value.@displayName, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@avatarUrl, stream);
+    }
+}
+
+
+
+public record OidcConfiguration (
+    String? @clientName, 
+    String @redirectUri, 
+    String? @clientUri, 
+    String? @logoUri, 
+    String? @tosUri, 
+    String? @policyUri, 
+    List<String>? @contacts, 
+    Dictionary<String, String> @staticRegistrations
+) {
+}
+
+class FfiConverterTypeOidcConfiguration: FfiConverterRustBuffer<OidcConfiguration> {
+    public static FfiConverterTypeOidcConfiguration INSTANCE = new FfiConverterTypeOidcConfiguration();
+
+    public override OidcConfiguration Read(BigEndianStream stream) {
+        return new OidcConfiguration(
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterOptionalSequenceString.INSTANCE.Read(stream),
+            FfiConverterDictionaryStringString.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(OidcConfiguration value) {
+        return
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@clientName) +
+            FfiConverterString.INSTANCE.AllocationSize(value.@redirectUri) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@clientUri) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@logoUri) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@tosUri) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@policyUri) +
+            FfiConverterOptionalSequenceString.INSTANCE.AllocationSize(value.@contacts) +
+            FfiConverterDictionaryStringString.INSTANCE.AllocationSize(value.@staticRegistrations);
+    }
+
+    public override void Write(OidcConfiguration value, BigEndianStream stream) {
+            FfiConverterOptionalString.INSTANCE.Write(value.@clientName, stream);
+            FfiConverterString.INSTANCE.Write(value.@redirectUri, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@clientUri, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@logoUri, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@tosUri, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@policyUri, stream);
+            FfiConverterOptionalSequenceString.INSTANCE.Write(value.@contacts, stream);
+            FfiConverterDictionaryStringString.INSTANCE.Write(value.@staticRegistrations, stream);
+    }
+}
+
+
+
+public record OtlpTracingConfiguration (
+    String @clientName, 
+    String @user, 
+    String @password, 
+    String @otlpEndpoint, 
+    String @filter, 
+    bool @writeToStdoutOrSystem, 
+    TracingFileConfiguration? @writeToFiles
+) {
+}
+
+class FfiConverterTypeOtlpTracingConfiguration: FfiConverterRustBuffer<OtlpTracingConfiguration> {
+    public static FfiConverterTypeOtlpTracingConfiguration INSTANCE = new FfiConverterTypeOtlpTracingConfiguration();
+
+    public override OtlpTracingConfiguration Read(BigEndianStream stream) {
+        return new OtlpTracingConfiguration(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterBoolean.INSTANCE.Read(stream),
+            FfiConverterOptionalTypeTracingFileConfiguration.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(OtlpTracingConfiguration value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@clientName) +
+            FfiConverterString.INSTANCE.AllocationSize(value.@user) +
+            FfiConverterString.INSTANCE.AllocationSize(value.@password) +
+            FfiConverterString.INSTANCE.AllocationSize(value.@otlpEndpoint) +
+            FfiConverterString.INSTANCE.AllocationSize(value.@filter) +
+            FfiConverterBoolean.INSTANCE.AllocationSize(value.@writeToStdoutOrSystem) +
+            FfiConverterOptionalTypeTracingFileConfiguration.INSTANCE.AllocationSize(value.@writeToFiles);
+    }
+
+    public override void Write(OtlpTracingConfiguration value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@clientName, stream);
+            FfiConverterString.INSTANCE.Write(value.@user, stream);
+            FfiConverterString.INSTANCE.Write(value.@password, stream);
+            FfiConverterString.INSTANCE.Write(value.@otlpEndpoint, stream);
+            FfiConverterString.INSTANCE.Write(value.@filter, stream);
+            FfiConverterBoolean.INSTANCE.Write(value.@writeToStdoutOrSystem, stream);
+            FfiConverterOptionalTypeTracingFileConfiguration.INSTANCE.Write(value.@writeToFiles, stream);
+    }
+}
+
+
+
+public record PollAnswer (
+    String @id, 
+    String @text
+) {
+}
+
+class FfiConverterTypePollAnswer: FfiConverterRustBuffer<PollAnswer> {
+    public static FfiConverterTypePollAnswer INSTANCE = new FfiConverterTypePollAnswer();
+
+    public override PollAnswer Read(BigEndianStream stream) {
+        return new PollAnswer(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterString.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(PollAnswer value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@id) +
+            FfiConverterString.INSTANCE.AllocationSize(value.@text);
+    }
+
+    public override void Write(PollAnswer value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@id, stream);
+            FfiConverterString.INSTANCE.Write(value.@text, stream);
+    }
+}
+
+
+
+public record PusherIdentifiers (
+    String @pushkey, 
+    String @appId
+) {
+}
+
+class FfiConverterTypePusherIdentifiers: FfiConverterRustBuffer<PusherIdentifiers> {
+    public static FfiConverterTypePusherIdentifiers INSTANCE = new FfiConverterTypePusherIdentifiers();
+
+    public override PusherIdentifiers Read(BigEndianStream stream) {
+        return new PusherIdentifiers(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterString.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(PusherIdentifiers value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@pushkey) +
+            FfiConverterString.INSTANCE.AllocationSize(value.@appId);
+    }
+
+    public override void Write(PusherIdentifiers value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@pushkey, stream);
+            FfiConverterString.INSTANCE.Write(value.@appId, stream);
+    }
+}
+
+
+
+public record Reaction (
+    String @key, 
+    ulong @count, 
+    List<ReactionSenderData> @senders
+) {
+}
+
+class FfiConverterTypeReaction: FfiConverterRustBuffer<Reaction> {
+    public static FfiConverterTypeReaction INSTANCE = new FfiConverterTypeReaction();
+
+    public override Reaction Read(BigEndianStream stream) {
+        return new Reaction(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterUInt64.INSTANCE.Read(stream),
+            FfiConverterSequenceTypeReactionSenderData.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(Reaction value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@key) +
+            FfiConverterUInt64.INSTANCE.AllocationSize(value.@count) +
+            FfiConverterSequenceTypeReactionSenderData.INSTANCE.AllocationSize(value.@senders);
+    }
+
+    public override void Write(Reaction value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@key, stream);
+            FfiConverterUInt64.INSTANCE.Write(value.@count, stream);
+            FfiConverterSequenceTypeReactionSenderData.INSTANCE.Write(value.@senders, stream);
+    }
+}
+
+
+
+public record ReactionSenderData (
+    String @senderId, 
+    ulong @timestamp
+) {
+}
+
+class FfiConverterTypeReactionSenderData: FfiConverterRustBuffer<ReactionSenderData> {
+    public static FfiConverterTypeReactionSenderData INSTANCE = new FfiConverterTypeReactionSenderData();
+
+    public override ReactionSenderData Read(BigEndianStream stream) {
+        return new ReactionSenderData(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterUInt64.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(ReactionSenderData value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@senderId) +
+            FfiConverterUInt64.INSTANCE.AllocationSize(value.@timestamp);
+    }
+
+    public override void Write(ReactionSenderData value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@senderId, stream);
+            FfiConverterUInt64.INSTANCE.Write(value.@timestamp, stream);
+    }
+}
+
+
+
+public record Receipt (
+    ulong? @timestamp
+) {
+}
+
+class FfiConverterTypeReceipt: FfiConverterRustBuffer<Receipt> {
+    public static FfiConverterTypeReceipt INSTANCE = new FfiConverterTypeReceipt();
+
+    public override Receipt Read(BigEndianStream stream) {
+        return new Receipt(
+            FfiConverterOptionalUInt64.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(Receipt value) {
+        return
+            FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.@timestamp);
+    }
+
+    public override void Write(Receipt value, BigEndianStream stream) {
+            FfiConverterOptionalUInt64.INSTANCE.Write(value.@timestamp, stream);
+    }
+}
+
+
+
+public record RequiredState (
+    String @key, 
+    String @value
+) {
+}
+
+class FfiConverterTypeRequiredState: FfiConverterRustBuffer<RequiredState> {
+    public static FfiConverterTypeRequiredState INSTANCE = new FfiConverterTypeRequiredState();
+
+    public override RequiredState Read(BigEndianStream stream) {
+        return new RequiredState(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterString.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(RequiredState value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@key) +
+            FfiConverterString.INSTANCE.AllocationSize(value.@value);
+    }
+
+    public override void Write(RequiredState value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@key, stream);
+            FfiConverterString.INSTANCE.Write(value.@value, stream);
+    }
+}
+
+
+
+public record RoomInfo (
+    String @id, 
+    String? @name, 
+    String? @topic, 
+    String? @avatarUrl, 
+    bool @isDirect, 
+    bool @isPublic, 
+    bool @isSpace, 
+    bool @isTombstoned, 
+    String? @canonicalAlias, 
+    List<String> @alternativeAliases, 
+    Membership @membership, 
+    EventTimelineItem? @latestEvent, 
+    RoomMember? @inviter, 
+    ulong @activeMembersCount, 
+    ulong @invitedMembersCount, 
+    ulong @joinedMembersCount, 
+    ulong @highlightCount, 
+    ulong @notificationCount, 
+    RoomNotificationMode? @userDefinedNotificationMode, 
+    bool @hasRoomCall, 
+    List<String> @activeRoomCallParticipants
+) : IDisposable {
+    public void Dispose() {
+    FFIObjectUtil.DisposeAll(
+            this.@id,
+            this.@name,
+            this.@topic,
+            this.@avatarUrl,
+            this.@isDirect,
+            this.@isPublic,
+            this.@isSpace,
+            this.@isTombstoned,
+            this.@canonicalAlias,
+            this.@alternativeAliases,
+            this.@membership,
+            this.@latestEvent,
+            this.@inviter,
+            this.@activeMembersCount,
+            this.@invitedMembersCount,
+            this.@joinedMembersCount,
+            this.@highlightCount,
+            this.@notificationCount,
+            this.@userDefinedNotificationMode,
+            this.@hasRoomCall,
+            this.@activeRoomCallParticipants);
+    }
+}
+
+class FfiConverterTypeRoomInfo: FfiConverterRustBuffer<RoomInfo> {
+    public static FfiConverterTypeRoomInfo INSTANCE = new FfiConverterTypeRoomInfo();
+
+    public override RoomInfo Read(BigEndianStream stream) {
+        return new RoomInfo(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterBoolean.INSTANCE.Read(stream),
+            FfiConverterBoolean.INSTANCE.Read(stream),
+            FfiConverterBoolean.INSTANCE.Read(stream),
+            FfiConverterBoolean.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterSequenceString.INSTANCE.Read(stream),
+            FfiConverterTypeMembership.INSTANCE.Read(stream),
+            FfiConverterOptionalTypeEventTimelineItem.INSTANCE.Read(stream),
+            FfiConverterOptionalTypeRoomMember.INSTANCE.Read(stream),
+            FfiConverterUInt64.INSTANCE.Read(stream),
+            FfiConverterUInt64.INSTANCE.Read(stream),
+            FfiConverterUInt64.INSTANCE.Read(stream),
+            FfiConverterUInt64.INSTANCE.Read(stream),
+            FfiConverterUInt64.INSTANCE.Read(stream),
+            FfiConverterOptionalTypeRoomNotificationMode.INSTANCE.Read(stream),
+            FfiConverterBoolean.INSTANCE.Read(stream),
+            FfiConverterSequenceString.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(RoomInfo value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@id) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@name) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@topic) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@avatarUrl) +
+            FfiConverterBoolean.INSTANCE.AllocationSize(value.@isDirect) +
+            FfiConverterBoolean.INSTANCE.AllocationSize(value.@isPublic) +
+            FfiConverterBoolean.INSTANCE.AllocationSize(value.@isSpace) +
+            FfiConverterBoolean.INSTANCE.AllocationSize(value.@isTombstoned) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@canonicalAlias) +
+            FfiConverterSequenceString.INSTANCE.AllocationSize(value.@alternativeAliases) +
+            FfiConverterTypeMembership.INSTANCE.AllocationSize(value.@membership) +
+            FfiConverterOptionalTypeEventTimelineItem.INSTANCE.AllocationSize(value.@latestEvent) +
+            FfiConverterOptionalTypeRoomMember.INSTANCE.AllocationSize(value.@inviter) +
+            FfiConverterUInt64.INSTANCE.AllocationSize(value.@activeMembersCount) +
+            FfiConverterUInt64.INSTANCE.AllocationSize(value.@invitedMembersCount) +
+            FfiConverterUInt64.INSTANCE.AllocationSize(value.@joinedMembersCount) +
+            FfiConverterUInt64.INSTANCE.AllocationSize(value.@highlightCount) +
+            FfiConverterUInt64.INSTANCE.AllocationSize(value.@notificationCount) +
+            FfiConverterOptionalTypeRoomNotificationMode.INSTANCE.AllocationSize(value.@userDefinedNotificationMode) +
+            FfiConverterBoolean.INSTANCE.AllocationSize(value.@hasRoomCall) +
+            FfiConverterSequenceString.INSTANCE.AllocationSize(value.@activeRoomCallParticipants);
+    }
+
+    public override void Write(RoomInfo value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@id, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@name, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@topic, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@avatarUrl, stream);
+            FfiConverterBoolean.INSTANCE.Write(value.@isDirect, stream);
+            FfiConverterBoolean.INSTANCE.Write(value.@isPublic, stream);
+            FfiConverterBoolean.INSTANCE.Write(value.@isSpace, stream);
+            FfiConverterBoolean.INSTANCE.Write(value.@isTombstoned, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@canonicalAlias, stream);
+            FfiConverterSequenceString.INSTANCE.Write(value.@alternativeAliases, stream);
+            FfiConverterTypeMembership.INSTANCE.Write(value.@membership, stream);
+            FfiConverterOptionalTypeEventTimelineItem.INSTANCE.Write(value.@latestEvent, stream);
+            FfiConverterOptionalTypeRoomMember.INSTANCE.Write(value.@inviter, stream);
+            FfiConverterUInt64.INSTANCE.Write(value.@activeMembersCount, stream);
+            FfiConverterUInt64.INSTANCE.Write(value.@invitedMembersCount, stream);
+            FfiConverterUInt64.INSTANCE.Write(value.@joinedMembersCount, stream);
+            FfiConverterUInt64.INSTANCE.Write(value.@highlightCount, stream);
+            FfiConverterUInt64.INSTANCE.Write(value.@notificationCount, stream);
+            FfiConverterOptionalTypeRoomNotificationMode.INSTANCE.Write(value.@userDefinedNotificationMode, stream);
+            FfiConverterBoolean.INSTANCE.Write(value.@hasRoomCall, stream);
+            FfiConverterSequenceString.INSTANCE.Write(value.@activeRoomCallParticipants, stream);
+    }
+}
+
+
+
+public record RoomListEntriesResult (
+    List<RoomListEntry> @entries, 
+    TaskHandle @entriesStream
+) : IDisposable {
+    public void Dispose() {
+    FFIObjectUtil.DisposeAll(
+            this.@entries,
+            this.@entriesStream);
+    }
+}
+
+class FfiConverterTypeRoomListEntriesResult: FfiConverterRustBuffer<RoomListEntriesResult> {
+    public static FfiConverterTypeRoomListEntriesResult INSTANCE = new FfiConverterTypeRoomListEntriesResult();
+
+    public override RoomListEntriesResult Read(BigEndianStream stream) {
+        return new RoomListEntriesResult(
+            FfiConverterSequenceTypeRoomListEntry.INSTANCE.Read(stream),
+            FfiConverterTypeTaskHandle.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(RoomListEntriesResult value) {
+        return
+            FfiConverterSequenceTypeRoomListEntry.INSTANCE.AllocationSize(value.@entries) +
+            FfiConverterTypeTaskHandle.INSTANCE.AllocationSize(value.@entriesStream);
+    }
+
+    public override void Write(RoomListEntriesResult value, BigEndianStream stream) {
+            FfiConverterSequenceTypeRoomListEntry.INSTANCE.Write(value.@entries, stream);
+            FfiConverterTypeTaskHandle.INSTANCE.Write(value.@entriesStream, stream);
+    }
+}
+
+
+
+public record RoomListEntriesWithDynamicAdaptersResult (
+    RoomListDynamicEntriesController @controller, 
+    TaskHandle @entriesStream
+) : IDisposable {
+    public void Dispose() {
+    FFIObjectUtil.DisposeAll(
+            this.@controller,
+            this.@entriesStream);
+    }
+}
+
+class FfiConverterTypeRoomListEntriesWithDynamicAdaptersResult: FfiConverterRustBuffer<RoomListEntriesWithDynamicAdaptersResult> {
+    public static FfiConverterTypeRoomListEntriesWithDynamicAdaptersResult INSTANCE = new FfiConverterTypeRoomListEntriesWithDynamicAdaptersResult();
+
+    public override RoomListEntriesWithDynamicAdaptersResult Read(BigEndianStream stream) {
+        return new RoomListEntriesWithDynamicAdaptersResult(
+            FfiConverterTypeRoomListDynamicEntriesController.INSTANCE.Read(stream),
+            FfiConverterTypeTaskHandle.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(RoomListEntriesWithDynamicAdaptersResult value) {
+        return
+            FfiConverterTypeRoomListDynamicEntriesController.INSTANCE.AllocationSize(value.@controller) +
+            FfiConverterTypeTaskHandle.INSTANCE.AllocationSize(value.@entriesStream);
+    }
+
+    public override void Write(RoomListEntriesWithDynamicAdaptersResult value, BigEndianStream stream) {
+            FfiConverterTypeRoomListDynamicEntriesController.INSTANCE.Write(value.@controller, stream);
+            FfiConverterTypeTaskHandle.INSTANCE.Write(value.@entriesStream, stream);
+    }
+}
+
+
+
+public record RoomListLoadingStateResult (
+    RoomListLoadingState @state, 
+    TaskHandle @stateStream
+) : IDisposable {
+    public void Dispose() {
+    FFIObjectUtil.DisposeAll(
+            this.@state,
+            this.@stateStream);
+    }
+}
+
+class FfiConverterTypeRoomListLoadingStateResult: FfiConverterRustBuffer<RoomListLoadingStateResult> {
+    public static FfiConverterTypeRoomListLoadingStateResult INSTANCE = new FfiConverterTypeRoomListLoadingStateResult();
+
+    public override RoomListLoadingStateResult Read(BigEndianStream stream) {
+        return new RoomListLoadingStateResult(
+            FfiConverterTypeRoomListLoadingState.INSTANCE.Read(stream),
+            FfiConverterTypeTaskHandle.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(RoomListLoadingStateResult value) {
+        return
+            FfiConverterTypeRoomListLoadingState.INSTANCE.AllocationSize(value.@state) +
+            FfiConverterTypeTaskHandle.INSTANCE.AllocationSize(value.@stateStream);
+    }
+
+    public override void Write(RoomListLoadingStateResult value, BigEndianStream stream) {
+            FfiConverterTypeRoomListLoadingState.INSTANCE.Write(value.@state, stream);
+            FfiConverterTypeTaskHandle.INSTANCE.Write(value.@stateStream, stream);
+    }
+}
+
+
+
+public record RoomListRange (
+    uint @start, 
+    uint @endInclusive
+) {
+}
+
+class FfiConverterTypeRoomListRange: FfiConverterRustBuffer<RoomListRange> {
+    public static FfiConverterTypeRoomListRange INSTANCE = new FfiConverterTypeRoomListRange();
+
+    public override RoomListRange Read(BigEndianStream stream) {
+        return new RoomListRange(
+            FfiConverterUInt32.INSTANCE.Read(stream),
+            FfiConverterUInt32.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(RoomListRange value) {
+        return
+            FfiConverterUInt32.INSTANCE.AllocationSize(value.@start) +
+            FfiConverterUInt32.INSTANCE.AllocationSize(value.@endInclusive);
+    }
+
+    public override void Write(RoomListRange value, BigEndianStream stream) {
+            FfiConverterUInt32.INSTANCE.Write(value.@start, stream);
+            FfiConverterUInt32.INSTANCE.Write(value.@endInclusive, stream);
+    }
+}
+
+
+
+public record RoomNotificationSettings (
+    RoomNotificationMode @mode, 
+    bool @isDefault
+) {
+}
+
+class FfiConverterTypeRoomNotificationSettings: FfiConverterRustBuffer<RoomNotificationSettings> {
+    public static FfiConverterTypeRoomNotificationSettings INSTANCE = new FfiConverterTypeRoomNotificationSettings();
+
+    public override RoomNotificationSettings Read(BigEndianStream stream) {
+        return new RoomNotificationSettings(
+            FfiConverterTypeRoomNotificationMode.INSTANCE.Read(stream),
+            FfiConverterBoolean.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(RoomNotificationSettings value) {
+        return
+            FfiConverterTypeRoomNotificationMode.INSTANCE.AllocationSize(value.@mode) +
+            FfiConverterBoolean.INSTANCE.AllocationSize(value.@isDefault);
+    }
+
+    public override void Write(RoomNotificationSettings value, BigEndianStream stream) {
+            FfiConverterTypeRoomNotificationMode.INSTANCE.Write(value.@mode, stream);
+            FfiConverterBoolean.INSTANCE.Write(value.@isDefault, stream);
+    }
+}
+
+
+
+public record RoomSubscription (
+    List<RequiredState>? @requiredState, 
+    uint? @timelineLimit
+) {
+}
+
+class FfiConverterTypeRoomSubscription: FfiConverterRustBuffer<RoomSubscription> {
+    public static FfiConverterTypeRoomSubscription INSTANCE = new FfiConverterTypeRoomSubscription();
+
+    public override RoomSubscription Read(BigEndianStream stream) {
+        return new RoomSubscription(
+            FfiConverterOptionalSequenceTypeRequiredState.INSTANCE.Read(stream),
+            FfiConverterOptionalUInt32.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(RoomSubscription value) {
+        return
+            FfiConverterOptionalSequenceTypeRequiredState.INSTANCE.AllocationSize(value.@requiredState) +
+            FfiConverterOptionalUInt32.INSTANCE.AllocationSize(value.@timelineLimit);
+    }
+
+    public override void Write(RoomSubscription value, BigEndianStream stream) {
+            FfiConverterOptionalSequenceTypeRequiredState.INSTANCE.Write(value.@requiredState, stream);
+            FfiConverterOptionalUInt32.INSTANCE.Write(value.@timelineLimit, stream);
+    }
+}
+
+
+
+public record RoomTimelineListenerResult (
+    List<TimelineItem> @items, 
+    TaskHandle @itemsStream
+) : IDisposable {
+    public void Dispose() {
+    FFIObjectUtil.DisposeAll(
+            this.@items,
+            this.@itemsStream);
+    }
+}
+
+class FfiConverterTypeRoomTimelineListenerResult: FfiConverterRustBuffer<RoomTimelineListenerResult> {
+    public static FfiConverterTypeRoomTimelineListenerResult INSTANCE = new FfiConverterTypeRoomTimelineListenerResult();
+
+    public override RoomTimelineListenerResult Read(BigEndianStream stream) {
+        return new RoomTimelineListenerResult(
+            FfiConverterSequenceTypeTimelineItem.INSTANCE.Read(stream),
+            FfiConverterTypeTaskHandle.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(RoomTimelineListenerResult value) {
+        return
+            FfiConverterSequenceTypeTimelineItem.INSTANCE.AllocationSize(value.@items) +
+            FfiConverterTypeTaskHandle.INSTANCE.AllocationSize(value.@itemsStream);
+    }
+
+    public override void Write(RoomTimelineListenerResult value, BigEndianStream stream) {
+            FfiConverterSequenceTypeTimelineItem.INSTANCE.Write(value.@items, stream);
+            FfiConverterTypeTaskHandle.INSTANCE.Write(value.@itemsStream, stream);
+    }
+}
+
+
+
+public record SearchUsersResults (
+    List<UserProfile> @results, 
+    bool @limited
+) {
+}
+
+class FfiConverterTypeSearchUsersResults: FfiConverterRustBuffer<SearchUsersResults> {
+    public static FfiConverterTypeSearchUsersResults INSTANCE = new FfiConverterTypeSearchUsersResults();
+
+    public override SearchUsersResults Read(BigEndianStream stream) {
+        return new SearchUsersResults(
+            FfiConverterSequenceTypeUserProfile.INSTANCE.Read(stream),
+            FfiConverterBoolean.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(SearchUsersResults value) {
+        return
+            FfiConverterSequenceTypeUserProfile.INSTANCE.AllocationSize(value.@results) +
+            FfiConverterBoolean.INSTANCE.AllocationSize(value.@limited);
+    }
+
+    public override void Write(SearchUsersResults value, BigEndianStream stream) {
+            FfiConverterSequenceTypeUserProfile.INSTANCE.Write(value.@results, stream);
+            FfiConverterBoolean.INSTANCE.Write(value.@limited, stream);
+    }
+}
+
+
+
+public record Session (
+    String @accessToken, 
+    String? @refreshToken, 
+    String @userId, 
+    String @deviceId, 
+    String @homeserverUrl, 
+    String? @oidcData, 
+    String? @slidingSyncProxy
+) {
+}
+
+class FfiConverterTypeSession: FfiConverterRustBuffer<Session> {
+    public static FfiConverterTypeSession INSTANCE = new FfiConverterTypeSession();
+
+    public override Session Read(BigEndianStream stream) {
+        return new Session(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(Session value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@accessToken) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@refreshToken) +
+            FfiConverterString.INSTANCE.AllocationSize(value.@userId) +
+            FfiConverterString.INSTANCE.AllocationSize(value.@deviceId) +
+            FfiConverterString.INSTANCE.AllocationSize(value.@homeserverUrl) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@oidcData) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@slidingSyncProxy);
+    }
+
+    public override void Write(Session value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@accessToken, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@refreshToken, stream);
+            FfiConverterString.INSTANCE.Write(value.@userId, stream);
+            FfiConverterString.INSTANCE.Write(value.@deviceId, stream);
+            FfiConverterString.INSTANCE.Write(value.@homeserverUrl, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@oidcData, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@slidingSyncProxy, stream);
+    }
+}
+
+
+
+public record SetData (
+    uint @index, 
+    TimelineItem @item
+) : IDisposable {
+    public void Dispose() {
+    FFIObjectUtil.DisposeAll(
+            this.@index,
+            this.@item);
+    }
+}
+
+class FfiConverterTypeSetData: FfiConverterRustBuffer<SetData> {
+    public static FfiConverterTypeSetData INSTANCE = new FfiConverterTypeSetData();
+
+    public override SetData Read(BigEndianStream stream) {
+        return new SetData(
+            FfiConverterUInt32.INSTANCE.Read(stream),
+            FfiConverterTypeTimelineItem.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(SetData value) {
+        return
+            FfiConverterUInt32.INSTANCE.AllocationSize(value.@index) +
+            FfiConverterTypeTimelineItem.INSTANCE.AllocationSize(value.@item);
+    }
+
+    public override void Write(SetData value, BigEndianStream stream) {
+            FfiConverterUInt32.INSTANCE.Write(value.@index, stream);
+            FfiConverterTypeTimelineItem.INSTANCE.Write(value.@item, stream);
+    }
+}
+
+
+
+public record TextMessageContent (
+    String @body, 
+    FormattedBody? @formatted
+) {
+}
+
+class FfiConverterTypeTextMessageContent: FfiConverterRustBuffer<TextMessageContent> {
+    public static FfiConverterTypeTextMessageContent INSTANCE = new FfiConverterTypeTextMessageContent();
+
+    public override TextMessageContent Read(BigEndianStream stream) {
+        return new TextMessageContent(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterOptionalTypeFormattedBody.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(TextMessageContent value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@body) +
+            FfiConverterOptionalTypeFormattedBody.INSTANCE.AllocationSize(value.@formatted);
+    }
+
+    public override void Write(TextMessageContent value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@body, stream);
+            FfiConverterOptionalTypeFormattedBody.INSTANCE.Write(value.@formatted, stream);
+    }
+}
+
+
+
+public record ThumbnailInfo (
+    ulong? @height, 
+    ulong? @width, 
+    String? @mimetype, 
+    ulong? @size
+) {
+}
+
+class FfiConverterTypeThumbnailInfo: FfiConverterRustBuffer<ThumbnailInfo> {
+    public static FfiConverterTypeThumbnailInfo INSTANCE = new FfiConverterTypeThumbnailInfo();
+
+    public override ThumbnailInfo Read(BigEndianStream stream) {
+        return new ThumbnailInfo(
+            FfiConverterOptionalUInt64.INSTANCE.Read(stream),
+            FfiConverterOptionalUInt64.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterOptionalUInt64.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(ThumbnailInfo value) {
+        return
+            FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.@height) +
+            FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.@width) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@mimetype) +
+            FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.@size);
+    }
+
+    public override void Write(ThumbnailInfo value, BigEndianStream stream) {
+            FfiConverterOptionalUInt64.INSTANCE.Write(value.@height, stream);
+            FfiConverterOptionalUInt64.INSTANCE.Write(value.@width, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@mimetype, stream);
+            FfiConverterOptionalUInt64.INSTANCE.Write(value.@size, stream);
+    }
+}
+
+
+
+public record TracingConfiguration (
+    String @filter, 
+    bool @writeToStdoutOrSystem, 
+    TracingFileConfiguration? @writeToFiles
+) {
+}
+
+class FfiConverterTypeTracingConfiguration: FfiConverterRustBuffer<TracingConfiguration> {
+    public static FfiConverterTypeTracingConfiguration INSTANCE = new FfiConverterTypeTracingConfiguration();
+
+    public override TracingConfiguration Read(BigEndianStream stream) {
+        return new TracingConfiguration(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterBoolean.INSTANCE.Read(stream),
+            FfiConverterOptionalTypeTracingFileConfiguration.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(TracingConfiguration value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@filter) +
+            FfiConverterBoolean.INSTANCE.AllocationSize(value.@writeToStdoutOrSystem) +
+            FfiConverterOptionalTypeTracingFileConfiguration.INSTANCE.AllocationSize(value.@writeToFiles);
+    }
+
+    public override void Write(TracingConfiguration value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@filter, stream);
+            FfiConverterBoolean.INSTANCE.Write(value.@writeToStdoutOrSystem, stream);
+            FfiConverterOptionalTypeTracingFileConfiguration.INSTANCE.Write(value.@writeToFiles, stream);
+    }
+}
+
+
+
+public record TracingFileConfiguration (
+    String @path, 
+    String @filePrefix
+) {
+}
+
+class FfiConverterTypeTracingFileConfiguration: FfiConverterRustBuffer<TracingFileConfiguration> {
+    public static FfiConverterTypeTracingFileConfiguration INSTANCE = new FfiConverterTypeTracingFileConfiguration();
+
+    public override TracingFileConfiguration Read(BigEndianStream stream) {
+        return new TracingFileConfiguration(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterString.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(TracingFileConfiguration value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@path) +
+            FfiConverterString.INSTANCE.AllocationSize(value.@filePrefix);
+    }
+
+    public override void Write(TracingFileConfiguration value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@path, stream);
+            FfiConverterString.INSTANCE.Write(value.@filePrefix, stream);
+    }
+}
+
+
+
+public record TransmissionProgress (
+    ulong @current, 
+    ulong @total
+) {
+}
+
+class FfiConverterTypeTransmissionProgress: FfiConverterRustBuffer<TransmissionProgress> {
+    public static FfiConverterTypeTransmissionProgress INSTANCE = new FfiConverterTypeTransmissionProgress();
+
+    public override TransmissionProgress Read(BigEndianStream stream) {
+        return new TransmissionProgress(
+            FfiConverterUInt64.INSTANCE.Read(stream),
+            FfiConverterUInt64.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(TransmissionProgress value) {
+        return
+            FfiConverterUInt64.INSTANCE.AllocationSize(value.@current) +
+            FfiConverterUInt64.INSTANCE.AllocationSize(value.@total);
+    }
+
+    public override void Write(TransmissionProgress value, BigEndianStream stream) {
+            FfiConverterUInt64.INSTANCE.Write(value.@current, stream);
+            FfiConverterUInt64.INSTANCE.Write(value.@total, stream);
+    }
+}
+
+
+
+public record UnstableAudioDetailsContent (
+    TimeSpan @duration, 
+    List<ushort> @waveform
+) {
+}
+
+class FfiConverterTypeUnstableAudioDetailsContent: FfiConverterRustBuffer<UnstableAudioDetailsContent> {
+    public static FfiConverterTypeUnstableAudioDetailsContent INSTANCE = new FfiConverterTypeUnstableAudioDetailsContent();
+
+    public override UnstableAudioDetailsContent Read(BigEndianStream stream) {
+        return new UnstableAudioDetailsContent(
+            FfiConverterDuration.INSTANCE.Read(stream),
+            FfiConverterSequenceUInt16.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(UnstableAudioDetailsContent value) {
+        return
+            FfiConverterDuration.INSTANCE.AllocationSize(value.@duration) +
+            FfiConverterSequenceUInt16.INSTANCE.AllocationSize(value.@waveform);
+    }
+
+    public override void Write(UnstableAudioDetailsContent value, BigEndianStream stream) {
+            FfiConverterDuration.INSTANCE.Write(value.@duration, stream);
+            FfiConverterSequenceUInt16.INSTANCE.Write(value.@waveform, stream);
+    }
+}
+
+
+
+public record UnstableVoiceContent (
+) {
+}
+
+class FfiConverterTypeUnstableVoiceContent: FfiConverterRustBuffer<UnstableVoiceContent> {
+    public static FfiConverterTypeUnstableVoiceContent INSTANCE = new FfiConverterTypeUnstableVoiceContent();
+
+    public override UnstableVoiceContent Read(BigEndianStream stream) {
+        return new UnstableVoiceContent(
+        );
+    }
+
+    public override int AllocationSize(UnstableVoiceContent value) {
+        return;
+    }
+
+    public override void Write(UnstableVoiceContent value, BigEndianStream stream) {
+    }
+}
+
+
+
+public record UserProfile (
+    String @userId, 
+    String? @displayName, 
+    String? @avatarUrl
+) {
+}
+
+class FfiConverterTypeUserProfile: FfiConverterRustBuffer<UserProfile> {
+    public static FfiConverterTypeUserProfile INSTANCE = new FfiConverterTypeUserProfile();
+
+    public override UserProfile Read(BigEndianStream stream) {
+        return new UserProfile(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(UserProfile value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@userId) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@displayName) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@avatarUrl);
+    }
+
+    public override void Write(UserProfile value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@userId, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@displayName, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@avatarUrl, stream);
+    }
+}
+
+
+
+public record VideoInfo (
+    TimeSpan? @duration, 
+    ulong? @height, 
+    ulong? @width, 
+    String? @mimetype, 
+    ulong? @size, 
+    ThumbnailInfo? @thumbnailInfo, 
+    MediaSource? @thumbnailSource, 
+    String? @blurhash
+) : IDisposable {
+    public void Dispose() {
+    FFIObjectUtil.DisposeAll(
+            this.@duration,
+            this.@height,
+            this.@width,
+            this.@mimetype,
+            this.@size,
+            this.@thumbnailInfo,
+            this.@thumbnailSource,
+            this.@blurhash);
+    }
+}
+
+class FfiConverterTypeVideoInfo: FfiConverterRustBuffer<VideoInfo> {
+    public static FfiConverterTypeVideoInfo INSTANCE = new FfiConverterTypeVideoInfo();
+
+    public override VideoInfo Read(BigEndianStream stream) {
+        return new VideoInfo(
+            FfiConverterOptionalDuration.INSTANCE.Read(stream),
+            FfiConverterOptionalUInt64.INSTANCE.Read(stream),
+            FfiConverterOptionalUInt64.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterOptionalUInt64.INSTANCE.Read(stream),
+            FfiConverterOptionalTypeThumbnailInfo.INSTANCE.Read(stream),
+            FfiConverterOptionalTypeMediaSource.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(VideoInfo value) {
+        return
+            FfiConverterOptionalDuration.INSTANCE.AllocationSize(value.@duration) +
+            FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.@height) +
+            FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.@width) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@mimetype) +
+            FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.@size) +
+            FfiConverterOptionalTypeThumbnailInfo.INSTANCE.AllocationSize(value.@thumbnailInfo) +
+            FfiConverterOptionalTypeMediaSource.INSTANCE.AllocationSize(value.@thumbnailSource) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@blurhash);
+    }
+
+    public override void Write(VideoInfo value, BigEndianStream stream) {
+            FfiConverterOptionalDuration.INSTANCE.Write(value.@duration, stream);
+            FfiConverterOptionalUInt64.INSTANCE.Write(value.@height, stream);
+            FfiConverterOptionalUInt64.INSTANCE.Write(value.@width, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@mimetype, stream);
+            FfiConverterOptionalUInt64.INSTANCE.Write(value.@size, stream);
+            FfiConverterOptionalTypeThumbnailInfo.INSTANCE.Write(value.@thumbnailInfo, stream);
+            FfiConverterOptionalTypeMediaSource.INSTANCE.Write(value.@thumbnailSource, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@blurhash, stream);
+    }
+}
+
+
+
+public record VideoMessageContent (
+    String @body, 
+    MediaSource @source, 
+    VideoInfo? @info
+) : IDisposable {
+    public void Dispose() {
+    FFIObjectUtil.DisposeAll(
+            this.@body,
+            this.@source,
+            this.@info);
+    }
+}
+
+class FfiConverterTypeVideoMessageContent: FfiConverterRustBuffer<VideoMessageContent> {
+    public static FfiConverterTypeVideoMessageContent INSTANCE = new FfiConverterTypeVideoMessageContent();
+
+    public override VideoMessageContent Read(BigEndianStream stream) {
+        return new VideoMessageContent(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterTypeMediaSource.INSTANCE.Read(stream),
+            FfiConverterOptionalTypeVideoInfo.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(VideoMessageContent value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@body) +
+            FfiConverterTypeMediaSource.INSTANCE.AllocationSize(value.@source) +
+            FfiConverterOptionalTypeVideoInfo.INSTANCE.AllocationSize(value.@info);
+    }
+
+    public override void Write(VideoMessageContent value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@body, stream);
+            FfiConverterTypeMediaSource.INSTANCE.Write(value.@source, stream);
+            FfiConverterOptionalTypeVideoInfo.INSTANCE.Write(value.@info, stream);
+    }
+}
+
+
+
+public record VirtualElementCallWidgetOptions (
+    String @elementCallUrl, 
+    String @widgetId, 
+    String? @parentUrl, 
+    bool? @hideHeader, 
+    bool? @preload, 
+    double? @fontScale, 
+    bool? @appPrompt, 
+    bool? @skipLobby, 
+    bool? @confineToRoom, 
+    String? @font, 
+    String? @analyticsId, 
+    EncryptionSystem @encryption
+) {
+}
+
+class FfiConverterTypeVirtualElementCallWidgetOptions: FfiConverterRustBuffer<VirtualElementCallWidgetOptions> {
+    public static FfiConverterTypeVirtualElementCallWidgetOptions INSTANCE = new FfiConverterTypeVirtualElementCallWidgetOptions();
+
+    public override VirtualElementCallWidgetOptions Read(BigEndianStream stream) {
+        return new VirtualElementCallWidgetOptions(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterOptionalBoolean.INSTANCE.Read(stream),
+            FfiConverterOptionalBoolean.INSTANCE.Read(stream),
+            FfiConverterOptionalDouble.INSTANCE.Read(stream),
+            FfiConverterOptionalBoolean.INSTANCE.Read(stream),
+            FfiConverterOptionalBoolean.INSTANCE.Read(stream),
+            FfiConverterOptionalBoolean.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterOptionalString.INSTANCE.Read(stream),
+            FfiConverterTypeEncryptionSystem.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(VirtualElementCallWidgetOptions value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@elementCallUrl) +
+            FfiConverterString.INSTANCE.AllocationSize(value.@widgetId) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@parentUrl) +
+            FfiConverterOptionalBoolean.INSTANCE.AllocationSize(value.@hideHeader) +
+            FfiConverterOptionalBoolean.INSTANCE.AllocationSize(value.@preload) +
+            FfiConverterOptionalDouble.INSTANCE.AllocationSize(value.@fontScale) +
+            FfiConverterOptionalBoolean.INSTANCE.AllocationSize(value.@appPrompt) +
+            FfiConverterOptionalBoolean.INSTANCE.AllocationSize(value.@skipLobby) +
+            FfiConverterOptionalBoolean.INSTANCE.AllocationSize(value.@confineToRoom) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@font) +
+            FfiConverterOptionalString.INSTANCE.AllocationSize(value.@analyticsId) +
+            FfiConverterTypeEncryptionSystem.INSTANCE.AllocationSize(value.@encryption);
+    }
+
+    public override void Write(VirtualElementCallWidgetOptions value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@elementCallUrl, stream);
+            FfiConverterString.INSTANCE.Write(value.@widgetId, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@parentUrl, stream);
+            FfiConverterOptionalBoolean.INSTANCE.Write(value.@hideHeader, stream);
+            FfiConverterOptionalBoolean.INSTANCE.Write(value.@preload, stream);
+            FfiConverterOptionalDouble.INSTANCE.Write(value.@fontScale, stream);
+            FfiConverterOptionalBoolean.INSTANCE.Write(value.@appPrompt, stream);
+            FfiConverterOptionalBoolean.INSTANCE.Write(value.@skipLobby, stream);
+            FfiConverterOptionalBoolean.INSTANCE.Write(value.@confineToRoom, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@font, stream);
+            FfiConverterOptionalString.INSTANCE.Write(value.@analyticsId, stream);
+            FfiConverterTypeEncryptionSystem.INSTANCE.Write(value.@encryption, stream);
+    }
+}
+
+
+
+public record WidgetCapabilities (
+    List<WidgetEventFilter> @read, 
+    List<WidgetEventFilter> @send, 
+    bool @requiresClient
+) {
+}
+
+class FfiConverterTypeWidgetCapabilities: FfiConverterRustBuffer<WidgetCapabilities> {
+    public static FfiConverterTypeWidgetCapabilities INSTANCE = new FfiConverterTypeWidgetCapabilities();
+
+    public override WidgetCapabilities Read(BigEndianStream stream) {
+        return new WidgetCapabilities(
+            FfiConverterSequenceTypeWidgetEventFilter.INSTANCE.Read(stream),
+            FfiConverterSequenceTypeWidgetEventFilter.INSTANCE.Read(stream),
+            FfiConverterBoolean.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(WidgetCapabilities value) {
+        return
+            FfiConverterSequenceTypeWidgetEventFilter.INSTANCE.AllocationSize(value.@read) +
+            FfiConverterSequenceTypeWidgetEventFilter.INSTANCE.AllocationSize(value.@send) +
+            FfiConverterBoolean.INSTANCE.AllocationSize(value.@requiresClient);
+    }
+
+    public override void Write(WidgetCapabilities value, BigEndianStream stream) {
+            FfiConverterSequenceTypeWidgetEventFilter.INSTANCE.Write(value.@read, stream);
+            FfiConverterSequenceTypeWidgetEventFilter.INSTANCE.Write(value.@send, stream);
+            FfiConverterBoolean.INSTANCE.Write(value.@requiresClient, stream);
+    }
+}
+
+
+
+public record WidgetDriverAndHandle (
+    WidgetDriver @driver, 
+    WidgetDriverHandle @handle
+) : IDisposable {
+    public void Dispose() {
+    FFIObjectUtil.DisposeAll(
+            this.@driver,
+            this.@handle);
+    }
+}
+
+class FfiConverterTypeWidgetDriverAndHandle: FfiConverterRustBuffer<WidgetDriverAndHandle> {
+    public static FfiConverterTypeWidgetDriverAndHandle INSTANCE = new FfiConverterTypeWidgetDriverAndHandle();
+
+    public override WidgetDriverAndHandle Read(BigEndianStream stream) {
+        return new WidgetDriverAndHandle(
+            FfiConverterTypeWidgetDriver.INSTANCE.Read(stream),
+            FfiConverterTypeWidgetDriverHandle.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(WidgetDriverAndHandle value) {
+        return
+            FfiConverterTypeWidgetDriver.INSTANCE.AllocationSize(value.@driver) +
+            FfiConverterTypeWidgetDriverHandle.INSTANCE.AllocationSize(value.@handle);
+    }
+
+    public override void Write(WidgetDriverAndHandle value, BigEndianStream stream) {
+            FfiConverterTypeWidgetDriver.INSTANCE.Write(value.@driver, stream);
+            FfiConverterTypeWidgetDriverHandle.INSTANCE.Write(value.@handle, stream);
+    }
+}
+
+
+
+public record WidgetSettings (
+    String @widgetId, 
+    bool @initAfterContentLoad, 
+    String @rawUrl
+) {
+}
+
+class FfiConverterTypeWidgetSettings: FfiConverterRustBuffer<WidgetSettings> {
+    public static FfiConverterTypeWidgetSettings INSTANCE = new FfiConverterTypeWidgetSettings();
+
+    public override WidgetSettings Read(BigEndianStream stream) {
+        return new WidgetSettings(
+            FfiConverterString.INSTANCE.Read(stream),
+            FfiConverterBoolean.INSTANCE.Read(stream),
+            FfiConverterString.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(WidgetSettings value) {
+        return
+            FfiConverterString.INSTANCE.AllocationSize(value.@widgetId) +
+            FfiConverterBoolean.INSTANCE.AllocationSize(value.@initAfterContentLoad) +
+            FfiConverterString.INSTANCE.AllocationSize(value.@rawUrl);
+    }
+
+    public override void Write(WidgetSettings value, BigEndianStream stream) {
+            FfiConverterString.INSTANCE.Write(value.@widgetId, stream);
+            FfiConverterBoolean.INSTANCE.Write(value.@initAfterContentLoad, stream);
+            FfiConverterString.INSTANCE.Write(value.@rawUrl, stream);
+    }
+}
+
+
+
+
+
+public record AccountManagementAction {
+    
+    public record Profile: AccountManagementAction {}
+    
+    
+    public record SessionsList: AccountManagementAction {}
+    
+    
+    public record SessionView (
+        String @deviceId
+    ) : AccountManagementAction {}
+    
+    public record SessionEnd (
+        String @deviceId
+    ) : AccountManagementAction {}
+    
+
+    
+}
+
+class FfiConverterTypeAccountManagementAction : FfiConverterRustBuffer<AccountManagementAction>{
+    public static FfiConverterRustBuffer<AccountManagementAction> INSTANCE = new FfiConverterTypeAccountManagementAction();
+
+    public override AccountManagementAction Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new AccountManagementAction.Profile(
+                );
+            case 2:
+                return new AccountManagementAction.SessionsList(
+                );
+            case 3:
+                return new AccountManagementAction.SessionView(
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            case 4:
+                return new AccountManagementAction.SessionEnd(
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeAccountManagementAction.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(AccountManagementAction value) {
+        switch (value) {
+            case AccountManagementAction.Profile variant_value:
+                return 4;
+            case AccountManagementAction.SessionsList variant_value:
+                return 4;
+            case AccountManagementAction.SessionView variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@deviceId);
+            case AccountManagementAction.SessionEnd variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@deviceId);
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeAccountManagementAction.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(AccountManagementAction value, BigEndianStream stream) {
+        switch (value) {
+            case AccountManagementAction.Profile variant_value:
+                stream.WriteInt(1);
+                break;
+            case AccountManagementAction.SessionsList variant_value:
+                stream.WriteInt(2);
+                break;
+            case AccountManagementAction.SessionView variant_value:
+                stream.WriteInt(3);
+                FfiConverterString.INSTANCE.Write(variant_value.@deviceId, stream);
+                break;
+            case AccountManagementAction.SessionEnd variant_value:
+                stream.WriteInt(4);
+                FfiConverterString.INSTANCE.Write(variant_value.@deviceId, stream);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeAccountManagementAction.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
+public enum AssetType: int {
+    
+    Sender,
+    Pin
+}
+
+class FfiConverterTypeAssetType: FfiConverterRustBuffer<AssetType> {
+    public static FfiConverterTypeAssetType INSTANCE = new FfiConverterTypeAssetType();
+
+    public override AssetType Read(BigEndianStream stream) {
+        var value = stream.ReadInt() - 1;
+        if (Enum.IsDefined(typeof(AssetType), value)) {
+            return (AssetType)value;
+        } else {
+            throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeAssetType.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(AssetType value) {
+        return 4;
+    }
+
+    public override void Write(AssetType value, BigEndianStream stream) {
+        stream.WriteInt((int)value + 1);
+    }
+}
+
+
+
+
+
+
+
+public class AuthenticationException: UniffiException {
+    AuthenticationException(string message): base(message) {}
+
+    // Each variant is a nested class
+    // Flat enums carries a string error message, so no special implementation is necessary.
+    
+    public class ClientMissing: AuthenticationException {
+        public ClientMissing(string message): base(message) {}
+    }
+    
+    public class InvalidServerName: AuthenticationException {
+        public InvalidServerName(string message): base(message) {}
+    }
+    
+    public class SlidingSyncNotAvailable: AuthenticationException {
+        public SlidingSyncNotAvailable(string message): base(message) {}
+    }
+    
+    public class SessionMissing: AuthenticationException {
+        public SessionMissing(string message): base(message) {}
+    }
+    
+    public class InvalidBasePath: AuthenticationException {
+        public InvalidBasePath(string message): base(message) {}
+    }
+    
+    public class OidcNotSupported: AuthenticationException {
+        public OidcNotSupported(string message): base(message) {}
+    }
+    
+    public class OidcMetadataMissing: AuthenticationException {
+        public OidcMetadataMissing(string message): base(message) {}
+    }
+    
+    public class OidcMetadataInvalid: AuthenticationException {
+        public OidcMetadataInvalid(string message): base(message) {}
+    }
+    
+    public class OidcCallbackUrlInvalid: AuthenticationException {
+        public OidcCallbackUrlInvalid(string message): base(message) {}
+    }
+    
+    public class OidcCancelled: AuthenticationException {
+        public OidcCancelled(string message): base(message) {}
+    }
+    
+    public class OidcException: AuthenticationException {
+        public OidcException(string message): base(message) {}
+    }
+    
+    public class Generic: AuthenticationException {
+        public Generic(string message): base(message) {}
+    }
+    
+}
+
+class FfiConverterTypeAuthenticationException : FfiConverterRustBuffer<AuthenticationException>, CallStatusErrorHandler<AuthenticationException> {
+    public static FfiConverterTypeAuthenticationException INSTANCE = new FfiConverterTypeAuthenticationException();
+
+    public override AuthenticationException Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1: return new AuthenticationException.ClientMissing(FfiConverterString.INSTANCE.Read(stream));
+            case 2: return new AuthenticationException.InvalidServerName(FfiConverterString.INSTANCE.Read(stream));
+            case 3: return new AuthenticationException.SlidingSyncNotAvailable(FfiConverterString.INSTANCE.Read(stream));
+            case 4: return new AuthenticationException.SessionMissing(FfiConverterString.INSTANCE.Read(stream));
+            case 5: return new AuthenticationException.InvalidBasePath(FfiConverterString.INSTANCE.Read(stream));
+            case 6: return new AuthenticationException.OidcNotSupported(FfiConverterString.INSTANCE.Read(stream));
+            case 7: return new AuthenticationException.OidcMetadataMissing(FfiConverterString.INSTANCE.Read(stream));
+            case 8: return new AuthenticationException.OidcMetadataInvalid(FfiConverterString.INSTANCE.Read(stream));
+            case 9: return new AuthenticationException.OidcCallbackUrlInvalid(FfiConverterString.INSTANCE.Read(stream));
+            case 10: return new AuthenticationException.OidcCancelled(FfiConverterString.INSTANCE.Read(stream));
+            case 11: return new AuthenticationException.OidcException(FfiConverterString.INSTANCE.Read(stream));
+            case 12: return new AuthenticationException.Generic(FfiConverterString.INSTANCE.Read(stream));
+            default:
+                throw new InternalException(String.Format("invalid error value '{0}' in FfiConverterTypeAuthenticationException.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(AuthenticationException value) {
+        return 4 + FfiConverterString.INSTANCE.AllocationSize(value.Message);
+    }
+
+    public override void Write(AuthenticationException value, BigEndianStream stream) {
+        switch (value) {
+            case AuthenticationException.ClientMissing:
+                stream.WriteInt(1);
+                break;
+            case AuthenticationException.InvalidServerName:
+                stream.WriteInt(2);
+                break;
+            case AuthenticationException.SlidingSyncNotAvailable:
+                stream.WriteInt(3);
+                break;
+            case AuthenticationException.SessionMissing:
+                stream.WriteInt(4);
+                break;
+            case AuthenticationException.InvalidBasePath:
+                stream.WriteInt(5);
+                break;
+            case AuthenticationException.OidcNotSupported:
+                stream.WriteInt(6);
+                break;
+            case AuthenticationException.OidcMetadataMissing:
+                stream.WriteInt(7);
+                break;
+            case AuthenticationException.OidcMetadataInvalid:
+                stream.WriteInt(8);
+                break;
+            case AuthenticationException.OidcCallbackUrlInvalid:
+                stream.WriteInt(9);
+                break;
+            case AuthenticationException.OidcCancelled:
+                stream.WriteInt(10);
+                break;
+            case AuthenticationException.OidcException:
+                stream.WriteInt(11);
+                break;
+            case AuthenticationException.Generic:
+                stream.WriteInt(12);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid error value '{0}' in FfiConverterTypeAuthenticationException.Write()", value));
+        }
     }
 }
 
@@ -942,6 +12157,160 @@ class FfiConverterTypeClientException : FfiConverterRustBuffer<ClientException>,
 
 
 
+public record EncryptedMessage {
+    
+    public record OlmV1Curve25519AesSha2 (
+        String @senderKey
+    ) : EncryptedMessage {}
+    
+    public record MegolmV1AesSha2 (
+        String @sessionId
+    ) : EncryptedMessage {}
+    
+    public record Unknown: EncryptedMessage {}
+    
+    
+
+    
+}
+
+class FfiConverterTypeEncryptedMessage : FfiConverterRustBuffer<EncryptedMessage>{
+    public static FfiConverterRustBuffer<EncryptedMessage> INSTANCE = new FfiConverterTypeEncryptedMessage();
+
+    public override EncryptedMessage Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new EncryptedMessage.OlmV1Curve25519AesSha2(
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            case 2:
+                return new EncryptedMessage.MegolmV1AesSha2(
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            case 3:
+                return new EncryptedMessage.Unknown(
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeEncryptedMessage.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(EncryptedMessage value) {
+        switch (value) {
+            case EncryptedMessage.OlmV1Curve25519AesSha2 variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@senderKey);
+            case EncryptedMessage.MegolmV1AesSha2 variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@sessionId);
+            case EncryptedMessage.Unknown variant_value:
+                return 4;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeEncryptedMessage.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(EncryptedMessage value, BigEndianStream stream) {
+        switch (value) {
+            case EncryptedMessage.OlmV1Curve25519AesSha2 variant_value:
+                stream.WriteInt(1);
+                FfiConverterString.INSTANCE.Write(variant_value.@senderKey, stream);
+                break;
+            case EncryptedMessage.MegolmV1AesSha2 variant_value:
+                stream.WriteInt(2);
+                FfiConverterString.INSTANCE.Write(variant_value.@sessionId, stream);
+                break;
+            case EncryptedMessage.Unknown variant_value:
+                stream.WriteInt(3);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeEncryptedMessage.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
+public record EncryptionSystem {
+    
+    public record Unencrypted: EncryptionSystem {}
+    
+    
+    public record PerParticipantKeys: EncryptionSystem {}
+    
+    
+    public record SharedSecret (
+        String @secret
+    ) : EncryptionSystem {}
+    
+
+    
+}
+
+class FfiConverterTypeEncryptionSystem : FfiConverterRustBuffer<EncryptionSystem>{
+    public static FfiConverterRustBuffer<EncryptionSystem> INSTANCE = new FfiConverterTypeEncryptionSystem();
+
+    public override EncryptionSystem Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new EncryptionSystem.Unencrypted(
+                );
+            case 2:
+                return new EncryptionSystem.PerParticipantKeys(
+                );
+            case 3:
+                return new EncryptionSystem.SharedSecret(
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeEncryptionSystem.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(EncryptionSystem value) {
+        switch (value) {
+            case EncryptionSystem.Unencrypted variant_value:
+                return 4;
+            case EncryptionSystem.PerParticipantKeys variant_value:
+                return 4;
+            case EncryptionSystem.SharedSecret variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@secret);
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeEncryptionSystem.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(EncryptionSystem value, BigEndianStream stream) {
+        switch (value) {
+            case EncryptionSystem.Unencrypted variant_value:
+                stream.WriteInt(1);
+                break;
+            case EncryptionSystem.PerParticipantKeys variant_value:
+                stream.WriteInt(2);
+                break;
+            case EncryptionSystem.SharedSecret variant_value:
+                stream.WriteInt(3);
+                FfiConverterString.INSTANCE.Write(variant_value.@secret, stream);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeEncryptionSystem.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
 public enum EventItemOrigin: int {
     
     Local,
@@ -971,6 +12340,6702 @@ class FfiConverterTypeEventItemOrigin: FfiConverterRustBuffer<EventItemOrigin> {
 }
 
 
+
+
+
+
+
+public record EventSendState {
+    
+    public record NotSentYet: EventSendState {}
+    
+    
+    public record SendingFailed (
+        String @error
+    ) : EventSendState {}
+    
+    public record Cancelled: EventSendState {}
+    
+    
+    public record Sent (
+        String @eventId
+    ) : EventSendState {}
+    
+
+    
+}
+
+class FfiConverterTypeEventSendState : FfiConverterRustBuffer<EventSendState>{
+    public static FfiConverterRustBuffer<EventSendState> INSTANCE = new FfiConverterTypeEventSendState();
+
+    public override EventSendState Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new EventSendState.NotSentYet(
+                );
+            case 2:
+                return new EventSendState.SendingFailed(
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            case 3:
+                return new EventSendState.Cancelled(
+                );
+            case 4:
+                return new EventSendState.Sent(
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeEventSendState.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(EventSendState value) {
+        switch (value) {
+            case EventSendState.NotSentYet variant_value:
+                return 4;
+            case EventSendState.SendingFailed variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@error);
+            case EventSendState.Cancelled variant_value:
+                return 4;
+            case EventSendState.Sent variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@eventId);
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeEventSendState.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(EventSendState value, BigEndianStream stream) {
+        switch (value) {
+            case EventSendState.NotSentYet variant_value:
+                stream.WriteInt(1);
+                break;
+            case EventSendState.SendingFailed variant_value:
+                stream.WriteInt(2);
+                FfiConverterString.INSTANCE.Write(variant_value.@error, stream);
+                break;
+            case EventSendState.Cancelled variant_value:
+                stream.WriteInt(3);
+                break;
+            case EventSendState.Sent variant_value:
+                stream.WriteInt(4);
+                FfiConverterString.INSTANCE.Write(variant_value.@eventId, stream);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeEventSendState.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
+public enum LogLevel: int {
+    
+    Error,
+    Warn,
+    Info,
+    Debug,
+    Trace
+}
+
+class FfiConverterTypeLogLevel: FfiConverterRustBuffer<LogLevel> {
+    public static FfiConverterTypeLogLevel INSTANCE = new FfiConverterTypeLogLevel();
+
+    public override LogLevel Read(BigEndianStream stream) {
+        var value = stream.ReadInt() - 1;
+        if (Enum.IsDefined(typeof(LogLevel), value)) {
+            return (LogLevel)value;
+        } else {
+            throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeLogLevel.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(LogLevel value) {
+        return 4;
+    }
+
+    public override void Write(LogLevel value, BigEndianStream stream) {
+        stream.WriteInt((int)value + 1);
+    }
+}
+
+
+
+
+
+
+
+public class MediaInfoException: UniffiException {
+    MediaInfoException(string message): base(message) {}
+
+    // Each variant is a nested class
+    // Flat enums carries a string error message, so no special implementation is necessary.
+    
+    public class MissingField: MediaInfoException {
+        public MissingField(string message): base(message) {}
+    }
+    
+    public class InvalidField: MediaInfoException {
+        public InvalidField(string message): base(message) {}
+    }
+    
+}
+
+class FfiConverterTypeMediaInfoException : FfiConverterRustBuffer<MediaInfoException>, CallStatusErrorHandler<MediaInfoException> {
+    public static FfiConverterTypeMediaInfoException INSTANCE = new FfiConverterTypeMediaInfoException();
+
+    public override MediaInfoException Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1: return new MediaInfoException.MissingField(FfiConverterString.INSTANCE.Read(stream));
+            case 2: return new MediaInfoException.InvalidField(FfiConverterString.INSTANCE.Read(stream));
+            default:
+                throw new InternalException(String.Format("invalid error value '{0}' in FfiConverterTypeMediaInfoException.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(MediaInfoException value) {
+        return 4 + FfiConverterString.INSTANCE.AllocationSize(value.Message);
+    }
+
+    public override void Write(MediaInfoException value, BigEndianStream stream) {
+        switch (value) {
+            case MediaInfoException.MissingField:
+                stream.WriteInt(1);
+                break;
+            case MediaInfoException.InvalidField:
+                stream.WriteInt(2);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid error value '{0}' in FfiConverterTypeMediaInfoException.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+public enum Membership: int {
+    
+    Invited,
+    Joined,
+    Left
+}
+
+class FfiConverterTypeMembership: FfiConverterRustBuffer<Membership> {
+    public static FfiConverterTypeMembership INSTANCE = new FfiConverterTypeMembership();
+
+    public override Membership Read(BigEndianStream stream) {
+        var value = stream.ReadInt() - 1;
+        if (Enum.IsDefined(typeof(Membership), value)) {
+            return (Membership)value;
+        } else {
+            throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeMembership.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(Membership value) {
+        return 4;
+    }
+
+    public override void Write(Membership value, BigEndianStream stream) {
+        stream.WriteInt((int)value + 1);
+    }
+}
+
+
+
+
+
+
+
+public enum MembershipChange: int {
+    
+    None,
+    Error,
+    Joined,
+    Left,
+    Banned,
+    Unbanned,
+    Kicked,
+    Invited,
+    KickedAndBanned,
+    InvitationAccepted,
+    InvitationRejected,
+    InvitationRevoked,
+    Knocked,
+    KnockAccepted,
+    KnockRetracted,
+    KnockDenied,
+    NotImplemented
+}
+
+class FfiConverterTypeMembershipChange: FfiConverterRustBuffer<MembershipChange> {
+    public static FfiConverterTypeMembershipChange INSTANCE = new FfiConverterTypeMembershipChange();
+
+    public override MembershipChange Read(BigEndianStream stream) {
+        var value = stream.ReadInt() - 1;
+        if (Enum.IsDefined(typeof(MembershipChange), value)) {
+            return (MembershipChange)value;
+        } else {
+            throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeMembershipChange.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(MembershipChange value) {
+        return 4;
+    }
+
+    public override void Write(MembershipChange value, BigEndianStream stream) {
+        stream.WriteInt((int)value + 1);
+    }
+}
+
+
+
+
+
+
+
+public enum MembershipState: int {
+    
+    Ban,
+    Invite,
+    Join,
+    Knock,
+    Leave
+}
+
+class FfiConverterTypeMembershipState: FfiConverterRustBuffer<MembershipState> {
+    public static FfiConverterTypeMembershipState INSTANCE = new FfiConverterTypeMembershipState();
+
+    public override MembershipState Read(BigEndianStream stream) {
+        var value = stream.ReadInt() - 1;
+        if (Enum.IsDefined(typeof(MembershipState), value)) {
+            return (MembershipState)value;
+        } else {
+            throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeMembershipState.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(MembershipState value) {
+        return 4;
+    }
+
+    public override void Write(MembershipState value, BigEndianStream stream) {
+        stream.WriteInt((int)value + 1);
+    }
+}
+
+
+
+
+
+
+
+public record MessageFormat {
+    
+    public record Html: MessageFormat {}
+    
+    
+    public record Unknown (
+        String @format
+    ) : MessageFormat {}
+    
+
+    
+}
+
+class FfiConverterTypeMessageFormat : FfiConverterRustBuffer<MessageFormat>{
+    public static FfiConverterRustBuffer<MessageFormat> INSTANCE = new FfiConverterTypeMessageFormat();
+
+    public override MessageFormat Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new MessageFormat.Html(
+                );
+            case 2:
+                return new MessageFormat.Unknown(
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeMessageFormat.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(MessageFormat value) {
+        switch (value) {
+            case MessageFormat.Html variant_value:
+                return 4;
+            case MessageFormat.Unknown variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@format);
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeMessageFormat.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(MessageFormat value, BigEndianStream stream) {
+        switch (value) {
+            case MessageFormat.Html variant_value:
+                stream.WriteInt(1);
+                break;
+            case MessageFormat.Unknown variant_value:
+                stream.WriteInt(2);
+                FfiConverterString.INSTANCE.Write(variant_value.@format, stream);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeMessageFormat.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
+public record MessageLikeEventContent: IDisposable  {
+    
+    public record CallAnswer: MessageLikeEventContent {}
+    
+    
+    public record CallInvite: MessageLikeEventContent {}
+    
+    
+    public record CallHangup: MessageLikeEventContent {}
+    
+    
+    public record CallCandidates: MessageLikeEventContent {}
+    
+    
+    public record KeyVerificationReady: MessageLikeEventContent {}
+    
+    
+    public record KeyVerificationStart: MessageLikeEventContent {}
+    
+    
+    public record KeyVerificationCancel: MessageLikeEventContent {}
+    
+    
+    public record KeyVerificationAccept: MessageLikeEventContent {}
+    
+    
+    public record KeyVerificationKey: MessageLikeEventContent {}
+    
+    
+    public record KeyVerificationMac: MessageLikeEventContent {}
+    
+    
+    public record KeyVerificationDone: MessageLikeEventContent {}
+    
+    
+    public record Poll (
+        String @question
+    ) : MessageLikeEventContent {}
+    
+    public record ReactionContent (
+        String @relatedEventId
+    ) : MessageLikeEventContent {}
+    
+    public record RoomEncrypted: MessageLikeEventContent {}
+    
+    
+    public record RoomMessage (
+        MessageType @messageType,String? @inReplyToEventId
+    ) : MessageLikeEventContent {}
+    
+    public record RoomRedaction: MessageLikeEventContent {}
+    
+    
+    public record Sticker: MessageLikeEventContent {}
+    
+    
+
+    
+    public void Dispose() {
+        switch (this) {
+            case MessageLikeEventContent.CallAnswer variant_value:
+                break;
+            case MessageLikeEventContent.CallInvite variant_value:
+                break;
+            case MessageLikeEventContent.CallHangup variant_value:
+                break;
+            case MessageLikeEventContent.CallCandidates variant_value:
+                break;
+            case MessageLikeEventContent.KeyVerificationReady variant_value:
+                break;
+            case MessageLikeEventContent.KeyVerificationStart variant_value:
+                break;
+            case MessageLikeEventContent.KeyVerificationCancel variant_value:
+                break;
+            case MessageLikeEventContent.KeyVerificationAccept variant_value:
+                break;
+            case MessageLikeEventContent.KeyVerificationKey variant_value:
+                break;
+            case MessageLikeEventContent.KeyVerificationMac variant_value:
+                break;
+            case MessageLikeEventContent.KeyVerificationDone variant_value:
+                break;
+            case MessageLikeEventContent.Poll variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@question);
+                break;
+            case MessageLikeEventContent.ReactionContent variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@relatedEventId);
+                break;
+            case MessageLikeEventContent.RoomEncrypted variant_value:
+                break;
+            case MessageLikeEventContent.RoomMessage variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@messageType,
+            variant_value.@inReplyToEventId);
+                break;
+            case MessageLikeEventContent.RoomRedaction variant_value:
+                break;
+            case MessageLikeEventContent.Sticker variant_value:
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in MessageLikeEventContent.Dispose()", this));
+        }
+    }
+    
+}
+
+class FfiConverterTypeMessageLikeEventContent : FfiConverterRustBuffer<MessageLikeEventContent>{
+    public static FfiConverterRustBuffer<MessageLikeEventContent> INSTANCE = new FfiConverterTypeMessageLikeEventContent();
+
+    public override MessageLikeEventContent Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new MessageLikeEventContent.CallAnswer(
+                );
+            case 2:
+                return new MessageLikeEventContent.CallInvite(
+                );
+            case 3:
+                return new MessageLikeEventContent.CallHangup(
+                );
+            case 4:
+                return new MessageLikeEventContent.CallCandidates(
+                );
+            case 5:
+                return new MessageLikeEventContent.KeyVerificationReady(
+                );
+            case 6:
+                return new MessageLikeEventContent.KeyVerificationStart(
+                );
+            case 7:
+                return new MessageLikeEventContent.KeyVerificationCancel(
+                );
+            case 8:
+                return new MessageLikeEventContent.KeyVerificationAccept(
+                );
+            case 9:
+                return new MessageLikeEventContent.KeyVerificationKey(
+                );
+            case 10:
+                return new MessageLikeEventContent.KeyVerificationMac(
+                );
+            case 11:
+                return new MessageLikeEventContent.KeyVerificationDone(
+                );
+            case 12:
+                return new MessageLikeEventContent.Poll(
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            case 13:
+                return new MessageLikeEventContent.ReactionContent(
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            case 14:
+                return new MessageLikeEventContent.RoomEncrypted(
+                );
+            case 15:
+                return new MessageLikeEventContent.RoomMessage(
+                    FfiConverterTypeMessageType.INSTANCE.Read(stream),
+                    FfiConverterOptionalString.INSTANCE.Read(stream)
+                );
+            case 16:
+                return new MessageLikeEventContent.RoomRedaction(
+                );
+            case 17:
+                return new MessageLikeEventContent.Sticker(
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeMessageLikeEventContent.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(MessageLikeEventContent value) {
+        switch (value) {
+            case MessageLikeEventContent.CallAnswer variant_value:
+                return 4;
+            case MessageLikeEventContent.CallInvite variant_value:
+                return 4;
+            case MessageLikeEventContent.CallHangup variant_value:
+                return 4;
+            case MessageLikeEventContent.CallCandidates variant_value:
+                return 4;
+            case MessageLikeEventContent.KeyVerificationReady variant_value:
+                return 4;
+            case MessageLikeEventContent.KeyVerificationStart variant_value:
+                return 4;
+            case MessageLikeEventContent.KeyVerificationCancel variant_value:
+                return 4;
+            case MessageLikeEventContent.KeyVerificationAccept variant_value:
+                return 4;
+            case MessageLikeEventContent.KeyVerificationKey variant_value:
+                return 4;
+            case MessageLikeEventContent.KeyVerificationMac variant_value:
+                return 4;
+            case MessageLikeEventContent.KeyVerificationDone variant_value:
+                return 4;
+            case MessageLikeEventContent.Poll variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@question);
+            case MessageLikeEventContent.ReactionContent variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@relatedEventId);
+            case MessageLikeEventContent.RoomEncrypted variant_value:
+                return 4;
+            case MessageLikeEventContent.RoomMessage variant_value:
+                return 4
+                    + FfiConverterTypeMessageType.INSTANCE.AllocationSize(variant_value.@messageType)
+                    + FfiConverterOptionalString.INSTANCE.AllocationSize(variant_value.@inReplyToEventId);
+            case MessageLikeEventContent.RoomRedaction variant_value:
+                return 4;
+            case MessageLikeEventContent.Sticker variant_value:
+                return 4;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeMessageLikeEventContent.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(MessageLikeEventContent value, BigEndianStream stream) {
+        switch (value) {
+            case MessageLikeEventContent.CallAnswer variant_value:
+                stream.WriteInt(1);
+                break;
+            case MessageLikeEventContent.CallInvite variant_value:
+                stream.WriteInt(2);
+                break;
+            case MessageLikeEventContent.CallHangup variant_value:
+                stream.WriteInt(3);
+                break;
+            case MessageLikeEventContent.CallCandidates variant_value:
+                stream.WriteInt(4);
+                break;
+            case MessageLikeEventContent.KeyVerificationReady variant_value:
+                stream.WriteInt(5);
+                break;
+            case MessageLikeEventContent.KeyVerificationStart variant_value:
+                stream.WriteInt(6);
+                break;
+            case MessageLikeEventContent.KeyVerificationCancel variant_value:
+                stream.WriteInt(7);
+                break;
+            case MessageLikeEventContent.KeyVerificationAccept variant_value:
+                stream.WriteInt(8);
+                break;
+            case MessageLikeEventContent.KeyVerificationKey variant_value:
+                stream.WriteInt(9);
+                break;
+            case MessageLikeEventContent.KeyVerificationMac variant_value:
+                stream.WriteInt(10);
+                break;
+            case MessageLikeEventContent.KeyVerificationDone variant_value:
+                stream.WriteInt(11);
+                break;
+            case MessageLikeEventContent.Poll variant_value:
+                stream.WriteInt(12);
+                FfiConverterString.INSTANCE.Write(variant_value.@question, stream);
+                break;
+            case MessageLikeEventContent.ReactionContent variant_value:
+                stream.WriteInt(13);
+                FfiConverterString.INSTANCE.Write(variant_value.@relatedEventId, stream);
+                break;
+            case MessageLikeEventContent.RoomEncrypted variant_value:
+                stream.WriteInt(14);
+                break;
+            case MessageLikeEventContent.RoomMessage variant_value:
+                stream.WriteInt(15);
+                FfiConverterTypeMessageType.INSTANCE.Write(variant_value.@messageType, stream);
+                FfiConverterOptionalString.INSTANCE.Write(variant_value.@inReplyToEventId, stream);
+                break;
+            case MessageLikeEventContent.RoomRedaction variant_value:
+                stream.WriteInt(16);
+                break;
+            case MessageLikeEventContent.Sticker variant_value:
+                stream.WriteInt(17);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeMessageLikeEventContent.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
+public enum MessageLikeEventType: int {
+    
+    CallAnswer,
+    CallInvite,
+    CallHangup,
+    CallCandidates,
+    KeyVerificationReady,
+    KeyVerificationStart,
+    KeyVerificationCancel,
+    KeyVerificationAccept,
+    KeyVerificationKey,
+    KeyVerificationMac,
+    KeyVerificationDone,
+    ReactionSent,
+    RoomEncrypted,
+    RoomMessage,
+    RoomRedaction,
+    Sticker
+}
+
+class FfiConverterTypeMessageLikeEventType: FfiConverterRustBuffer<MessageLikeEventType> {
+    public static FfiConverterTypeMessageLikeEventType INSTANCE = new FfiConverterTypeMessageLikeEventType();
+
+    public override MessageLikeEventType Read(BigEndianStream stream) {
+        var value = stream.ReadInt() - 1;
+        if (Enum.IsDefined(typeof(MessageLikeEventType), value)) {
+            return (MessageLikeEventType)value;
+        } else {
+            throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeMessageLikeEventType.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(MessageLikeEventType value) {
+        return 4;
+    }
+
+    public override void Write(MessageLikeEventType value, BigEndianStream stream) {
+        stream.WriteInt((int)value + 1);
+    }
+}
+
+
+
+
+
+
+
+public record MessageType: IDisposable  {
+    
+    public record Emote (
+        EmoteMessageContent @content
+    ) : MessageType {}
+    
+    public record Image (
+        ImageMessageContent @content
+    ) : MessageType {}
+    
+    public record Audio (
+        AudioMessageContent @content
+    ) : MessageType {}
+    
+    public record Video (
+        VideoMessageContent @content
+    ) : MessageType {}
+    
+    public record File (
+        FileMessageContent @content
+    ) : MessageType {}
+    
+    public record Notice (
+        NoticeMessageContent @content
+    ) : MessageType {}
+    
+    public record Text (
+        TextMessageContent @content
+    ) : MessageType {}
+    
+    public record Location (
+        LocationContent @content
+    ) : MessageType {}
+    
+    public record Other (
+        String @msgtype,String @body
+    ) : MessageType {}
+    
+
+    
+    public void Dispose() {
+        switch (this) {
+            case MessageType.Emote variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@content);
+                break;
+            case MessageType.Image variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@content);
+                break;
+            case MessageType.Audio variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@content);
+                break;
+            case MessageType.Video variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@content);
+                break;
+            case MessageType.File variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@content);
+                break;
+            case MessageType.Notice variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@content);
+                break;
+            case MessageType.Text variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@content);
+                break;
+            case MessageType.Location variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@content);
+                break;
+            case MessageType.Other variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@msgtype,
+            variant_value.@body);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in MessageType.Dispose()", this));
+        }
+    }
+    
+}
+
+class FfiConverterTypeMessageType : FfiConverterRustBuffer<MessageType>{
+    public static FfiConverterRustBuffer<MessageType> INSTANCE = new FfiConverterTypeMessageType();
+
+    public override MessageType Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new MessageType.Emote(
+                    FfiConverterTypeEmoteMessageContent.INSTANCE.Read(stream)
+                );
+            case 2:
+                return new MessageType.Image(
+                    FfiConverterTypeImageMessageContent.INSTANCE.Read(stream)
+                );
+            case 3:
+                return new MessageType.Audio(
+                    FfiConverterTypeAudioMessageContent.INSTANCE.Read(stream)
+                );
+            case 4:
+                return new MessageType.Video(
+                    FfiConverterTypeVideoMessageContent.INSTANCE.Read(stream)
+                );
+            case 5:
+                return new MessageType.File(
+                    FfiConverterTypeFileMessageContent.INSTANCE.Read(stream)
+                );
+            case 6:
+                return new MessageType.Notice(
+                    FfiConverterTypeNoticeMessageContent.INSTANCE.Read(stream)
+                );
+            case 7:
+                return new MessageType.Text(
+                    FfiConverterTypeTextMessageContent.INSTANCE.Read(stream)
+                );
+            case 8:
+                return new MessageType.Location(
+                    FfiConverterTypeLocationContent.INSTANCE.Read(stream)
+                );
+            case 9:
+                return new MessageType.Other(
+                    FfiConverterString.INSTANCE.Read(stream),
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeMessageType.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(MessageType value) {
+        switch (value) {
+            case MessageType.Emote variant_value:
+                return 4
+                    + FfiConverterTypeEmoteMessageContent.INSTANCE.AllocationSize(variant_value.@content);
+            case MessageType.Image variant_value:
+                return 4
+                    + FfiConverterTypeImageMessageContent.INSTANCE.AllocationSize(variant_value.@content);
+            case MessageType.Audio variant_value:
+                return 4
+                    + FfiConverterTypeAudioMessageContent.INSTANCE.AllocationSize(variant_value.@content);
+            case MessageType.Video variant_value:
+                return 4
+                    + FfiConverterTypeVideoMessageContent.INSTANCE.AllocationSize(variant_value.@content);
+            case MessageType.File variant_value:
+                return 4
+                    + FfiConverterTypeFileMessageContent.INSTANCE.AllocationSize(variant_value.@content);
+            case MessageType.Notice variant_value:
+                return 4
+                    + FfiConverterTypeNoticeMessageContent.INSTANCE.AllocationSize(variant_value.@content);
+            case MessageType.Text variant_value:
+                return 4
+                    + FfiConverterTypeTextMessageContent.INSTANCE.AllocationSize(variant_value.@content);
+            case MessageType.Location variant_value:
+                return 4
+                    + FfiConverterTypeLocationContent.INSTANCE.AllocationSize(variant_value.@content);
+            case MessageType.Other variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@msgtype)
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@body);
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeMessageType.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(MessageType value, BigEndianStream stream) {
+        switch (value) {
+            case MessageType.Emote variant_value:
+                stream.WriteInt(1);
+                FfiConverterTypeEmoteMessageContent.INSTANCE.Write(variant_value.@content, stream);
+                break;
+            case MessageType.Image variant_value:
+                stream.WriteInt(2);
+                FfiConverterTypeImageMessageContent.INSTANCE.Write(variant_value.@content, stream);
+                break;
+            case MessageType.Audio variant_value:
+                stream.WriteInt(3);
+                FfiConverterTypeAudioMessageContent.INSTANCE.Write(variant_value.@content, stream);
+                break;
+            case MessageType.Video variant_value:
+                stream.WriteInt(4);
+                FfiConverterTypeVideoMessageContent.INSTANCE.Write(variant_value.@content, stream);
+                break;
+            case MessageType.File variant_value:
+                stream.WriteInt(5);
+                FfiConverterTypeFileMessageContent.INSTANCE.Write(variant_value.@content, stream);
+                break;
+            case MessageType.Notice variant_value:
+                stream.WriteInt(6);
+                FfiConverterTypeNoticeMessageContent.INSTANCE.Write(variant_value.@content, stream);
+                break;
+            case MessageType.Text variant_value:
+                stream.WriteInt(7);
+                FfiConverterTypeTextMessageContent.INSTANCE.Write(variant_value.@content, stream);
+                break;
+            case MessageType.Location variant_value:
+                stream.WriteInt(8);
+                FfiConverterTypeLocationContent.INSTANCE.Write(variant_value.@content, stream);
+                break;
+            case MessageType.Other variant_value:
+                stream.WriteInt(9);
+                FfiConverterString.INSTANCE.Write(variant_value.@msgtype, stream);
+                FfiConverterString.INSTANCE.Write(variant_value.@body, stream);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeMessageType.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
+public record NotificationEvent: IDisposable  {
+    
+    public record Timeline (
+        TimelineEvent @event
+    ) : NotificationEvent {}
+    
+    public record Invite (
+        String @sender
+    ) : NotificationEvent {}
+    
+
+    
+    public void Dispose() {
+        switch (this) {
+            case NotificationEvent.Timeline variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@event);
+                break;
+            case NotificationEvent.Invite variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@sender);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in NotificationEvent.Dispose()", this));
+        }
+    }
+    
+}
+
+class FfiConverterTypeNotificationEvent : FfiConverterRustBuffer<NotificationEvent>{
+    public static FfiConverterRustBuffer<NotificationEvent> INSTANCE = new FfiConverterTypeNotificationEvent();
+
+    public override NotificationEvent Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new NotificationEvent.Timeline(
+                    FfiConverterTypeTimelineEvent.INSTANCE.Read(stream)
+                );
+            case 2:
+                return new NotificationEvent.Invite(
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeNotificationEvent.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(NotificationEvent value) {
+        switch (value) {
+            case NotificationEvent.Timeline variant_value:
+                return 4
+                    + FfiConverterTypeTimelineEvent.INSTANCE.AllocationSize(variant_value.@event);
+            case NotificationEvent.Invite variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@sender);
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeNotificationEvent.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(NotificationEvent value, BigEndianStream stream) {
+        switch (value) {
+            case NotificationEvent.Timeline variant_value:
+                stream.WriteInt(1);
+                FfiConverterTypeTimelineEvent.INSTANCE.Write(variant_value.@event, stream);
+                break;
+            case NotificationEvent.Invite variant_value:
+                stream.WriteInt(2);
+                FfiConverterString.INSTANCE.Write(variant_value.@sender, stream);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeNotificationEvent.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
+public record NotificationProcessSetup: IDisposable  {
+    
+    public record MultipleProcesses: NotificationProcessSetup {}
+    
+    
+    public record SingleProcess (
+        SyncService @syncService
+    ) : NotificationProcessSetup {}
+    
+
+    
+    public void Dispose() {
+        switch (this) {
+            case NotificationProcessSetup.MultipleProcesses variant_value:
+                break;
+            case NotificationProcessSetup.SingleProcess variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@syncService);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in NotificationProcessSetup.Dispose()", this));
+        }
+    }
+    
+}
+
+class FfiConverterTypeNotificationProcessSetup : FfiConverterRustBuffer<NotificationProcessSetup>{
+    public static FfiConverterRustBuffer<NotificationProcessSetup> INSTANCE = new FfiConverterTypeNotificationProcessSetup();
+
+    public override NotificationProcessSetup Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new NotificationProcessSetup.MultipleProcesses(
+                );
+            case 2:
+                return new NotificationProcessSetup.SingleProcess(
+                    FfiConverterTypeSyncService.INSTANCE.Read(stream)
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeNotificationProcessSetup.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(NotificationProcessSetup value) {
+        switch (value) {
+            case NotificationProcessSetup.MultipleProcesses variant_value:
+                return 4;
+            case NotificationProcessSetup.SingleProcess variant_value:
+                return 4
+                    + FfiConverterTypeSyncService.INSTANCE.AllocationSize(variant_value.@syncService);
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeNotificationProcessSetup.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(NotificationProcessSetup value, BigEndianStream stream) {
+        switch (value) {
+            case NotificationProcessSetup.MultipleProcesses variant_value:
+                stream.WriteInt(1);
+                break;
+            case NotificationProcessSetup.SingleProcess variant_value:
+                stream.WriteInt(2);
+                FfiConverterTypeSyncService.INSTANCE.Write(variant_value.@syncService, stream);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeNotificationProcessSetup.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
+public class NotificationSettingsException: UniffiException {
+    // Each variant is a nested class
+    
+    
+    public class Generic : NotificationSettingsException {
+        // Members
+        public String @msg;
+
+        // Constructor
+        public Generic(
+                String @msg) {
+            this.@msg = @msg;
+        }
+    }
+    
+    
+    public class InvalidParameter : NotificationSettingsException {
+        // Members
+        public String @msg;
+
+        // Constructor
+        public InvalidParameter(
+                String @msg) {
+            this.@msg = @msg;
+        }
+    }
+    
+    
+    public class InvalidRoomId : NotificationSettingsException {
+        // Members
+        public String @roomId;
+
+        // Constructor
+        public InvalidRoomId(
+                String @roomId) {
+            this.@roomId = @roomId;
+        }
+    }
+    
+    
+    public class RuleNotFound : NotificationSettingsException {
+        // Members
+        public String @ruleId;
+
+        // Constructor
+        public RuleNotFound(
+                String @ruleId) {
+            this.@ruleId = @ruleId;
+        }
+    }
+    
+    public class UnableToAddPushRule : NotificationSettingsException {}
+    
+    
+    public class UnableToRemovePushRule : NotificationSettingsException {}
+    
+    
+    public class UnableToSavePushRules : NotificationSettingsException {}
+    
+    
+    public class UnableToUpdatePushRule : NotificationSettingsException {}
+    
+    
+
+    
+}
+
+class FfiConverterTypeNotificationSettingsException : FfiConverterRustBuffer<NotificationSettingsException>, CallStatusErrorHandler<NotificationSettingsException> {
+    public static FfiConverterTypeNotificationSettingsException INSTANCE = new FfiConverterTypeNotificationSettingsException();
+
+    public override NotificationSettingsException Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new NotificationSettingsException.Generic(
+                    FfiConverterString.INSTANCE.Read(stream));
+            case 2:
+                return new NotificationSettingsException.InvalidParameter(
+                    FfiConverterString.INSTANCE.Read(stream));
+            case 3:
+                return new NotificationSettingsException.InvalidRoomId(
+                    FfiConverterString.INSTANCE.Read(stream));
+            case 4:
+                return new NotificationSettingsException.RuleNotFound(
+                    FfiConverterString.INSTANCE.Read(stream));
+            case 5:
+                return new NotificationSettingsException.UnableToAddPushRule();
+            case 6:
+                return new NotificationSettingsException.UnableToRemovePushRule();
+            case 7:
+                return new NotificationSettingsException.UnableToSavePushRules();
+            case 8:
+                return new NotificationSettingsException.UnableToUpdatePushRule();
+            default:
+                throw new InternalException(String.Format("invalid error value '{0}' in FfiConverterTypeNotificationSettingsException.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(NotificationSettingsException value) {
+        switch (value) {
+            case NotificationSettingsException.Generic variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@msg);
+            case NotificationSettingsException.InvalidParameter variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@msg);
+            case NotificationSettingsException.InvalidRoomId variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@roomId);
+            case NotificationSettingsException.RuleNotFound variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@ruleId);
+            case NotificationSettingsException.UnableToAddPushRule variant_value:
+                return 4;
+            case NotificationSettingsException.UnableToRemovePushRule variant_value:
+                return 4;
+            case NotificationSettingsException.UnableToSavePushRules variant_value:
+                return 4;
+            case NotificationSettingsException.UnableToUpdatePushRule variant_value:
+                return 4;
+            default:
+                throw new InternalException(String.Format("invalid error value '{0}' in FfiConverterTypeNotificationSettingsException.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(NotificationSettingsException value, BigEndianStream stream) {
+        switch (value) {
+            case NotificationSettingsException.Generic variant_value:
+                stream.WriteInt(1);
+                FfiConverterString.INSTANCE.Write(variant_value.@msg, stream);
+                break;
+            case NotificationSettingsException.InvalidParameter variant_value:
+                stream.WriteInt(2);
+                FfiConverterString.INSTANCE.Write(variant_value.@msg, stream);
+                break;
+            case NotificationSettingsException.InvalidRoomId variant_value:
+                stream.WriteInt(3);
+                FfiConverterString.INSTANCE.Write(variant_value.@roomId, stream);
+                break;
+            case NotificationSettingsException.RuleNotFound variant_value:
+                stream.WriteInt(4);
+                FfiConverterString.INSTANCE.Write(variant_value.@ruleId, stream);
+                break;
+            case NotificationSettingsException.UnableToAddPushRule variant_value:
+                stream.WriteInt(5);
+                break;
+            case NotificationSettingsException.UnableToRemovePushRule variant_value:
+                stream.WriteInt(6);
+                break;
+            case NotificationSettingsException.UnableToSavePushRules variant_value:
+                stream.WriteInt(7);
+                break;
+            case NotificationSettingsException.UnableToUpdatePushRule variant_value:
+                stream.WriteInt(8);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid error value '{0}' in FfiConverterTypeNotificationSettingsException.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+public record OtherState {
+    
+    public record PolicyRuleRoom: OtherState {}
+    
+    
+    public record PolicyRuleServer: OtherState {}
+    
+    
+    public record PolicyRuleUser: OtherState {}
+    
+    
+    public record RoomAliases: OtherState {}
+    
+    
+    public record RoomAvatar (
+        String? @url
+    ) : OtherState {}
+    
+    public record RoomCanonicalAlias: OtherState {}
+    
+    
+    public record RoomCreate: OtherState {}
+    
+    
+    public record RoomEncryption: OtherState {}
+    
+    
+    public record RoomGuestAccess: OtherState {}
+    
+    
+    public record RoomHistoryVisibility: OtherState {}
+    
+    
+    public record RoomJoinRules: OtherState {}
+    
+    
+    public record RoomName (
+        String? @name
+    ) : OtherState {}
+    
+    public record RoomPinnedEvents: OtherState {}
+    
+    
+    public record RoomPowerLevels: OtherState {}
+    
+    
+    public record RoomServerAcl: OtherState {}
+    
+    
+    public record RoomThirdPartyInvite (
+        String? @displayName
+    ) : OtherState {}
+    
+    public record RoomTombstone: OtherState {}
+    
+    
+    public record RoomTopic (
+        String? @topic
+    ) : OtherState {}
+    
+    public record SpaceChild: OtherState {}
+    
+    
+    public record SpaceParent: OtherState {}
+    
+    
+    public record Custom (
+        String @eventType
+    ) : OtherState {}
+    
+
+    
+}
+
+class FfiConverterTypeOtherState : FfiConverterRustBuffer<OtherState>{
+    public static FfiConverterRustBuffer<OtherState> INSTANCE = new FfiConverterTypeOtherState();
+
+    public override OtherState Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new OtherState.PolicyRuleRoom(
+                );
+            case 2:
+                return new OtherState.PolicyRuleServer(
+                );
+            case 3:
+                return new OtherState.PolicyRuleUser(
+                );
+            case 4:
+                return new OtherState.RoomAliases(
+                );
+            case 5:
+                return new OtherState.RoomAvatar(
+                    FfiConverterOptionalString.INSTANCE.Read(stream)
+                );
+            case 6:
+                return new OtherState.RoomCanonicalAlias(
+                );
+            case 7:
+                return new OtherState.RoomCreate(
+                );
+            case 8:
+                return new OtherState.RoomEncryption(
+                );
+            case 9:
+                return new OtherState.RoomGuestAccess(
+                );
+            case 10:
+                return new OtherState.RoomHistoryVisibility(
+                );
+            case 11:
+                return new OtherState.RoomJoinRules(
+                );
+            case 12:
+                return new OtherState.RoomName(
+                    FfiConverterOptionalString.INSTANCE.Read(stream)
+                );
+            case 13:
+                return new OtherState.RoomPinnedEvents(
+                );
+            case 14:
+                return new OtherState.RoomPowerLevels(
+                );
+            case 15:
+                return new OtherState.RoomServerAcl(
+                );
+            case 16:
+                return new OtherState.RoomThirdPartyInvite(
+                    FfiConverterOptionalString.INSTANCE.Read(stream)
+                );
+            case 17:
+                return new OtherState.RoomTombstone(
+                );
+            case 18:
+                return new OtherState.RoomTopic(
+                    FfiConverterOptionalString.INSTANCE.Read(stream)
+                );
+            case 19:
+                return new OtherState.SpaceChild(
+                );
+            case 20:
+                return new OtherState.SpaceParent(
+                );
+            case 21:
+                return new OtherState.Custom(
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeOtherState.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(OtherState value) {
+        switch (value) {
+            case OtherState.PolicyRuleRoom variant_value:
+                return 4;
+            case OtherState.PolicyRuleServer variant_value:
+                return 4;
+            case OtherState.PolicyRuleUser variant_value:
+                return 4;
+            case OtherState.RoomAliases variant_value:
+                return 4;
+            case OtherState.RoomAvatar variant_value:
+                return 4
+                    + FfiConverterOptionalString.INSTANCE.AllocationSize(variant_value.@url);
+            case OtherState.RoomCanonicalAlias variant_value:
+                return 4;
+            case OtherState.RoomCreate variant_value:
+                return 4;
+            case OtherState.RoomEncryption variant_value:
+                return 4;
+            case OtherState.RoomGuestAccess variant_value:
+                return 4;
+            case OtherState.RoomHistoryVisibility variant_value:
+                return 4;
+            case OtherState.RoomJoinRules variant_value:
+                return 4;
+            case OtherState.RoomName variant_value:
+                return 4
+                    + FfiConverterOptionalString.INSTANCE.AllocationSize(variant_value.@name);
+            case OtherState.RoomPinnedEvents variant_value:
+                return 4;
+            case OtherState.RoomPowerLevels variant_value:
+                return 4;
+            case OtherState.RoomServerAcl variant_value:
+                return 4;
+            case OtherState.RoomThirdPartyInvite variant_value:
+                return 4
+                    + FfiConverterOptionalString.INSTANCE.AllocationSize(variant_value.@displayName);
+            case OtherState.RoomTombstone variant_value:
+                return 4;
+            case OtherState.RoomTopic variant_value:
+                return 4
+                    + FfiConverterOptionalString.INSTANCE.AllocationSize(variant_value.@topic);
+            case OtherState.SpaceChild variant_value:
+                return 4;
+            case OtherState.SpaceParent variant_value:
+                return 4;
+            case OtherState.Custom variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@eventType);
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeOtherState.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(OtherState value, BigEndianStream stream) {
+        switch (value) {
+            case OtherState.PolicyRuleRoom variant_value:
+                stream.WriteInt(1);
+                break;
+            case OtherState.PolicyRuleServer variant_value:
+                stream.WriteInt(2);
+                break;
+            case OtherState.PolicyRuleUser variant_value:
+                stream.WriteInt(3);
+                break;
+            case OtherState.RoomAliases variant_value:
+                stream.WriteInt(4);
+                break;
+            case OtherState.RoomAvatar variant_value:
+                stream.WriteInt(5);
+                FfiConverterOptionalString.INSTANCE.Write(variant_value.@url, stream);
+                break;
+            case OtherState.RoomCanonicalAlias variant_value:
+                stream.WriteInt(6);
+                break;
+            case OtherState.RoomCreate variant_value:
+                stream.WriteInt(7);
+                break;
+            case OtherState.RoomEncryption variant_value:
+                stream.WriteInt(8);
+                break;
+            case OtherState.RoomGuestAccess variant_value:
+                stream.WriteInt(9);
+                break;
+            case OtherState.RoomHistoryVisibility variant_value:
+                stream.WriteInt(10);
+                break;
+            case OtherState.RoomJoinRules variant_value:
+                stream.WriteInt(11);
+                break;
+            case OtherState.RoomName variant_value:
+                stream.WriteInt(12);
+                FfiConverterOptionalString.INSTANCE.Write(variant_value.@name, stream);
+                break;
+            case OtherState.RoomPinnedEvents variant_value:
+                stream.WriteInt(13);
+                break;
+            case OtherState.RoomPowerLevels variant_value:
+                stream.WriteInt(14);
+                break;
+            case OtherState.RoomServerAcl variant_value:
+                stream.WriteInt(15);
+                break;
+            case OtherState.RoomThirdPartyInvite variant_value:
+                stream.WriteInt(16);
+                FfiConverterOptionalString.INSTANCE.Write(variant_value.@displayName, stream);
+                break;
+            case OtherState.RoomTombstone variant_value:
+                stream.WriteInt(17);
+                break;
+            case OtherState.RoomTopic variant_value:
+                stream.WriteInt(18);
+                FfiConverterOptionalString.INSTANCE.Write(variant_value.@topic, stream);
+                break;
+            case OtherState.SpaceChild variant_value:
+                stream.WriteInt(19);
+                break;
+            case OtherState.SpaceParent variant_value:
+                stream.WriteInt(20);
+                break;
+            case OtherState.Custom variant_value:
+                stream.WriteInt(21);
+                FfiConverterString.INSTANCE.Write(variant_value.@eventType, stream);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeOtherState.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
+public record PaginationOptions {
+    
+    public record SimpleRequest (
+        ushort @eventLimit,bool @waitForToken
+    ) : PaginationOptions {}
+    
+    public record UntilNumItems (
+        ushort @eventLimit,ushort @items,bool @waitForToken
+    ) : PaginationOptions {}
+    
+
+    
+}
+
+class FfiConverterTypePaginationOptions : FfiConverterRustBuffer<PaginationOptions>{
+    public static FfiConverterRustBuffer<PaginationOptions> INSTANCE = new FfiConverterTypePaginationOptions();
+
+    public override PaginationOptions Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new PaginationOptions.SimpleRequest(
+                    FfiConverterUInt16.INSTANCE.Read(stream),
+                    FfiConverterBoolean.INSTANCE.Read(stream)
+                );
+            case 2:
+                return new PaginationOptions.UntilNumItems(
+                    FfiConverterUInt16.INSTANCE.Read(stream),
+                    FfiConverterUInt16.INSTANCE.Read(stream),
+                    FfiConverterBoolean.INSTANCE.Read(stream)
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypePaginationOptions.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(PaginationOptions value) {
+        switch (value) {
+            case PaginationOptions.SimpleRequest variant_value:
+                return 4
+                    + FfiConverterUInt16.INSTANCE.AllocationSize(variant_value.@eventLimit)
+                    + FfiConverterBoolean.INSTANCE.AllocationSize(variant_value.@waitForToken);
+            case PaginationOptions.UntilNumItems variant_value:
+                return 4
+                    + FfiConverterUInt16.INSTANCE.AllocationSize(variant_value.@eventLimit)
+                    + FfiConverterUInt16.INSTANCE.AllocationSize(variant_value.@items)
+                    + FfiConverterBoolean.INSTANCE.AllocationSize(variant_value.@waitForToken);
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypePaginationOptions.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(PaginationOptions value, BigEndianStream stream) {
+        switch (value) {
+            case PaginationOptions.SimpleRequest variant_value:
+                stream.WriteInt(1);
+                FfiConverterUInt16.INSTANCE.Write(variant_value.@eventLimit, stream);
+                FfiConverterBoolean.INSTANCE.Write(variant_value.@waitForToken, stream);
+                break;
+            case PaginationOptions.UntilNumItems variant_value:
+                stream.WriteInt(2);
+                FfiConverterUInt16.INSTANCE.Write(variant_value.@eventLimit, stream);
+                FfiConverterUInt16.INSTANCE.Write(variant_value.@items, stream);
+                FfiConverterBoolean.INSTANCE.Write(variant_value.@waitForToken, stream);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypePaginationOptions.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
+public class ParseException: UniffiException {
+    ParseException(string message): base(message) {}
+
+    // Each variant is a nested class
+    // Flat enums carries a string error message, so no special implementation is necessary.
+    
+    public class EmptyHost: ParseException {
+        public EmptyHost(string message): base(message) {}
+    }
+    
+    public class IdnaException: ParseException {
+        public IdnaException(string message): base(message) {}
+    }
+    
+    public class InvalidPort: ParseException {
+        public InvalidPort(string message): base(message) {}
+    }
+    
+    public class InvalidIpv4Address: ParseException {
+        public InvalidIpv4Address(string message): base(message) {}
+    }
+    
+    public class InvalidIpv6Address: ParseException {
+        public InvalidIpv6Address(string message): base(message) {}
+    }
+    
+    public class InvalidDomainCharacter: ParseException {
+        public InvalidDomainCharacter(string message): base(message) {}
+    }
+    
+    public class RelativeUrlWithoutBase: ParseException {
+        public RelativeUrlWithoutBase(string message): base(message) {}
+    }
+    
+    public class RelativeUrlWithCannotBeABaseBase: ParseException {
+        public RelativeUrlWithCannotBeABaseBase(string message): base(message) {}
+    }
+    
+    public class SetHostOnCannotBeABaseUrl: ParseException {
+        public SetHostOnCannotBeABaseUrl(string message): base(message) {}
+    }
+    
+    public class Overflow: ParseException {
+        public Overflow(string message): base(message) {}
+    }
+    
+    public class Other: ParseException {
+        public Other(string message): base(message) {}
+    }
+    
+}
+
+class FfiConverterTypeParseException : FfiConverterRustBuffer<ParseException>, CallStatusErrorHandler<ParseException> {
+    public static FfiConverterTypeParseException INSTANCE = new FfiConverterTypeParseException();
+
+    public override ParseException Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1: return new ParseException.EmptyHost(FfiConverterString.INSTANCE.Read(stream));
+            case 2: return new ParseException.IdnaException(FfiConverterString.INSTANCE.Read(stream));
+            case 3: return new ParseException.InvalidPort(FfiConverterString.INSTANCE.Read(stream));
+            case 4: return new ParseException.InvalidIpv4Address(FfiConverterString.INSTANCE.Read(stream));
+            case 5: return new ParseException.InvalidIpv6Address(FfiConverterString.INSTANCE.Read(stream));
+            case 6: return new ParseException.InvalidDomainCharacter(FfiConverterString.INSTANCE.Read(stream));
+            case 7: return new ParseException.RelativeUrlWithoutBase(FfiConverterString.INSTANCE.Read(stream));
+            case 8: return new ParseException.RelativeUrlWithCannotBeABaseBase(FfiConverterString.INSTANCE.Read(stream));
+            case 9: return new ParseException.SetHostOnCannotBeABaseUrl(FfiConverterString.INSTANCE.Read(stream));
+            case 10: return new ParseException.Overflow(FfiConverterString.INSTANCE.Read(stream));
+            case 11: return new ParseException.Other(FfiConverterString.INSTANCE.Read(stream));
+            default:
+                throw new InternalException(String.Format("invalid error value '{0}' in FfiConverterTypeParseException.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(ParseException value) {
+        return 4 + FfiConverterString.INSTANCE.AllocationSize(value.Message);
+    }
+
+    public override void Write(ParseException value, BigEndianStream stream) {
+        switch (value) {
+            case ParseException.EmptyHost:
+                stream.WriteInt(1);
+                break;
+            case ParseException.IdnaException:
+                stream.WriteInt(2);
+                break;
+            case ParseException.InvalidPort:
+                stream.WriteInt(3);
+                break;
+            case ParseException.InvalidIpv4Address:
+                stream.WriteInt(4);
+                break;
+            case ParseException.InvalidIpv6Address:
+                stream.WriteInt(5);
+                break;
+            case ParseException.InvalidDomainCharacter:
+                stream.WriteInt(6);
+                break;
+            case ParseException.RelativeUrlWithoutBase:
+                stream.WriteInt(7);
+                break;
+            case ParseException.RelativeUrlWithCannotBeABaseBase:
+                stream.WriteInt(8);
+                break;
+            case ParseException.SetHostOnCannotBeABaseUrl:
+                stream.WriteInt(9);
+                break;
+            case ParseException.Overflow:
+                stream.WriteInt(10);
+                break;
+            case ParseException.Other:
+                stream.WriteInt(11);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid error value '{0}' in FfiConverterTypeParseException.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+public enum PollKind: int {
+    
+    Disclosed,
+    Undisclosed
+}
+
+class FfiConverterTypePollKind: FfiConverterRustBuffer<PollKind> {
+    public static FfiConverterTypePollKind INSTANCE = new FfiConverterTypePollKind();
+
+    public override PollKind Read(BigEndianStream stream) {
+        var value = stream.ReadInt() - 1;
+        if (Enum.IsDefined(typeof(PollKind), value)) {
+            return (PollKind)value;
+        } else {
+            throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypePollKind.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(PollKind value) {
+        return 4;
+    }
+
+    public override void Write(PollKind value, BigEndianStream stream) {
+        stream.WriteInt((int)value + 1);
+    }
+}
+
+
+
+
+
+
+
+public record ProfileDetails {
+    
+    public record Unavailable: ProfileDetails {}
+    
+    
+    public record Pending: ProfileDetails {}
+    
+    
+    public record Ready (
+        String? @displayName,bool @displayNameAmbiguous,String? @avatarUrl
+    ) : ProfileDetails {}
+    
+    public record Error (
+        String @message
+    ) : ProfileDetails {}
+    
+
+    
+}
+
+class FfiConverterTypeProfileDetails : FfiConverterRustBuffer<ProfileDetails>{
+    public static FfiConverterRustBuffer<ProfileDetails> INSTANCE = new FfiConverterTypeProfileDetails();
+
+    public override ProfileDetails Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new ProfileDetails.Unavailable(
+                );
+            case 2:
+                return new ProfileDetails.Pending(
+                );
+            case 3:
+                return new ProfileDetails.Ready(
+                    FfiConverterOptionalString.INSTANCE.Read(stream),
+                    FfiConverterBoolean.INSTANCE.Read(stream),
+                    FfiConverterOptionalString.INSTANCE.Read(stream)
+                );
+            case 4:
+                return new ProfileDetails.Error(
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeProfileDetails.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(ProfileDetails value) {
+        switch (value) {
+            case ProfileDetails.Unavailable variant_value:
+                return 4;
+            case ProfileDetails.Pending variant_value:
+                return 4;
+            case ProfileDetails.Ready variant_value:
+                return 4
+                    + FfiConverterOptionalString.INSTANCE.AllocationSize(variant_value.@displayName)
+                    + FfiConverterBoolean.INSTANCE.AllocationSize(variant_value.@displayNameAmbiguous)
+                    + FfiConverterOptionalString.INSTANCE.AllocationSize(variant_value.@avatarUrl);
+            case ProfileDetails.Error variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@message);
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeProfileDetails.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(ProfileDetails value, BigEndianStream stream) {
+        switch (value) {
+            case ProfileDetails.Unavailable variant_value:
+                stream.WriteInt(1);
+                break;
+            case ProfileDetails.Pending variant_value:
+                stream.WriteInt(2);
+                break;
+            case ProfileDetails.Ready variant_value:
+                stream.WriteInt(3);
+                FfiConverterOptionalString.INSTANCE.Write(variant_value.@displayName, stream);
+                FfiConverterBoolean.INSTANCE.Write(variant_value.@displayNameAmbiguous, stream);
+                FfiConverterOptionalString.INSTANCE.Write(variant_value.@avatarUrl, stream);
+                break;
+            case ProfileDetails.Error variant_value:
+                stream.WriteInt(4);
+                FfiConverterString.INSTANCE.Write(variant_value.@message, stream);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeProfileDetails.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
+public enum PushFormat: int {
+    
+    EventIdOnly
+}
+
+class FfiConverterTypePushFormat: FfiConverterRustBuffer<PushFormat> {
+    public static FfiConverterTypePushFormat INSTANCE = new FfiConverterTypePushFormat();
+
+    public override PushFormat Read(BigEndianStream stream) {
+        var value = stream.ReadInt() - 1;
+        if (Enum.IsDefined(typeof(PushFormat), value)) {
+            return (PushFormat)value;
+        } else {
+            throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypePushFormat.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(PushFormat value) {
+        return 4;
+    }
+
+    public override void Write(PushFormat value, BigEndianStream stream) {
+        stream.WriteInt((int)value + 1);
+    }
+}
+
+
+
+
+
+
+
+public record PusherKind {
+    
+    public record Http (
+        HttpPusherData @data
+    ) : PusherKind {}
+    
+    public record Email: PusherKind {}
+    
+    
+
+    
+}
+
+class FfiConverterTypePusherKind : FfiConverterRustBuffer<PusherKind>{
+    public static FfiConverterRustBuffer<PusherKind> INSTANCE = new FfiConverterTypePusherKind();
+
+    public override PusherKind Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new PusherKind.Http(
+                    FfiConverterTypeHttpPusherData.INSTANCE.Read(stream)
+                );
+            case 2:
+                return new PusherKind.Email(
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypePusherKind.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(PusherKind value) {
+        switch (value) {
+            case PusherKind.Http variant_value:
+                return 4
+                    + FfiConverterTypeHttpPusherData.INSTANCE.AllocationSize(variant_value.@data);
+            case PusherKind.Email variant_value:
+                return 4;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypePusherKind.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(PusherKind value, BigEndianStream stream) {
+        switch (value) {
+            case PusherKind.Http variant_value:
+                stream.WriteInt(1);
+                FfiConverterTypeHttpPusherData.INSTANCE.Write(variant_value.@data, stream);
+                break;
+            case PusherKind.Email variant_value:
+                stream.WriteInt(2);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypePusherKind.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
+public record RepliedToEventDetails: IDisposable  {
+    
+    public record Unavailable: RepliedToEventDetails {}
+    
+    
+    public record Pending: RepliedToEventDetails {}
+    
+    
+    public record Ready (
+        TimelineItemContent @content,String @sender,ProfileDetails @senderProfile
+    ) : RepliedToEventDetails {}
+    
+    public record Error (
+        String @message
+    ) : RepliedToEventDetails {}
+    
+
+    
+    public void Dispose() {
+        switch (this) {
+            case RepliedToEventDetails.Unavailable variant_value:
+                break;
+            case RepliedToEventDetails.Pending variant_value:
+                break;
+            case RepliedToEventDetails.Ready variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@content,
+            variant_value.@sender,
+            variant_value.@senderProfile);
+                break;
+            case RepliedToEventDetails.Error variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@message);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in RepliedToEventDetails.Dispose()", this));
+        }
+    }
+    
+}
+
+class FfiConverterTypeRepliedToEventDetails : FfiConverterRustBuffer<RepliedToEventDetails>{
+    public static FfiConverterRustBuffer<RepliedToEventDetails> INSTANCE = new FfiConverterTypeRepliedToEventDetails();
+
+    public override RepliedToEventDetails Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new RepliedToEventDetails.Unavailable(
+                );
+            case 2:
+                return new RepliedToEventDetails.Pending(
+                );
+            case 3:
+                return new RepliedToEventDetails.Ready(
+                    FfiConverterTypeTimelineItemContent.INSTANCE.Read(stream),
+                    FfiConverterString.INSTANCE.Read(stream),
+                    FfiConverterTypeProfileDetails.INSTANCE.Read(stream)
+                );
+            case 4:
+                return new RepliedToEventDetails.Error(
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeRepliedToEventDetails.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(RepliedToEventDetails value) {
+        switch (value) {
+            case RepliedToEventDetails.Unavailable variant_value:
+                return 4;
+            case RepliedToEventDetails.Pending variant_value:
+                return 4;
+            case RepliedToEventDetails.Ready variant_value:
+                return 4
+                    + FfiConverterTypeTimelineItemContent.INSTANCE.AllocationSize(variant_value.@content)
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@sender)
+                    + FfiConverterTypeProfileDetails.INSTANCE.AllocationSize(variant_value.@senderProfile);
+            case RepliedToEventDetails.Error variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@message);
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeRepliedToEventDetails.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(RepliedToEventDetails value, BigEndianStream stream) {
+        switch (value) {
+            case RepliedToEventDetails.Unavailable variant_value:
+                stream.WriteInt(1);
+                break;
+            case RepliedToEventDetails.Pending variant_value:
+                stream.WriteInt(2);
+                break;
+            case RepliedToEventDetails.Ready variant_value:
+                stream.WriteInt(3);
+                FfiConverterTypeTimelineItemContent.INSTANCE.Write(variant_value.@content, stream);
+                FfiConverterString.INSTANCE.Write(variant_value.@sender, stream);
+                FfiConverterTypeProfileDetails.INSTANCE.Write(variant_value.@senderProfile, stream);
+                break;
+            case RepliedToEventDetails.Error variant_value:
+                stream.WriteInt(4);
+                FfiConverterString.INSTANCE.Write(variant_value.@message, stream);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeRepliedToEventDetails.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
+public class RoomException: UniffiException {
+    RoomException(string message): base(message) {}
+
+    // Each variant is a nested class
+    // Flat enums carries a string error message, so no special implementation is necessary.
+    
+    public class InvalidAttachmentData: RoomException {
+        public InvalidAttachmentData(string message): base(message) {}
+    }
+    
+    public class InvalidAttachmentMimeType: RoomException {
+        public InvalidAttachmentMimeType(string message): base(message) {}
+    }
+    
+    public class InvalidMediaInfo: RoomException {
+        public InvalidMediaInfo(string message): base(message) {}
+    }
+    
+    public class TimelineUnavailable: RoomException {
+        public TimelineUnavailable(string message): base(message) {}
+    }
+    
+    public class InvalidThumbnailData: RoomException {
+        public InvalidThumbnailData(string message): base(message) {}
+    }
+    
+    public class FailedSendingAttachment: RoomException {
+        public FailedSendingAttachment(string message): base(message) {}
+    }
+    
+}
+
+class FfiConverterTypeRoomException : FfiConverterRustBuffer<RoomException>, CallStatusErrorHandler<RoomException> {
+    public static FfiConverterTypeRoomException INSTANCE = new FfiConverterTypeRoomException();
+
+    public override RoomException Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1: return new RoomException.InvalidAttachmentData(FfiConverterString.INSTANCE.Read(stream));
+            case 2: return new RoomException.InvalidAttachmentMimeType(FfiConverterString.INSTANCE.Read(stream));
+            case 3: return new RoomException.InvalidMediaInfo(FfiConverterString.INSTANCE.Read(stream));
+            case 4: return new RoomException.TimelineUnavailable(FfiConverterString.INSTANCE.Read(stream));
+            case 5: return new RoomException.InvalidThumbnailData(FfiConverterString.INSTANCE.Read(stream));
+            case 6: return new RoomException.FailedSendingAttachment(FfiConverterString.INSTANCE.Read(stream));
+            default:
+                throw new InternalException(String.Format("invalid error value '{0}' in FfiConverterTypeRoomException.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(RoomException value) {
+        return 4 + FfiConverterString.INSTANCE.AllocationSize(value.Message);
+    }
+
+    public override void Write(RoomException value, BigEndianStream stream) {
+        switch (value) {
+            case RoomException.InvalidAttachmentData:
+                stream.WriteInt(1);
+                break;
+            case RoomException.InvalidAttachmentMimeType:
+                stream.WriteInt(2);
+                break;
+            case RoomException.InvalidMediaInfo:
+                stream.WriteInt(3);
+                break;
+            case RoomException.TimelineUnavailable:
+                stream.WriteInt(4);
+                break;
+            case RoomException.InvalidThumbnailData:
+                stream.WriteInt(5);
+                break;
+            case RoomException.FailedSendingAttachment:
+                stream.WriteInt(6);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid error value '{0}' in FfiConverterTypeRoomException.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+public record RoomListEntriesDynamicFilterKind {
+    
+    public record All: RoomListEntriesDynamicFilterKind {}
+    
+    
+    public record None: RoomListEntriesDynamicFilterKind {}
+    
+    
+    public record NormalizedMatchRoomName (
+        String @pattern
+    ) : RoomListEntriesDynamicFilterKind {}
+    
+    public record FuzzyMatchRoomName (
+        String @pattern
+    ) : RoomListEntriesDynamicFilterKind {}
+    
+
+    
+}
+
+class FfiConverterTypeRoomListEntriesDynamicFilterKind : FfiConverterRustBuffer<RoomListEntriesDynamicFilterKind>{
+    public static FfiConverterRustBuffer<RoomListEntriesDynamicFilterKind> INSTANCE = new FfiConverterTypeRoomListEntriesDynamicFilterKind();
+
+    public override RoomListEntriesDynamicFilterKind Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new RoomListEntriesDynamicFilterKind.All(
+                );
+            case 2:
+                return new RoomListEntriesDynamicFilterKind.None(
+                );
+            case 3:
+                return new RoomListEntriesDynamicFilterKind.NormalizedMatchRoomName(
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            case 4:
+                return new RoomListEntriesDynamicFilterKind.FuzzyMatchRoomName(
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeRoomListEntriesDynamicFilterKind.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(RoomListEntriesDynamicFilterKind value) {
+        switch (value) {
+            case RoomListEntriesDynamicFilterKind.All variant_value:
+                return 4;
+            case RoomListEntriesDynamicFilterKind.None variant_value:
+                return 4;
+            case RoomListEntriesDynamicFilterKind.NormalizedMatchRoomName variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@pattern);
+            case RoomListEntriesDynamicFilterKind.FuzzyMatchRoomName variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@pattern);
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeRoomListEntriesDynamicFilterKind.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(RoomListEntriesDynamicFilterKind value, BigEndianStream stream) {
+        switch (value) {
+            case RoomListEntriesDynamicFilterKind.All variant_value:
+                stream.WriteInt(1);
+                break;
+            case RoomListEntriesDynamicFilterKind.None variant_value:
+                stream.WriteInt(2);
+                break;
+            case RoomListEntriesDynamicFilterKind.NormalizedMatchRoomName variant_value:
+                stream.WriteInt(3);
+                FfiConverterString.INSTANCE.Write(variant_value.@pattern, stream);
+                break;
+            case RoomListEntriesDynamicFilterKind.FuzzyMatchRoomName variant_value:
+                stream.WriteInt(4);
+                FfiConverterString.INSTANCE.Write(variant_value.@pattern, stream);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeRoomListEntriesDynamicFilterKind.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
+public record RoomListEntriesUpdate {
+    
+    public record Append (
+        List<RoomListEntry> @values
+    ) : RoomListEntriesUpdate {}
+    
+    public record Clear: RoomListEntriesUpdate {}
+    
+    
+    public record PushFront (
+        RoomListEntry @value
+    ) : RoomListEntriesUpdate {}
+    
+    public record PushBack (
+        RoomListEntry @value
+    ) : RoomListEntriesUpdate {}
+    
+    public record PopFront: RoomListEntriesUpdate {}
+    
+    
+    public record PopBack: RoomListEntriesUpdate {}
+    
+    
+    public record Insert (
+        uint @index,RoomListEntry @value
+    ) : RoomListEntriesUpdate {}
+    
+    public record Set (
+        uint @index,RoomListEntry @value
+    ) : RoomListEntriesUpdate {}
+    
+    public record Remove (
+        uint @index
+    ) : RoomListEntriesUpdate {}
+    
+    public record Truncate (
+        uint @length
+    ) : RoomListEntriesUpdate {}
+    
+    public record Reset (
+        List<RoomListEntry> @values
+    ) : RoomListEntriesUpdate {}
+    
+
+    
+}
+
+class FfiConverterTypeRoomListEntriesUpdate : FfiConverterRustBuffer<RoomListEntriesUpdate>{
+    public static FfiConverterRustBuffer<RoomListEntriesUpdate> INSTANCE = new FfiConverterTypeRoomListEntriesUpdate();
+
+    public override RoomListEntriesUpdate Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new RoomListEntriesUpdate.Append(
+                    FfiConverterSequenceTypeRoomListEntry.INSTANCE.Read(stream)
+                );
+            case 2:
+                return new RoomListEntriesUpdate.Clear(
+                );
+            case 3:
+                return new RoomListEntriesUpdate.PushFront(
+                    FfiConverterTypeRoomListEntry.INSTANCE.Read(stream)
+                );
+            case 4:
+                return new RoomListEntriesUpdate.PushBack(
+                    FfiConverterTypeRoomListEntry.INSTANCE.Read(stream)
+                );
+            case 5:
+                return new RoomListEntriesUpdate.PopFront(
+                );
+            case 6:
+                return new RoomListEntriesUpdate.PopBack(
+                );
+            case 7:
+                return new RoomListEntriesUpdate.Insert(
+                    FfiConverterUInt32.INSTANCE.Read(stream),
+                    FfiConverterTypeRoomListEntry.INSTANCE.Read(stream)
+                );
+            case 8:
+                return new RoomListEntriesUpdate.Set(
+                    FfiConverterUInt32.INSTANCE.Read(stream),
+                    FfiConverterTypeRoomListEntry.INSTANCE.Read(stream)
+                );
+            case 9:
+                return new RoomListEntriesUpdate.Remove(
+                    FfiConverterUInt32.INSTANCE.Read(stream)
+                );
+            case 10:
+                return new RoomListEntriesUpdate.Truncate(
+                    FfiConverterUInt32.INSTANCE.Read(stream)
+                );
+            case 11:
+                return new RoomListEntriesUpdate.Reset(
+                    FfiConverterSequenceTypeRoomListEntry.INSTANCE.Read(stream)
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeRoomListEntriesUpdate.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(RoomListEntriesUpdate value) {
+        switch (value) {
+            case RoomListEntriesUpdate.Append variant_value:
+                return 4
+                    + FfiConverterSequenceTypeRoomListEntry.INSTANCE.AllocationSize(variant_value.@values);
+            case RoomListEntriesUpdate.Clear variant_value:
+                return 4;
+            case RoomListEntriesUpdate.PushFront variant_value:
+                return 4
+                    + FfiConverterTypeRoomListEntry.INSTANCE.AllocationSize(variant_value.@value);
+            case RoomListEntriesUpdate.PushBack variant_value:
+                return 4
+                    + FfiConverterTypeRoomListEntry.INSTANCE.AllocationSize(variant_value.@value);
+            case RoomListEntriesUpdate.PopFront variant_value:
+                return 4;
+            case RoomListEntriesUpdate.PopBack variant_value:
+                return 4;
+            case RoomListEntriesUpdate.Insert variant_value:
+                return 4
+                    + FfiConverterUInt32.INSTANCE.AllocationSize(variant_value.@index)
+                    + FfiConverterTypeRoomListEntry.INSTANCE.AllocationSize(variant_value.@value);
+            case RoomListEntriesUpdate.Set variant_value:
+                return 4
+                    + FfiConverterUInt32.INSTANCE.AllocationSize(variant_value.@index)
+                    + FfiConverterTypeRoomListEntry.INSTANCE.AllocationSize(variant_value.@value);
+            case RoomListEntriesUpdate.Remove variant_value:
+                return 4
+                    + FfiConverterUInt32.INSTANCE.AllocationSize(variant_value.@index);
+            case RoomListEntriesUpdate.Truncate variant_value:
+                return 4
+                    + FfiConverterUInt32.INSTANCE.AllocationSize(variant_value.@length);
+            case RoomListEntriesUpdate.Reset variant_value:
+                return 4
+                    + FfiConverterSequenceTypeRoomListEntry.INSTANCE.AllocationSize(variant_value.@values);
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeRoomListEntriesUpdate.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(RoomListEntriesUpdate value, BigEndianStream stream) {
+        switch (value) {
+            case RoomListEntriesUpdate.Append variant_value:
+                stream.WriteInt(1);
+                FfiConverterSequenceTypeRoomListEntry.INSTANCE.Write(variant_value.@values, stream);
+                break;
+            case RoomListEntriesUpdate.Clear variant_value:
+                stream.WriteInt(2);
+                break;
+            case RoomListEntriesUpdate.PushFront variant_value:
+                stream.WriteInt(3);
+                FfiConverterTypeRoomListEntry.INSTANCE.Write(variant_value.@value, stream);
+                break;
+            case RoomListEntriesUpdate.PushBack variant_value:
+                stream.WriteInt(4);
+                FfiConverterTypeRoomListEntry.INSTANCE.Write(variant_value.@value, stream);
+                break;
+            case RoomListEntriesUpdate.PopFront variant_value:
+                stream.WriteInt(5);
+                break;
+            case RoomListEntriesUpdate.PopBack variant_value:
+                stream.WriteInt(6);
+                break;
+            case RoomListEntriesUpdate.Insert variant_value:
+                stream.WriteInt(7);
+                FfiConverterUInt32.INSTANCE.Write(variant_value.@index, stream);
+                FfiConverterTypeRoomListEntry.INSTANCE.Write(variant_value.@value, stream);
+                break;
+            case RoomListEntriesUpdate.Set variant_value:
+                stream.WriteInt(8);
+                FfiConverterUInt32.INSTANCE.Write(variant_value.@index, stream);
+                FfiConverterTypeRoomListEntry.INSTANCE.Write(variant_value.@value, stream);
+                break;
+            case RoomListEntriesUpdate.Remove variant_value:
+                stream.WriteInt(9);
+                FfiConverterUInt32.INSTANCE.Write(variant_value.@index, stream);
+                break;
+            case RoomListEntriesUpdate.Truncate variant_value:
+                stream.WriteInt(10);
+                FfiConverterUInt32.INSTANCE.Write(variant_value.@length, stream);
+                break;
+            case RoomListEntriesUpdate.Reset variant_value:
+                stream.WriteInt(11);
+                FfiConverterSequenceTypeRoomListEntry.INSTANCE.Write(variant_value.@values, stream);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeRoomListEntriesUpdate.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
+public record RoomListEntry {
+    
+    public record Empty: RoomListEntry {}
+    
+    
+    public record Invalidated (
+        String @roomId
+    ) : RoomListEntry {}
+    
+    public record Filled (
+        String @roomId
+    ) : RoomListEntry {}
+    
+
+    
+}
+
+class FfiConverterTypeRoomListEntry : FfiConverterRustBuffer<RoomListEntry>{
+    public static FfiConverterRustBuffer<RoomListEntry> INSTANCE = new FfiConverterTypeRoomListEntry();
+
+    public override RoomListEntry Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new RoomListEntry.Empty(
+                );
+            case 2:
+                return new RoomListEntry.Invalidated(
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            case 3:
+                return new RoomListEntry.Filled(
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeRoomListEntry.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(RoomListEntry value) {
+        switch (value) {
+            case RoomListEntry.Empty variant_value:
+                return 4;
+            case RoomListEntry.Invalidated variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@roomId);
+            case RoomListEntry.Filled variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@roomId);
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeRoomListEntry.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(RoomListEntry value, BigEndianStream stream) {
+        switch (value) {
+            case RoomListEntry.Empty variant_value:
+                stream.WriteInt(1);
+                break;
+            case RoomListEntry.Invalidated variant_value:
+                stream.WriteInt(2);
+                FfiConverterString.INSTANCE.Write(variant_value.@roomId, stream);
+                break;
+            case RoomListEntry.Filled variant_value:
+                stream.WriteInt(3);
+                FfiConverterString.INSTANCE.Write(variant_value.@roomId, stream);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeRoomListEntry.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
+public class RoomListException: UniffiException {
+    // Each variant is a nested class
+    
+    
+    public class SlidingSync : RoomListException {
+        // Members
+        public String @error;
+
+        // Constructor
+        public SlidingSync(
+                String @error) {
+            this.@error = @error;
+        }
+    }
+    
+    
+    public class UnknownList : RoomListException {
+        // Members
+        public String @listName;
+
+        // Constructor
+        public UnknownList(
+                String @listName) {
+            this.@listName = @listName;
+        }
+    }
+    
+    public class InputCannotBeApplied : RoomListException {}
+    
+    
+    
+    public class RoomNotFound : RoomListException {
+        // Members
+        public String @roomName;
+
+        // Constructor
+        public RoomNotFound(
+                String @roomName) {
+            this.@roomName = @roomName;
+        }
+    }
+    
+    
+    public class InvalidRoomId : RoomListException {
+        // Members
+        public String @error;
+
+        // Constructor
+        public InvalidRoomId(
+                String @error) {
+            this.@error = @error;
+        }
+    }
+    
+
+    
+}
+
+class FfiConverterTypeRoomListException : FfiConverterRustBuffer<RoomListException>, CallStatusErrorHandler<RoomListException> {
+    public static FfiConverterTypeRoomListException INSTANCE = new FfiConverterTypeRoomListException();
+
+    public override RoomListException Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new RoomListException.SlidingSync(
+                    FfiConverterString.INSTANCE.Read(stream));
+            case 2:
+                return new RoomListException.UnknownList(
+                    FfiConverterString.INSTANCE.Read(stream));
+            case 3:
+                return new RoomListException.InputCannotBeApplied();
+            case 4:
+                return new RoomListException.RoomNotFound(
+                    FfiConverterString.INSTANCE.Read(stream));
+            case 5:
+                return new RoomListException.InvalidRoomId(
+                    FfiConverterString.INSTANCE.Read(stream));
+            default:
+                throw new InternalException(String.Format("invalid error value '{0}' in FfiConverterTypeRoomListException.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(RoomListException value) {
+        switch (value) {
+            case RoomListException.SlidingSync variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@error);
+            case RoomListException.UnknownList variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@listName);
+            case RoomListException.InputCannotBeApplied variant_value:
+                return 4;
+            case RoomListException.RoomNotFound variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@roomName);
+            case RoomListException.InvalidRoomId variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@error);
+            default:
+                throw new InternalException(String.Format("invalid error value '{0}' in FfiConverterTypeRoomListException.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(RoomListException value, BigEndianStream stream) {
+        switch (value) {
+            case RoomListException.SlidingSync variant_value:
+                stream.WriteInt(1);
+                FfiConverterString.INSTANCE.Write(variant_value.@error, stream);
+                break;
+            case RoomListException.UnknownList variant_value:
+                stream.WriteInt(2);
+                FfiConverterString.INSTANCE.Write(variant_value.@listName, stream);
+                break;
+            case RoomListException.InputCannotBeApplied variant_value:
+                stream.WriteInt(3);
+                break;
+            case RoomListException.RoomNotFound variant_value:
+                stream.WriteInt(4);
+                FfiConverterString.INSTANCE.Write(variant_value.@roomName, stream);
+                break;
+            case RoomListException.InvalidRoomId variant_value:
+                stream.WriteInt(5);
+                FfiConverterString.INSTANCE.Write(variant_value.@error, stream);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid error value '{0}' in FfiConverterTypeRoomListException.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+public record RoomListInput {
+    
+    public record Viewport (
+        List<RoomListRange> @ranges
+    ) : RoomListInput {}
+    
+
+    
+}
+
+class FfiConverterTypeRoomListInput : FfiConverterRustBuffer<RoomListInput>{
+    public static FfiConverterRustBuffer<RoomListInput> INSTANCE = new FfiConverterTypeRoomListInput();
+
+    public override RoomListInput Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new RoomListInput.Viewport(
+                    FfiConverterSequenceTypeRoomListRange.INSTANCE.Read(stream)
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeRoomListInput.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(RoomListInput value) {
+        switch (value) {
+            case RoomListInput.Viewport variant_value:
+                return 4
+                    + FfiConverterSequenceTypeRoomListRange.INSTANCE.AllocationSize(variant_value.@ranges);
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeRoomListInput.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(RoomListInput value, BigEndianStream stream) {
+        switch (value) {
+            case RoomListInput.Viewport variant_value:
+                stream.WriteInt(1);
+                FfiConverterSequenceTypeRoomListRange.INSTANCE.Write(variant_value.@ranges, stream);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeRoomListInput.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
+public record RoomListLoadingState {
+    
+    public record NotLoaded: RoomListLoadingState {}
+    
+    
+    public record Loaded (
+        uint? @maximumNumberOfRooms
+    ) : RoomListLoadingState {}
+    
+
+    
+}
+
+class FfiConverterTypeRoomListLoadingState : FfiConverterRustBuffer<RoomListLoadingState>{
+    public static FfiConverterRustBuffer<RoomListLoadingState> INSTANCE = new FfiConverterTypeRoomListLoadingState();
+
+    public override RoomListLoadingState Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new RoomListLoadingState.NotLoaded(
+                );
+            case 2:
+                return new RoomListLoadingState.Loaded(
+                    FfiConverterOptionalUInt32.INSTANCE.Read(stream)
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeRoomListLoadingState.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(RoomListLoadingState value) {
+        switch (value) {
+            case RoomListLoadingState.NotLoaded variant_value:
+                return 4;
+            case RoomListLoadingState.Loaded variant_value:
+                return 4
+                    + FfiConverterOptionalUInt32.INSTANCE.AllocationSize(variant_value.@maximumNumberOfRooms);
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeRoomListLoadingState.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(RoomListLoadingState value, BigEndianStream stream) {
+        switch (value) {
+            case RoomListLoadingState.NotLoaded variant_value:
+                stream.WriteInt(1);
+                break;
+            case RoomListLoadingState.Loaded variant_value:
+                stream.WriteInt(2);
+                FfiConverterOptionalUInt32.INSTANCE.Write(variant_value.@maximumNumberOfRooms, stream);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeRoomListLoadingState.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
+public enum RoomListServiceState: int {
+    
+    Initial,
+    SettingUp,
+    Recovering,
+    Running,
+    Error,
+    Terminated
+}
+
+class FfiConverterTypeRoomListServiceState: FfiConverterRustBuffer<RoomListServiceState> {
+    public static FfiConverterTypeRoomListServiceState INSTANCE = new FfiConverterTypeRoomListServiceState();
+
+    public override RoomListServiceState Read(BigEndianStream stream) {
+        var value = stream.ReadInt() - 1;
+        if (Enum.IsDefined(typeof(RoomListServiceState), value)) {
+            return (RoomListServiceState)value;
+        } else {
+            throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeRoomListServiceState.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(RoomListServiceState value) {
+        return 4;
+    }
+
+    public override void Write(RoomListServiceState value, BigEndianStream stream) {
+        stream.WriteInt((int)value + 1);
+    }
+}
+
+
+
+
+
+
+
+public enum RoomListServiceSyncIndicator: int {
+    
+    Show,
+    Hide
+}
+
+class FfiConverterTypeRoomListServiceSyncIndicator: FfiConverterRustBuffer<RoomListServiceSyncIndicator> {
+    public static FfiConverterTypeRoomListServiceSyncIndicator INSTANCE = new FfiConverterTypeRoomListServiceSyncIndicator();
+
+    public override RoomListServiceSyncIndicator Read(BigEndianStream stream) {
+        var value = stream.ReadInt() - 1;
+        if (Enum.IsDefined(typeof(RoomListServiceSyncIndicator), value)) {
+            return (RoomListServiceSyncIndicator)value;
+        } else {
+            throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeRoomListServiceSyncIndicator.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(RoomListServiceSyncIndicator value) {
+        return 4;
+    }
+
+    public override void Write(RoomListServiceSyncIndicator value, BigEndianStream stream) {
+        stream.WriteInt((int)value + 1);
+    }
+}
+
+
+
+
+
+
+
+public enum RoomNotificationMode: int {
+    
+    AllMessages,
+    MentionsAndKeywordsOnly,
+    Mute
+}
+
+class FfiConverterTypeRoomNotificationMode: FfiConverterRustBuffer<RoomNotificationMode> {
+    public static FfiConverterTypeRoomNotificationMode INSTANCE = new FfiConverterTypeRoomNotificationMode();
+
+    public override RoomNotificationMode Read(BigEndianStream stream) {
+        var value = stream.ReadInt() - 1;
+        if (Enum.IsDefined(typeof(RoomNotificationMode), value)) {
+            return (RoomNotificationMode)value;
+        } else {
+            throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeRoomNotificationMode.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(RoomNotificationMode value) {
+        return 4;
+    }
+
+    public override void Write(RoomNotificationMode value, BigEndianStream stream) {
+        stream.WriteInt((int)value + 1);
+    }
+}
+
+
+
+
+
+
+
+public enum RoomPreset: int {
+    
+    PrivateChat,
+    PublicChat,
+    TrustedPrivateChat
+}
+
+class FfiConverterTypeRoomPreset: FfiConverterRustBuffer<RoomPreset> {
+    public static FfiConverterTypeRoomPreset INSTANCE = new FfiConverterTypeRoomPreset();
+
+    public override RoomPreset Read(BigEndianStream stream) {
+        var value = stream.ReadInt() - 1;
+        if (Enum.IsDefined(typeof(RoomPreset), value)) {
+            return (RoomPreset)value;
+        } else {
+            throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeRoomPreset.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(RoomPreset value) {
+        return 4;
+    }
+
+    public override void Write(RoomPreset value, BigEndianStream stream) {
+        stream.WriteInt((int)value + 1);
+    }
+}
+
+
+
+
+
+
+
+public enum RoomVisibility: int {
+    
+    Public,
+    Private
+}
+
+class FfiConverterTypeRoomVisibility: FfiConverterRustBuffer<RoomVisibility> {
+    public static FfiConverterTypeRoomVisibility INSTANCE = new FfiConverterTypeRoomVisibility();
+
+    public override RoomVisibility Read(BigEndianStream stream) {
+        var value = stream.ReadInt() - 1;
+        if (Enum.IsDefined(typeof(RoomVisibility), value)) {
+            return (RoomVisibility)value;
+        } else {
+            throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeRoomVisibility.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(RoomVisibility value) {
+        return 4;
+    }
+
+    public override void Write(RoomVisibility value, BigEndianStream stream) {
+        stream.WriteInt((int)value + 1);
+    }
+}
+
+
+
+
+
+
+
+public record StateEventContent {
+    
+    public record PolicyRuleRoom: StateEventContent {}
+    
+    
+    public record PolicyRuleServer: StateEventContent {}
+    
+    
+    public record PolicyRuleUser: StateEventContent {}
+    
+    
+    public record RoomAliases: StateEventContent {}
+    
+    
+    public record RoomAvatar: StateEventContent {}
+    
+    
+    public record RoomCanonicalAlias: StateEventContent {}
+    
+    
+    public record RoomCreate: StateEventContent {}
+    
+    
+    public record RoomEncryption: StateEventContent {}
+    
+    
+    public record RoomGuestAccess: StateEventContent {}
+    
+    
+    public record RoomHistoryVisibility: StateEventContent {}
+    
+    
+    public record RoomJoinRules: StateEventContent {}
+    
+    
+    public record RoomMemberContent (
+        String @userId,MembershipState @membershipState
+    ) : StateEventContent {}
+    
+    public record RoomName: StateEventContent {}
+    
+    
+    public record RoomPinnedEvents: StateEventContent {}
+    
+    
+    public record RoomPowerLevels: StateEventContent {}
+    
+    
+    public record RoomServerAcl: StateEventContent {}
+    
+    
+    public record RoomThirdPartyInvite: StateEventContent {}
+    
+    
+    public record RoomTombstone: StateEventContent {}
+    
+    
+    public record RoomTopic: StateEventContent {}
+    
+    
+    public record SpaceChild: StateEventContent {}
+    
+    
+    public record SpaceParent: StateEventContent {}
+    
+    
+
+    
+}
+
+class FfiConverterTypeStateEventContent : FfiConverterRustBuffer<StateEventContent>{
+    public static FfiConverterRustBuffer<StateEventContent> INSTANCE = new FfiConverterTypeStateEventContent();
+
+    public override StateEventContent Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new StateEventContent.PolicyRuleRoom(
+                );
+            case 2:
+                return new StateEventContent.PolicyRuleServer(
+                );
+            case 3:
+                return new StateEventContent.PolicyRuleUser(
+                );
+            case 4:
+                return new StateEventContent.RoomAliases(
+                );
+            case 5:
+                return new StateEventContent.RoomAvatar(
+                );
+            case 6:
+                return new StateEventContent.RoomCanonicalAlias(
+                );
+            case 7:
+                return new StateEventContent.RoomCreate(
+                );
+            case 8:
+                return new StateEventContent.RoomEncryption(
+                );
+            case 9:
+                return new StateEventContent.RoomGuestAccess(
+                );
+            case 10:
+                return new StateEventContent.RoomHistoryVisibility(
+                );
+            case 11:
+                return new StateEventContent.RoomJoinRules(
+                );
+            case 12:
+                return new StateEventContent.RoomMemberContent(
+                    FfiConverterString.INSTANCE.Read(stream),
+                    FfiConverterTypeMembershipState.INSTANCE.Read(stream)
+                );
+            case 13:
+                return new StateEventContent.RoomName(
+                );
+            case 14:
+                return new StateEventContent.RoomPinnedEvents(
+                );
+            case 15:
+                return new StateEventContent.RoomPowerLevels(
+                );
+            case 16:
+                return new StateEventContent.RoomServerAcl(
+                );
+            case 17:
+                return new StateEventContent.RoomThirdPartyInvite(
+                );
+            case 18:
+                return new StateEventContent.RoomTombstone(
+                );
+            case 19:
+                return new StateEventContent.RoomTopic(
+                );
+            case 20:
+                return new StateEventContent.SpaceChild(
+                );
+            case 21:
+                return new StateEventContent.SpaceParent(
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeStateEventContent.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(StateEventContent value) {
+        switch (value) {
+            case StateEventContent.PolicyRuleRoom variant_value:
+                return 4;
+            case StateEventContent.PolicyRuleServer variant_value:
+                return 4;
+            case StateEventContent.PolicyRuleUser variant_value:
+                return 4;
+            case StateEventContent.RoomAliases variant_value:
+                return 4;
+            case StateEventContent.RoomAvatar variant_value:
+                return 4;
+            case StateEventContent.RoomCanonicalAlias variant_value:
+                return 4;
+            case StateEventContent.RoomCreate variant_value:
+                return 4;
+            case StateEventContent.RoomEncryption variant_value:
+                return 4;
+            case StateEventContent.RoomGuestAccess variant_value:
+                return 4;
+            case StateEventContent.RoomHistoryVisibility variant_value:
+                return 4;
+            case StateEventContent.RoomJoinRules variant_value:
+                return 4;
+            case StateEventContent.RoomMemberContent variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@userId)
+                    + FfiConverterTypeMembershipState.INSTANCE.AllocationSize(variant_value.@membershipState);
+            case StateEventContent.RoomName variant_value:
+                return 4;
+            case StateEventContent.RoomPinnedEvents variant_value:
+                return 4;
+            case StateEventContent.RoomPowerLevels variant_value:
+                return 4;
+            case StateEventContent.RoomServerAcl variant_value:
+                return 4;
+            case StateEventContent.RoomThirdPartyInvite variant_value:
+                return 4;
+            case StateEventContent.RoomTombstone variant_value:
+                return 4;
+            case StateEventContent.RoomTopic variant_value:
+                return 4;
+            case StateEventContent.SpaceChild variant_value:
+                return 4;
+            case StateEventContent.SpaceParent variant_value:
+                return 4;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeStateEventContent.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(StateEventContent value, BigEndianStream stream) {
+        switch (value) {
+            case StateEventContent.PolicyRuleRoom variant_value:
+                stream.WriteInt(1);
+                break;
+            case StateEventContent.PolicyRuleServer variant_value:
+                stream.WriteInt(2);
+                break;
+            case StateEventContent.PolicyRuleUser variant_value:
+                stream.WriteInt(3);
+                break;
+            case StateEventContent.RoomAliases variant_value:
+                stream.WriteInt(4);
+                break;
+            case StateEventContent.RoomAvatar variant_value:
+                stream.WriteInt(5);
+                break;
+            case StateEventContent.RoomCanonicalAlias variant_value:
+                stream.WriteInt(6);
+                break;
+            case StateEventContent.RoomCreate variant_value:
+                stream.WriteInt(7);
+                break;
+            case StateEventContent.RoomEncryption variant_value:
+                stream.WriteInt(8);
+                break;
+            case StateEventContent.RoomGuestAccess variant_value:
+                stream.WriteInt(9);
+                break;
+            case StateEventContent.RoomHistoryVisibility variant_value:
+                stream.WriteInt(10);
+                break;
+            case StateEventContent.RoomJoinRules variant_value:
+                stream.WriteInt(11);
+                break;
+            case StateEventContent.RoomMemberContent variant_value:
+                stream.WriteInt(12);
+                FfiConverterString.INSTANCE.Write(variant_value.@userId, stream);
+                FfiConverterTypeMembershipState.INSTANCE.Write(variant_value.@membershipState, stream);
+                break;
+            case StateEventContent.RoomName variant_value:
+                stream.WriteInt(13);
+                break;
+            case StateEventContent.RoomPinnedEvents variant_value:
+                stream.WriteInt(14);
+                break;
+            case StateEventContent.RoomPowerLevels variant_value:
+                stream.WriteInt(15);
+                break;
+            case StateEventContent.RoomServerAcl variant_value:
+                stream.WriteInt(16);
+                break;
+            case StateEventContent.RoomThirdPartyInvite variant_value:
+                stream.WriteInt(17);
+                break;
+            case StateEventContent.RoomTombstone variant_value:
+                stream.WriteInt(18);
+                break;
+            case StateEventContent.RoomTopic variant_value:
+                stream.WriteInt(19);
+                break;
+            case StateEventContent.SpaceChild variant_value:
+                stream.WriteInt(20);
+                break;
+            case StateEventContent.SpaceParent variant_value:
+                stream.WriteInt(21);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeStateEventContent.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
+public enum StateEventType: int {
+    
+    PolicyRuleRoom,
+    PolicyRuleServer,
+    PolicyRuleUser,
+    RoomAliases,
+    RoomAvatar,
+    RoomCanonicalAlias,
+    RoomCreate,
+    RoomEncryption,
+    RoomGuestAccess,
+    RoomHistoryVisibility,
+    RoomJoinRules,
+    RoomMemberEvent,
+    RoomName,
+    RoomPinnedEvents,
+    RoomPowerLevels,
+    RoomServerAcl,
+    RoomThirdPartyInvite,
+    RoomTombstone,
+    RoomTopic,
+    SpaceChild,
+    SpaceParent
+}
+
+class FfiConverterTypeStateEventType: FfiConverterRustBuffer<StateEventType> {
+    public static FfiConverterTypeStateEventType INSTANCE = new FfiConverterTypeStateEventType();
+
+    public override StateEventType Read(BigEndianStream stream) {
+        var value = stream.ReadInt() - 1;
+        if (Enum.IsDefined(typeof(StateEventType), value)) {
+            return (StateEventType)value;
+        } else {
+            throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeStateEventType.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(StateEventType value) {
+        return 4;
+    }
+
+    public override void Write(StateEventType value, BigEndianStream stream) {
+        stream.WriteInt((int)value + 1);
+    }
+}
+
+
+
+
+
+
+
+public enum SyncServiceState: int {
+    
+    Idle,
+    Running,
+    Terminated,
+    Error
+}
+
+class FfiConverterTypeSyncServiceState: FfiConverterRustBuffer<SyncServiceState> {
+    public static FfiConverterTypeSyncServiceState INSTANCE = new FfiConverterTypeSyncServiceState();
+
+    public override SyncServiceState Read(BigEndianStream stream) {
+        var value = stream.ReadInt() - 1;
+        if (Enum.IsDefined(typeof(SyncServiceState), value)) {
+            return (SyncServiceState)value;
+        } else {
+            throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeSyncServiceState.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(SyncServiceState value) {
+        return 4;
+    }
+
+    public override void Write(SyncServiceState value, BigEndianStream stream) {
+        stream.WriteInt((int)value + 1);
+    }
+}
+
+
+
+
+
+
+
+public enum TimelineChange: int {
+    
+    Append,
+    Clear,
+    Insert,
+    Set,
+    Remove,
+    PushBack,
+    PushFront,
+    PopBack,
+    PopFront,
+    Truncate,
+    Reset
+}
+
+class FfiConverterTypeTimelineChange: FfiConverterRustBuffer<TimelineChange> {
+    public static FfiConverterTypeTimelineChange INSTANCE = new FfiConverterTypeTimelineChange();
+
+    public override TimelineChange Read(BigEndianStream stream) {
+        var value = stream.ReadInt() - 1;
+        if (Enum.IsDefined(typeof(TimelineChange), value)) {
+            return (TimelineChange)value;
+        } else {
+            throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeTimelineChange.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(TimelineChange value) {
+        return 4;
+    }
+
+    public override void Write(TimelineChange value, BigEndianStream stream) {
+        stream.WriteInt((int)value + 1);
+    }
+}
+
+
+
+
+
+
+
+public record TimelineEventType: IDisposable  {
+    
+    public record MessageLike (
+        MessageLikeEventContent @content
+    ) : TimelineEventType {}
+    
+    public record State (
+        StateEventContent @content
+    ) : TimelineEventType {}
+    
+
+    
+    public void Dispose() {
+        switch (this) {
+            case TimelineEventType.MessageLike variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@content);
+                break;
+            case TimelineEventType.State variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@content);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in TimelineEventType.Dispose()", this));
+        }
+    }
+    
+}
+
+class FfiConverterTypeTimelineEventType : FfiConverterRustBuffer<TimelineEventType>{
+    public static FfiConverterRustBuffer<TimelineEventType> INSTANCE = new FfiConverterTypeTimelineEventType();
+
+    public override TimelineEventType Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new TimelineEventType.MessageLike(
+                    FfiConverterTypeMessageLikeEventContent.INSTANCE.Read(stream)
+                );
+            case 2:
+                return new TimelineEventType.State(
+                    FfiConverterTypeStateEventContent.INSTANCE.Read(stream)
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeTimelineEventType.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(TimelineEventType value) {
+        switch (value) {
+            case TimelineEventType.MessageLike variant_value:
+                return 4
+                    + FfiConverterTypeMessageLikeEventContent.INSTANCE.AllocationSize(variant_value.@content);
+            case TimelineEventType.State variant_value:
+                return 4
+                    + FfiConverterTypeStateEventContent.INSTANCE.AllocationSize(variant_value.@content);
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeTimelineEventType.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(TimelineEventType value, BigEndianStream stream) {
+        switch (value) {
+            case TimelineEventType.MessageLike variant_value:
+                stream.WriteInt(1);
+                FfiConverterTypeMessageLikeEventContent.INSTANCE.Write(variant_value.@content, stream);
+                break;
+            case TimelineEventType.State variant_value:
+                stream.WriteInt(2);
+                FfiConverterTypeStateEventContent.INSTANCE.Write(variant_value.@content, stream);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeTimelineEventType.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
+public record TimelineItemContentKind: IDisposable  {
+    
+    public record Message: TimelineItemContentKind {}
+    
+    
+    public record RedactedMessage: TimelineItemContentKind {}
+    
+    
+    public record Sticker (
+        String @body,ImageInfo @info,String @url
+    ) : TimelineItemContentKind {}
+    
+    public record Poll (
+        String @question,PollKind @kind,ulong @maxSelections,List<PollAnswer> @answers,Dictionary<String, List<String>> @votes,ulong? @endTime
+    ) : TimelineItemContentKind {}
+    
+    public record UnableToDecrypt (
+        EncryptedMessage @msg
+    ) : TimelineItemContentKind {}
+    
+    public record RoomMembership (
+        String @userId,MembershipChange? @change
+    ) : TimelineItemContentKind {}
+    
+    public record ProfileChange (
+        String? @displayName,String? @prevDisplayName,String? @avatarUrl,String? @prevAvatarUrl
+    ) : TimelineItemContentKind {}
+    
+    public record State (
+        String @stateKey,OtherState @content
+    ) : TimelineItemContentKind {}
+    
+    public record FailedToParseMessageLike (
+        String @eventType,String @error
+    ) : TimelineItemContentKind {}
+    
+    public record FailedToParseState (
+        String @eventType,String @stateKey,String @error
+    ) : TimelineItemContentKind {}
+    
+
+    
+    public void Dispose() {
+        switch (this) {
+            case TimelineItemContentKind.Message variant_value:
+                break;
+            case TimelineItemContentKind.RedactedMessage variant_value:
+                break;
+            case TimelineItemContentKind.Sticker variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@body,
+            variant_value.@info,
+            variant_value.@url);
+                break;
+            case TimelineItemContentKind.Poll variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@question,
+            variant_value.@kind,
+            variant_value.@maxSelections,
+            variant_value.@answers,
+            variant_value.@votes,
+            variant_value.@endTime);
+                break;
+            case TimelineItemContentKind.UnableToDecrypt variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@msg);
+                break;
+            case TimelineItemContentKind.RoomMembership variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@userId,
+            variant_value.@change);
+                break;
+            case TimelineItemContentKind.ProfileChange variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@displayName,
+            variant_value.@prevDisplayName,
+            variant_value.@avatarUrl,
+            variant_value.@prevAvatarUrl);
+                break;
+            case TimelineItemContentKind.State variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@stateKey,
+            variant_value.@content);
+                break;
+            case TimelineItemContentKind.FailedToParseMessageLike variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@eventType,
+            variant_value.@error);
+                break;
+            case TimelineItemContentKind.FailedToParseState variant_value:
+                
+    FFIObjectUtil.DisposeAll(
+            variant_value.@eventType,
+            variant_value.@stateKey,
+            variant_value.@error);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in TimelineItemContentKind.Dispose()", this));
+        }
+    }
+    
+}
+
+class FfiConverterTypeTimelineItemContentKind : FfiConverterRustBuffer<TimelineItemContentKind>{
+    public static FfiConverterRustBuffer<TimelineItemContentKind> INSTANCE = new FfiConverterTypeTimelineItemContentKind();
+
+    public override TimelineItemContentKind Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new TimelineItemContentKind.Message(
+                );
+            case 2:
+                return new TimelineItemContentKind.RedactedMessage(
+                );
+            case 3:
+                return new TimelineItemContentKind.Sticker(
+                    FfiConverterString.INSTANCE.Read(stream),
+                    FfiConverterTypeImageInfo.INSTANCE.Read(stream),
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            case 4:
+                return new TimelineItemContentKind.Poll(
+                    FfiConverterString.INSTANCE.Read(stream),
+                    FfiConverterTypePollKind.INSTANCE.Read(stream),
+                    FfiConverterUInt64.INSTANCE.Read(stream),
+                    FfiConverterSequenceTypePollAnswer.INSTANCE.Read(stream),
+                    FfiConverterDictionaryStringSequenceString.INSTANCE.Read(stream),
+                    FfiConverterOptionalUInt64.INSTANCE.Read(stream)
+                );
+            case 5:
+                return new TimelineItemContentKind.UnableToDecrypt(
+                    FfiConverterTypeEncryptedMessage.INSTANCE.Read(stream)
+                );
+            case 6:
+                return new TimelineItemContentKind.RoomMembership(
+                    FfiConverterString.INSTANCE.Read(stream),
+                    FfiConverterOptionalTypeMembershipChange.INSTANCE.Read(stream)
+                );
+            case 7:
+                return new TimelineItemContentKind.ProfileChange(
+                    FfiConverterOptionalString.INSTANCE.Read(stream),
+                    FfiConverterOptionalString.INSTANCE.Read(stream),
+                    FfiConverterOptionalString.INSTANCE.Read(stream),
+                    FfiConverterOptionalString.INSTANCE.Read(stream)
+                );
+            case 8:
+                return new TimelineItemContentKind.State(
+                    FfiConverterString.INSTANCE.Read(stream),
+                    FfiConverterTypeOtherState.INSTANCE.Read(stream)
+                );
+            case 9:
+                return new TimelineItemContentKind.FailedToParseMessageLike(
+                    FfiConverterString.INSTANCE.Read(stream),
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            case 10:
+                return new TimelineItemContentKind.FailedToParseState(
+                    FfiConverterString.INSTANCE.Read(stream),
+                    FfiConverterString.INSTANCE.Read(stream),
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeTimelineItemContentKind.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(TimelineItemContentKind value) {
+        switch (value) {
+            case TimelineItemContentKind.Message variant_value:
+                return 4;
+            case TimelineItemContentKind.RedactedMessage variant_value:
+                return 4;
+            case TimelineItemContentKind.Sticker variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@body)
+                    + FfiConverterTypeImageInfo.INSTANCE.AllocationSize(variant_value.@info)
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@url);
+            case TimelineItemContentKind.Poll variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@question)
+                    + FfiConverterTypePollKind.INSTANCE.AllocationSize(variant_value.@kind)
+                    + FfiConverterUInt64.INSTANCE.AllocationSize(variant_value.@maxSelections)
+                    + FfiConverterSequenceTypePollAnswer.INSTANCE.AllocationSize(variant_value.@answers)
+                    + FfiConverterDictionaryStringSequenceString.INSTANCE.AllocationSize(variant_value.@votes)
+                    + FfiConverterOptionalUInt64.INSTANCE.AllocationSize(variant_value.@endTime);
+            case TimelineItemContentKind.UnableToDecrypt variant_value:
+                return 4
+                    + FfiConverterTypeEncryptedMessage.INSTANCE.AllocationSize(variant_value.@msg);
+            case TimelineItemContentKind.RoomMembership variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@userId)
+                    + FfiConverterOptionalTypeMembershipChange.INSTANCE.AllocationSize(variant_value.@change);
+            case TimelineItemContentKind.ProfileChange variant_value:
+                return 4
+                    + FfiConverterOptionalString.INSTANCE.AllocationSize(variant_value.@displayName)
+                    + FfiConverterOptionalString.INSTANCE.AllocationSize(variant_value.@prevDisplayName)
+                    + FfiConverterOptionalString.INSTANCE.AllocationSize(variant_value.@avatarUrl)
+                    + FfiConverterOptionalString.INSTANCE.AllocationSize(variant_value.@prevAvatarUrl);
+            case TimelineItemContentKind.State variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@stateKey)
+                    + FfiConverterTypeOtherState.INSTANCE.AllocationSize(variant_value.@content);
+            case TimelineItemContentKind.FailedToParseMessageLike variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@eventType)
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@error);
+            case TimelineItemContentKind.FailedToParseState variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@eventType)
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@stateKey)
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@error);
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeTimelineItemContentKind.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(TimelineItemContentKind value, BigEndianStream stream) {
+        switch (value) {
+            case TimelineItemContentKind.Message variant_value:
+                stream.WriteInt(1);
+                break;
+            case TimelineItemContentKind.RedactedMessage variant_value:
+                stream.WriteInt(2);
+                break;
+            case TimelineItemContentKind.Sticker variant_value:
+                stream.WriteInt(3);
+                FfiConverterString.INSTANCE.Write(variant_value.@body, stream);
+                FfiConverterTypeImageInfo.INSTANCE.Write(variant_value.@info, stream);
+                FfiConverterString.INSTANCE.Write(variant_value.@url, stream);
+                break;
+            case TimelineItemContentKind.Poll variant_value:
+                stream.WriteInt(4);
+                FfiConverterString.INSTANCE.Write(variant_value.@question, stream);
+                FfiConverterTypePollKind.INSTANCE.Write(variant_value.@kind, stream);
+                FfiConverterUInt64.INSTANCE.Write(variant_value.@maxSelections, stream);
+                FfiConverterSequenceTypePollAnswer.INSTANCE.Write(variant_value.@answers, stream);
+                FfiConverterDictionaryStringSequenceString.INSTANCE.Write(variant_value.@votes, stream);
+                FfiConverterOptionalUInt64.INSTANCE.Write(variant_value.@endTime, stream);
+                break;
+            case TimelineItemContentKind.UnableToDecrypt variant_value:
+                stream.WriteInt(5);
+                FfiConverterTypeEncryptedMessage.INSTANCE.Write(variant_value.@msg, stream);
+                break;
+            case TimelineItemContentKind.RoomMembership variant_value:
+                stream.WriteInt(6);
+                FfiConverterString.INSTANCE.Write(variant_value.@userId, stream);
+                FfiConverterOptionalTypeMembershipChange.INSTANCE.Write(variant_value.@change, stream);
+                break;
+            case TimelineItemContentKind.ProfileChange variant_value:
+                stream.WriteInt(7);
+                FfiConverterOptionalString.INSTANCE.Write(variant_value.@displayName, stream);
+                FfiConverterOptionalString.INSTANCE.Write(variant_value.@prevDisplayName, stream);
+                FfiConverterOptionalString.INSTANCE.Write(variant_value.@avatarUrl, stream);
+                FfiConverterOptionalString.INSTANCE.Write(variant_value.@prevAvatarUrl, stream);
+                break;
+            case TimelineItemContentKind.State variant_value:
+                stream.WriteInt(8);
+                FfiConverterString.INSTANCE.Write(variant_value.@stateKey, stream);
+                FfiConverterTypeOtherState.INSTANCE.Write(variant_value.@content, stream);
+                break;
+            case TimelineItemContentKind.FailedToParseMessageLike variant_value:
+                stream.WriteInt(9);
+                FfiConverterString.INSTANCE.Write(variant_value.@eventType, stream);
+                FfiConverterString.INSTANCE.Write(variant_value.@error, stream);
+                break;
+            case TimelineItemContentKind.FailedToParseState variant_value:
+                stream.WriteInt(10);
+                FfiConverterString.INSTANCE.Write(variant_value.@eventType, stream);
+                FfiConverterString.INSTANCE.Write(variant_value.@stateKey, stream);
+                FfiConverterString.INSTANCE.Write(variant_value.@error, stream);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeTimelineItemContentKind.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
+public record VirtualTimelineItem {
+    
+    public record DayDivider (
+        ulong @ts
+    ) : VirtualTimelineItem {}
+    
+    public record ReadMarker: VirtualTimelineItem {}
+    
+    
+
+    
+}
+
+class FfiConverterTypeVirtualTimelineItem : FfiConverterRustBuffer<VirtualTimelineItem>{
+    public static FfiConverterRustBuffer<VirtualTimelineItem> INSTANCE = new FfiConverterTypeVirtualTimelineItem();
+
+    public override VirtualTimelineItem Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new VirtualTimelineItem.DayDivider(
+                    FfiConverterUInt64.INSTANCE.Read(stream)
+                );
+            case 2:
+                return new VirtualTimelineItem.ReadMarker(
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeVirtualTimelineItem.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(VirtualTimelineItem value) {
+        switch (value) {
+            case VirtualTimelineItem.DayDivider variant_value:
+                return 4
+                    + FfiConverterUInt64.INSTANCE.AllocationSize(variant_value.@ts);
+            case VirtualTimelineItem.ReadMarker variant_value:
+                return 4;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeVirtualTimelineItem.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(VirtualTimelineItem value, BigEndianStream stream) {
+        switch (value) {
+            case VirtualTimelineItem.DayDivider variant_value:
+                stream.WriteInt(1);
+                FfiConverterUInt64.INSTANCE.Write(variant_value.@ts, stream);
+                break;
+            case VirtualTimelineItem.ReadMarker variant_value:
+                stream.WriteInt(2);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeVirtualTimelineItem.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
+public record WidgetEventFilter {
+    
+    public record MessageLikeWithType (
+        String @eventType
+    ) : WidgetEventFilter {}
+    
+    public record RoomMessageWithMsgtype (
+        String @msgtype
+    ) : WidgetEventFilter {}
+    
+    public record StateWithType (
+        String @eventType
+    ) : WidgetEventFilter {}
+    
+    public record StateWithTypeAndStateKey (
+        String @eventType,String @stateKey
+    ) : WidgetEventFilter {}
+    
+
+    
+}
+
+class FfiConverterTypeWidgetEventFilter : FfiConverterRustBuffer<WidgetEventFilter>{
+    public static FfiConverterRustBuffer<WidgetEventFilter> INSTANCE = new FfiConverterTypeWidgetEventFilter();
+
+    public override WidgetEventFilter Read(BigEndianStream stream) {
+        var value = stream.ReadInt();
+        switch (value) {
+            case 1:
+                return new WidgetEventFilter.MessageLikeWithType(
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            case 2:
+                return new WidgetEventFilter.RoomMessageWithMsgtype(
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            case 3:
+                return new WidgetEventFilter.StateWithType(
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            case 4:
+                return new WidgetEventFilter.StateWithTypeAndStateKey(
+                    FfiConverterString.INSTANCE.Read(stream),
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeWidgetEventFilter.Read()", value));
+        }
+    }
+
+    public override int AllocationSize(WidgetEventFilter value) {
+        switch (value) {
+            case WidgetEventFilter.MessageLikeWithType variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@eventType);
+            case WidgetEventFilter.RoomMessageWithMsgtype variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@msgtype);
+            case WidgetEventFilter.StateWithType variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@eventType);
+            case WidgetEventFilter.StateWithTypeAndStateKey variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@eventType)
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.@stateKey);
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeWidgetEventFilter.AllocationSize()", value));
+        }
+    }
+
+    public override void Write(WidgetEventFilter value, BigEndianStream stream) {
+        switch (value) {
+            case WidgetEventFilter.MessageLikeWithType variant_value:
+                stream.WriteInt(1);
+                FfiConverterString.INSTANCE.Write(variant_value.@eventType, stream);
+                break;
+            case WidgetEventFilter.RoomMessageWithMsgtype variant_value:
+                stream.WriteInt(2);
+                FfiConverterString.INSTANCE.Write(variant_value.@msgtype, stream);
+                break;
+            case WidgetEventFilter.StateWithType variant_value:
+                stream.WriteInt(3);
+                FfiConverterString.INSTANCE.Write(variant_value.@eventType, stream);
+                break;
+            case WidgetEventFilter.StateWithTypeAndStateKey variant_value:
+                stream.WriteInt(4);
+                FfiConverterString.INSTANCE.Write(variant_value.@eventType, stream);
+                FfiConverterString.INSTANCE.Write(variant_value.@stateKey, stream);
+                break;
+            default:
+                throw new InternalException(String.Format("invalid enum value '{0}' in FfiConverterTypeWidgetEventFilter.Write()", value));
+        }
+    }
+}
+
+
+
+
+
+
+
+
+static class UniffiCallbackResponseCode {
+    public static int SUCCESS = 0;
+    public static int ERROR = 1;
+    public static int UNEXPECTED_ERROR = 2;
+}
+
+class ConcurrentHandleMap<T> where T: notnull {
+    Dictionary<ulong, T> leftMap = new Dictionary<ulong, T>();
+    Dictionary<T, ulong> rightMap = new Dictionary<T, ulong>();
+
+    Object lock_ = new Object();
+    ulong currentHandle = 0;
+
+    public ulong Insert(T obj) {
+        lock (lock_) {
+            ulong existingHandle = 0;
+            if (rightMap.TryGetValue(obj, out existingHandle)) {
+                return existingHandle;
+            }
+            currentHandle += 1;
+            leftMap[currentHandle] = obj;
+            rightMap[obj] = currentHandle;
+            return currentHandle;
+        }
+    }
+
+    public bool TryGet(ulong handle, out T result) {
+        // Possible null reference assignment
+        #pragma warning disable 8601
+        return leftMap.TryGetValue(handle, out result);
+        #pragma warning restore 8601
+    }
+
+    public bool Remove(ulong handle) {
+        return Remove(handle, out T result);
+    }
+
+    public bool Remove(ulong handle, out T result) {
+        lock (lock_) {
+            // Possible null reference assignment
+            #pragma warning disable 8601
+            if (leftMap.Remove(handle, out result)) {
+            #pragma warning restore 8601
+                rightMap.Remove(result);
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+}
+
+[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+internal delegate int ForeignCallback(ulong handle, uint method, IntPtr argsData, int argsLength, ref RustBuffer outBuf);
+
+internal abstract class FfiConverterCallbackInterface<CallbackInterface>
+        : FfiConverter<CallbackInterface, ulong>
+        where CallbackInterface: notnull
+{
+    ConcurrentHandleMap<CallbackInterface> handleMap = new ConcurrentHandleMap<CallbackInterface>();
+
+    // Registers the foreign callback with the Rust side.
+    // This method is generated for each callback interface.
+    public abstract void Register();
+
+    public RustBuffer Drop(ulong handle) {
+        handleMap.Remove(handle);
+        return new RustBuffer();
+    }
+
+    public override CallbackInterface Lift(ulong handle) {
+        if (!handleMap.TryGet(handle, out CallbackInterface result)) {
+            throw new InternalException($"No callback in handlemap '{handle}'");
+        }
+        return result;
+    }
+
+    public override CallbackInterface Read(BigEndianStream stream) {
+        return Lift(stream.ReadULong());
+    }
+
+    public override ulong Lower(CallbackInterface value) {
+        return handleMap.Insert(value);
+    }
+
+    public override int AllocationSize(CallbackInterface value) {
+        return 8;
+    }
+
+    public override void Write(CallbackInterface value, BigEndianStream stream) {
+        stream.WriteULong(Lower(value));
+    }
+}
+public interface BackPaginationStatusListener {
+    void OnUpdate(BackPaginationStatus @status);
+}
+
+// The ForeignCallback that is passed to Rust.
+class ForeignCallbackTypeBackPaginationStatusListener {
+    // This cannot be a static method. Although C# supports implicitly using a static method as a
+    // delegate, the behaviour is incorrect for this use case. Using static method as a delegate
+    // argument creates an implicit delegate object, that is later going to be collected by GC. Any
+    // attempt to invoke a garbage collected delegate results in an error:
+    //   > A callback was made on a garbage collected delegate of type 'ForeignCallback::..'
+    public static ForeignCallback INSTANCE = (ulong handle, uint method, IntPtr argsData, int argsLength, ref RustBuffer outBuf) => {
+        var cb = FfiConverterTypeBackPaginationStatusListener.INSTANCE.Lift(handle);
+        switch (method) {
+            case 0: {
+                // 0 means Rust is done with the callback, and the callback
+                // can be dropped by the foreign language.
+                FfiConverterTypeBackPaginationStatusListener.INSTANCE.Drop(handle);
+                // No return value.
+                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
+                return 0;
+            }
+
+            
+            case 1: {
+                try {
+                    outBuf = InvokeOnUpdate(cb, RustBuffer.MemoryStream(argsData, argsLength));
+                    return UniffiCallbackResponseCode.SUCCESS;
+                } catch (Exception e) {
+                    // Unexpected error
+                    try {
+                        // Try to serialize the error into a string
+                        outBuf = FfiConverterString.INSTANCE.Lower(e.Message);
+                    } catch {
+                        // If that fails, then it's time to give up and just return
+                    }
+                    return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+                }
+            }
+
+            
+            default: {
+                // This should never happen, because an out of bounds method index won't
+                // ever be used. Once we can catch errors, we should return an InternalException.
+                // https://github.com/mozilla/uniffi-rs/issues/351
+                return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+            }
+        }
+    };
+
+    static RustBuffer InvokeOnUpdate(BackPaginationStatusListener callback, BigEndianStream stream) {callback.OnUpdate(FfiConverterTypeBackPaginationStatus.INSTANCE.Read(stream));
+        return new RustBuffer();
+    }
+
+    
+}
+
+// The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
+class FfiConverterTypeBackPaginationStatusListener: FfiConverterCallbackInterface<BackPaginationStatusListener> {
+    public static FfiConverterTypeBackPaginationStatusListener INSTANCE = new FfiConverterTypeBackPaginationStatusListener();
+
+    public override void Register() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_init_callback_backpaginationstatuslistener(ForeignCallbackTypeBackPaginationStatusListener.INSTANCE, ref status);
+        });
+    }
+}
+
+
+
+
+
+public interface ClientDelegate {
+    void DidReceiveAuthError(bool @isSoftLogout);
+    void DidRefreshTokens();
+}
+
+// The ForeignCallback that is passed to Rust.
+class ForeignCallbackTypeClientDelegate {
+    // This cannot be a static method. Although C# supports implicitly using a static method as a
+    // delegate, the behaviour is incorrect for this use case. Using static method as a delegate
+    // argument creates an implicit delegate object, that is later going to be collected by GC. Any
+    // attempt to invoke a garbage collected delegate results in an error:
+    //   > A callback was made on a garbage collected delegate of type 'ForeignCallback::..'
+    public static ForeignCallback INSTANCE = (ulong handle, uint method, IntPtr argsData, int argsLength, ref RustBuffer outBuf) => {
+        var cb = FfiConverterTypeClientDelegate.INSTANCE.Lift(handle);
+        switch (method) {
+            case 0: {
+                // 0 means Rust is done with the callback, and the callback
+                // can be dropped by the foreign language.
+                FfiConverterTypeClientDelegate.INSTANCE.Drop(handle);
+                // No return value.
+                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
+                return 0;
+            }
+
+            
+            case 1: {
+                try {
+                    outBuf = InvokeDidReceiveAuthError(cb, RustBuffer.MemoryStream(argsData, argsLength));
+                    return UniffiCallbackResponseCode.SUCCESS;
+                } catch (Exception e) {
+                    // Unexpected error
+                    try {
+                        // Try to serialize the error into a string
+                        outBuf = FfiConverterString.INSTANCE.Lower(e.Message);
+                    } catch {
+                        // If that fails, then it's time to give up and just return
+                    }
+                    return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+                }
+            }
+
+            
+            case 2: {
+                try {
+                    outBuf = InvokeDidRefreshTokens(cb, RustBuffer.MemoryStream(argsData, argsLength));
+                    return UniffiCallbackResponseCode.SUCCESS;
+                } catch (Exception e) {
+                    // Unexpected error
+                    try {
+                        // Try to serialize the error into a string
+                        outBuf = FfiConverterString.INSTANCE.Lower(e.Message);
+                    } catch {
+                        // If that fails, then it's time to give up and just return
+                    }
+                    return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+                }
+            }
+
+            
+            default: {
+                // This should never happen, because an out of bounds method index won't
+                // ever be used. Once we can catch errors, we should return an InternalException.
+                // https://github.com/mozilla/uniffi-rs/issues/351
+                return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+            }
+        }
+    };
+
+    static RustBuffer InvokeDidReceiveAuthError(ClientDelegate callback, BigEndianStream stream) {callback.DidReceiveAuthError(FfiConverterBoolean.INSTANCE.Read(stream));
+        return new RustBuffer();
+    }
+
+    static RustBuffer InvokeDidRefreshTokens(ClientDelegate callback, BigEndianStream stream) {callback.DidRefreshTokens();
+        return new RustBuffer();
+    }
+
+    
+}
+
+// The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
+class FfiConverterTypeClientDelegate: FfiConverterCallbackInterface<ClientDelegate> {
+    public static FfiConverterTypeClientDelegate INSTANCE = new FfiConverterTypeClientDelegate();
+
+    public override void Register() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_init_callback_clientdelegate(ForeignCallbackTypeClientDelegate.INSTANCE, ref status);
+        });
+    }
+}
+
+
+
+
+
+public interface ClientSessionDelegate {
+    /// <exception cref="ClientException"></exception>
+    Session RetrieveSessionFromKeychain(String @userId);
+    void SaveSessionInKeychain(Session @session);
+}
+
+// The ForeignCallback that is passed to Rust.
+class ForeignCallbackTypeClientSessionDelegate {
+    // This cannot be a static method. Although C# supports implicitly using a static method as a
+    // delegate, the behaviour is incorrect for this use case. Using static method as a delegate
+    // argument creates an implicit delegate object, that is later going to be collected by GC. Any
+    // attempt to invoke a garbage collected delegate results in an error:
+    //   > A callback was made on a garbage collected delegate of type 'ForeignCallback::..'
+    public static ForeignCallback INSTANCE = (ulong handle, uint method, IntPtr argsData, int argsLength, ref RustBuffer outBuf) => {
+        var cb = FfiConverterTypeClientSessionDelegate.INSTANCE.Lift(handle);
+        switch (method) {
+            case 0: {
+                // 0 means Rust is done with the callback, and the callback
+                // can be dropped by the foreign language.
+                FfiConverterTypeClientSessionDelegate.INSTANCE.Drop(handle);
+                // No return value.
+                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
+                return 0;
+            }
+
+            
+            case 1: {
+                try {
+                    try {
+                        outBuf = InvokeRetrieveSessionFromKeychain(cb, RustBuffer.MemoryStream(argsData, argsLength));
+                        return UniffiCallbackResponseCode.SUCCESS;
+                    } catch (ClientException e) {
+                        outBuf = FfiConverterTypeClientException.INSTANCE.Lower(e);
+                        return UniffiCallbackResponseCode.ERROR;
+                    }
+                } catch (Exception e) {
+                    // Unexpected error
+                    try {
+                        // Try to serialize the error into a string
+                        outBuf = FfiConverterString.INSTANCE.Lower(e.Message);
+                    } catch {
+                        // If that fails, then it's time to give up and just return
+                    }
+                    return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+                }
+            }
+
+            
+            case 2: {
+                try {
+                    outBuf = InvokeSaveSessionInKeychain(cb, RustBuffer.MemoryStream(argsData, argsLength));
+                    return UniffiCallbackResponseCode.SUCCESS;
+                } catch (Exception e) {
+                    // Unexpected error
+                    try {
+                        // Try to serialize the error into a string
+                        outBuf = FfiConverterString.INSTANCE.Lower(e.Message);
+                    } catch {
+                        // If that fails, then it's time to give up and just return
+                    }
+                    return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+                }
+            }
+
+            
+            default: {
+                // This should never happen, because an out of bounds method index won't
+                // ever be used. Once we can catch errors, we should return an InternalException.
+                // https://github.com/mozilla/uniffi-rs/issues/351
+                return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+            }
+        }
+    };
+
+    static RustBuffer InvokeRetrieveSessionFromKeychain(ClientSessionDelegate callback, BigEndianStream stream) {
+        var result =callback.RetrieveSessionFromKeychain(FfiConverterString.INSTANCE.Read(stream));
+        return FfiConverterTypeSession.INSTANCE.LowerIntoRustBuffer(result);
+    }
+
+    static RustBuffer InvokeSaveSessionInKeychain(ClientSessionDelegate callback, BigEndianStream stream) {callback.SaveSessionInKeychain(FfiConverterTypeSession.INSTANCE.Read(stream));
+        return new RustBuffer();
+    }
+
+    
+}
+
+// The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
+class FfiConverterTypeClientSessionDelegate: FfiConverterCallbackInterface<ClientSessionDelegate> {
+    public static FfiConverterTypeClientSessionDelegate INSTANCE = new FfiConverterTypeClientSessionDelegate();
+
+    public override void Register() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_init_callback_clientsessiondelegate(ForeignCallbackTypeClientSessionDelegate.INSTANCE, ref status);
+        });
+    }
+}
+
+
+
+
+
+public interface NotificationSettingsDelegate {
+    void SettingsDidChange();
+}
+
+// The ForeignCallback that is passed to Rust.
+class ForeignCallbackTypeNotificationSettingsDelegate {
+    // This cannot be a static method. Although C# supports implicitly using a static method as a
+    // delegate, the behaviour is incorrect for this use case. Using static method as a delegate
+    // argument creates an implicit delegate object, that is later going to be collected by GC. Any
+    // attempt to invoke a garbage collected delegate results in an error:
+    //   > A callback was made on a garbage collected delegate of type 'ForeignCallback::..'
+    public static ForeignCallback INSTANCE = (ulong handle, uint method, IntPtr argsData, int argsLength, ref RustBuffer outBuf) => {
+        var cb = FfiConverterTypeNotificationSettingsDelegate.INSTANCE.Lift(handle);
+        switch (method) {
+            case 0: {
+                // 0 means Rust is done with the callback, and the callback
+                // can be dropped by the foreign language.
+                FfiConverterTypeNotificationSettingsDelegate.INSTANCE.Drop(handle);
+                // No return value.
+                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
+                return 0;
+            }
+
+            
+            case 1: {
+                try {
+                    outBuf = InvokeSettingsDidChange(cb, RustBuffer.MemoryStream(argsData, argsLength));
+                    return UniffiCallbackResponseCode.SUCCESS;
+                } catch (Exception e) {
+                    // Unexpected error
+                    try {
+                        // Try to serialize the error into a string
+                        outBuf = FfiConverterString.INSTANCE.Lower(e.Message);
+                    } catch {
+                        // If that fails, then it's time to give up and just return
+                    }
+                    return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+                }
+            }
+
+            
+            default: {
+                // This should never happen, because an out of bounds method index won't
+                // ever be used. Once we can catch errors, we should return an InternalException.
+                // https://github.com/mozilla/uniffi-rs/issues/351
+                return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+            }
+        }
+    };
+
+    static RustBuffer InvokeSettingsDidChange(NotificationSettingsDelegate callback, BigEndianStream stream) {callback.SettingsDidChange();
+        return new RustBuffer();
+    }
+
+    
+}
+
+// The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
+class FfiConverterTypeNotificationSettingsDelegate: FfiConverterCallbackInterface<NotificationSettingsDelegate> {
+    public static FfiConverterTypeNotificationSettingsDelegate INSTANCE = new FfiConverterTypeNotificationSettingsDelegate();
+
+    public override void Register() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_init_callback_notificationsettingsdelegate(ForeignCallbackTypeNotificationSettingsDelegate.INSTANCE, ref status);
+        });
+    }
+}
+
+
+
+
+
+public interface ProgressWatcher {
+    void TransmissionProgress(TransmissionProgress @progress);
+}
+
+// The ForeignCallback that is passed to Rust.
+class ForeignCallbackTypeProgressWatcher {
+    // This cannot be a static method. Although C# supports implicitly using a static method as a
+    // delegate, the behaviour is incorrect for this use case. Using static method as a delegate
+    // argument creates an implicit delegate object, that is later going to be collected by GC. Any
+    // attempt to invoke a garbage collected delegate results in an error:
+    //   > A callback was made on a garbage collected delegate of type 'ForeignCallback::..'
+    public static ForeignCallback INSTANCE = (ulong handle, uint method, IntPtr argsData, int argsLength, ref RustBuffer outBuf) => {
+        var cb = FfiConverterTypeProgressWatcher.INSTANCE.Lift(handle);
+        switch (method) {
+            case 0: {
+                // 0 means Rust is done with the callback, and the callback
+                // can be dropped by the foreign language.
+                FfiConverterTypeProgressWatcher.INSTANCE.Drop(handle);
+                // No return value.
+                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
+                return 0;
+            }
+
+            
+            case 1: {
+                try {
+                    outBuf = InvokeTransmissionProgress(cb, RustBuffer.MemoryStream(argsData, argsLength));
+                    return UniffiCallbackResponseCode.SUCCESS;
+                } catch (Exception e) {
+                    // Unexpected error
+                    try {
+                        // Try to serialize the error into a string
+                        outBuf = FfiConverterString.INSTANCE.Lower(e.Message);
+                    } catch {
+                        // If that fails, then it's time to give up and just return
+                    }
+                    return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+                }
+            }
+
+            
+            default: {
+                // This should never happen, because an out of bounds method index won't
+                // ever be used. Once we can catch errors, we should return an InternalException.
+                // https://github.com/mozilla/uniffi-rs/issues/351
+                return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+            }
+        }
+    };
+
+    static RustBuffer InvokeTransmissionProgress(ProgressWatcher callback, BigEndianStream stream) {callback.TransmissionProgress(FfiConverterTypeTransmissionProgress.INSTANCE.Read(stream));
+        return new RustBuffer();
+    }
+
+    
+}
+
+// The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
+class FfiConverterTypeProgressWatcher: FfiConverterCallbackInterface<ProgressWatcher> {
+    public static FfiConverterTypeProgressWatcher INSTANCE = new FfiConverterTypeProgressWatcher();
+
+    public override void Register() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_init_callback_progresswatcher(ForeignCallbackTypeProgressWatcher.INSTANCE, ref status);
+        });
+    }
+}
+
+
+
+
+
+public interface RoomInfoListener {
+    void Call(RoomInfo @roomInfo);
+}
+
+// The ForeignCallback that is passed to Rust.
+class ForeignCallbackTypeRoomInfoListener {
+    // This cannot be a static method. Although C# supports implicitly using a static method as a
+    // delegate, the behaviour is incorrect for this use case. Using static method as a delegate
+    // argument creates an implicit delegate object, that is later going to be collected by GC. Any
+    // attempt to invoke a garbage collected delegate results in an error:
+    //   > A callback was made on a garbage collected delegate of type 'ForeignCallback::..'
+    public static ForeignCallback INSTANCE = (ulong handle, uint method, IntPtr argsData, int argsLength, ref RustBuffer outBuf) => {
+        var cb = FfiConverterTypeRoomInfoListener.INSTANCE.Lift(handle);
+        switch (method) {
+            case 0: {
+                // 0 means Rust is done with the callback, and the callback
+                // can be dropped by the foreign language.
+                FfiConverterTypeRoomInfoListener.INSTANCE.Drop(handle);
+                // No return value.
+                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
+                return 0;
+            }
+
+            
+            case 1: {
+                try {
+                    outBuf = InvokeCall(cb, RustBuffer.MemoryStream(argsData, argsLength));
+                    return UniffiCallbackResponseCode.SUCCESS;
+                } catch (Exception e) {
+                    // Unexpected error
+                    try {
+                        // Try to serialize the error into a string
+                        outBuf = FfiConverterString.INSTANCE.Lower(e.Message);
+                    } catch {
+                        // If that fails, then it's time to give up and just return
+                    }
+                    return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+                }
+            }
+
+            
+            default: {
+                // This should never happen, because an out of bounds method index won't
+                // ever be used. Once we can catch errors, we should return an InternalException.
+                // https://github.com/mozilla/uniffi-rs/issues/351
+                return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+            }
+        }
+    };
+
+    static RustBuffer InvokeCall(RoomInfoListener callback, BigEndianStream stream) {callback.Call(FfiConverterTypeRoomInfo.INSTANCE.Read(stream));
+        return new RustBuffer();
+    }
+
+    
+}
+
+// The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
+class FfiConverterTypeRoomInfoListener: FfiConverterCallbackInterface<RoomInfoListener> {
+    public static FfiConverterTypeRoomInfoListener INSTANCE = new FfiConverterTypeRoomInfoListener();
+
+    public override void Register() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_init_callback_roominfolistener(ForeignCallbackTypeRoomInfoListener.INSTANCE, ref status);
+        });
+    }
+}
+
+
+
+
+
+public interface RoomListEntriesListener {
+    void OnUpdate(List<RoomListEntriesUpdate> @roomEntriesUpdate);
+}
+
+// The ForeignCallback that is passed to Rust.
+class ForeignCallbackTypeRoomListEntriesListener {
+    // This cannot be a static method. Although C# supports implicitly using a static method as a
+    // delegate, the behaviour is incorrect for this use case. Using static method as a delegate
+    // argument creates an implicit delegate object, that is later going to be collected by GC. Any
+    // attempt to invoke a garbage collected delegate results in an error:
+    //   > A callback was made on a garbage collected delegate of type 'ForeignCallback::..'
+    public static ForeignCallback INSTANCE = (ulong handle, uint method, IntPtr argsData, int argsLength, ref RustBuffer outBuf) => {
+        var cb = FfiConverterTypeRoomListEntriesListener.INSTANCE.Lift(handle);
+        switch (method) {
+            case 0: {
+                // 0 means Rust is done with the callback, and the callback
+                // can be dropped by the foreign language.
+                FfiConverterTypeRoomListEntriesListener.INSTANCE.Drop(handle);
+                // No return value.
+                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
+                return 0;
+            }
+
+            
+            case 1: {
+                try {
+                    outBuf = InvokeOnUpdate(cb, RustBuffer.MemoryStream(argsData, argsLength));
+                    return UniffiCallbackResponseCode.SUCCESS;
+                } catch (Exception e) {
+                    // Unexpected error
+                    try {
+                        // Try to serialize the error into a string
+                        outBuf = FfiConverterString.INSTANCE.Lower(e.Message);
+                    } catch {
+                        // If that fails, then it's time to give up and just return
+                    }
+                    return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+                }
+            }
+
+            
+            default: {
+                // This should never happen, because an out of bounds method index won't
+                // ever be used. Once we can catch errors, we should return an InternalException.
+                // https://github.com/mozilla/uniffi-rs/issues/351
+                return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+            }
+        }
+    };
+
+    static RustBuffer InvokeOnUpdate(RoomListEntriesListener callback, BigEndianStream stream) {callback.OnUpdate(FfiConverterSequenceTypeRoomListEntriesUpdate.INSTANCE.Read(stream));
+        return new RustBuffer();
+    }
+
+    
+}
+
+// The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
+class FfiConverterTypeRoomListEntriesListener: FfiConverterCallbackInterface<RoomListEntriesListener> {
+    public static FfiConverterTypeRoomListEntriesListener INSTANCE = new FfiConverterTypeRoomListEntriesListener();
+
+    public override void Register() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_init_callback_roomlistentrieslistener(ForeignCallbackTypeRoomListEntriesListener.INSTANCE, ref status);
+        });
+    }
+}
+
+
+
+
+
+public interface RoomListLoadingStateListener {
+    void OnUpdate(RoomListLoadingState @state);
+}
+
+// The ForeignCallback that is passed to Rust.
+class ForeignCallbackTypeRoomListLoadingStateListener {
+    // This cannot be a static method. Although C# supports implicitly using a static method as a
+    // delegate, the behaviour is incorrect for this use case. Using static method as a delegate
+    // argument creates an implicit delegate object, that is later going to be collected by GC. Any
+    // attempt to invoke a garbage collected delegate results in an error:
+    //   > A callback was made on a garbage collected delegate of type 'ForeignCallback::..'
+    public static ForeignCallback INSTANCE = (ulong handle, uint method, IntPtr argsData, int argsLength, ref RustBuffer outBuf) => {
+        var cb = FfiConverterTypeRoomListLoadingStateListener.INSTANCE.Lift(handle);
+        switch (method) {
+            case 0: {
+                // 0 means Rust is done with the callback, and the callback
+                // can be dropped by the foreign language.
+                FfiConverterTypeRoomListLoadingStateListener.INSTANCE.Drop(handle);
+                // No return value.
+                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
+                return 0;
+            }
+
+            
+            case 1: {
+                try {
+                    outBuf = InvokeOnUpdate(cb, RustBuffer.MemoryStream(argsData, argsLength));
+                    return UniffiCallbackResponseCode.SUCCESS;
+                } catch (Exception e) {
+                    // Unexpected error
+                    try {
+                        // Try to serialize the error into a string
+                        outBuf = FfiConverterString.INSTANCE.Lower(e.Message);
+                    } catch {
+                        // If that fails, then it's time to give up and just return
+                    }
+                    return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+                }
+            }
+
+            
+            default: {
+                // This should never happen, because an out of bounds method index won't
+                // ever be used. Once we can catch errors, we should return an InternalException.
+                // https://github.com/mozilla/uniffi-rs/issues/351
+                return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+            }
+        }
+    };
+
+    static RustBuffer InvokeOnUpdate(RoomListLoadingStateListener callback, BigEndianStream stream) {callback.OnUpdate(FfiConverterTypeRoomListLoadingState.INSTANCE.Read(stream));
+        return new RustBuffer();
+    }
+
+    
+}
+
+// The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
+class FfiConverterTypeRoomListLoadingStateListener: FfiConverterCallbackInterface<RoomListLoadingStateListener> {
+    public static FfiConverterTypeRoomListLoadingStateListener INSTANCE = new FfiConverterTypeRoomListLoadingStateListener();
+
+    public override void Register() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_init_callback_roomlistloadingstatelistener(ForeignCallbackTypeRoomListLoadingStateListener.INSTANCE, ref status);
+        });
+    }
+}
+
+
+
+
+
+public interface RoomListServiceStateListener {
+    void OnUpdate(RoomListServiceState @state);
+}
+
+// The ForeignCallback that is passed to Rust.
+class ForeignCallbackTypeRoomListServiceStateListener {
+    // This cannot be a static method. Although C# supports implicitly using a static method as a
+    // delegate, the behaviour is incorrect for this use case. Using static method as a delegate
+    // argument creates an implicit delegate object, that is later going to be collected by GC. Any
+    // attempt to invoke a garbage collected delegate results in an error:
+    //   > A callback was made on a garbage collected delegate of type 'ForeignCallback::..'
+    public static ForeignCallback INSTANCE = (ulong handle, uint method, IntPtr argsData, int argsLength, ref RustBuffer outBuf) => {
+        var cb = FfiConverterTypeRoomListServiceStateListener.INSTANCE.Lift(handle);
+        switch (method) {
+            case 0: {
+                // 0 means Rust is done with the callback, and the callback
+                // can be dropped by the foreign language.
+                FfiConverterTypeRoomListServiceStateListener.INSTANCE.Drop(handle);
+                // No return value.
+                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
+                return 0;
+            }
+
+            
+            case 1: {
+                try {
+                    outBuf = InvokeOnUpdate(cb, RustBuffer.MemoryStream(argsData, argsLength));
+                    return UniffiCallbackResponseCode.SUCCESS;
+                } catch (Exception e) {
+                    // Unexpected error
+                    try {
+                        // Try to serialize the error into a string
+                        outBuf = FfiConverterString.INSTANCE.Lower(e.Message);
+                    } catch {
+                        // If that fails, then it's time to give up and just return
+                    }
+                    return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+                }
+            }
+
+            
+            default: {
+                // This should never happen, because an out of bounds method index won't
+                // ever be used. Once we can catch errors, we should return an InternalException.
+                // https://github.com/mozilla/uniffi-rs/issues/351
+                return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+            }
+        }
+    };
+
+    static RustBuffer InvokeOnUpdate(RoomListServiceStateListener callback, BigEndianStream stream) {callback.OnUpdate(FfiConverterTypeRoomListServiceState.INSTANCE.Read(stream));
+        return new RustBuffer();
+    }
+
+    
+}
+
+// The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
+class FfiConverterTypeRoomListServiceStateListener: FfiConverterCallbackInterface<RoomListServiceStateListener> {
+    public static FfiConverterTypeRoomListServiceStateListener INSTANCE = new FfiConverterTypeRoomListServiceStateListener();
+
+    public override void Register() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_init_callback_roomlistservicestatelistener(ForeignCallbackTypeRoomListServiceStateListener.INSTANCE, ref status);
+        });
+    }
+}
+
+
+
+
+
+public interface RoomListServiceSyncIndicatorListener {
+    void OnUpdate(RoomListServiceSyncIndicator @syncIndicator);
+}
+
+// The ForeignCallback that is passed to Rust.
+class ForeignCallbackTypeRoomListServiceSyncIndicatorListener {
+    // This cannot be a static method. Although C# supports implicitly using a static method as a
+    // delegate, the behaviour is incorrect for this use case. Using static method as a delegate
+    // argument creates an implicit delegate object, that is later going to be collected by GC. Any
+    // attempt to invoke a garbage collected delegate results in an error:
+    //   > A callback was made on a garbage collected delegate of type 'ForeignCallback::..'
+    public static ForeignCallback INSTANCE = (ulong handle, uint method, IntPtr argsData, int argsLength, ref RustBuffer outBuf) => {
+        var cb = FfiConverterTypeRoomListServiceSyncIndicatorListener.INSTANCE.Lift(handle);
+        switch (method) {
+            case 0: {
+                // 0 means Rust is done with the callback, and the callback
+                // can be dropped by the foreign language.
+                FfiConverterTypeRoomListServiceSyncIndicatorListener.INSTANCE.Drop(handle);
+                // No return value.
+                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
+                return 0;
+            }
+
+            
+            case 1: {
+                try {
+                    outBuf = InvokeOnUpdate(cb, RustBuffer.MemoryStream(argsData, argsLength));
+                    return UniffiCallbackResponseCode.SUCCESS;
+                } catch (Exception e) {
+                    // Unexpected error
+                    try {
+                        // Try to serialize the error into a string
+                        outBuf = FfiConverterString.INSTANCE.Lower(e.Message);
+                    } catch {
+                        // If that fails, then it's time to give up and just return
+                    }
+                    return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+                }
+            }
+
+            
+            default: {
+                // This should never happen, because an out of bounds method index won't
+                // ever be used. Once we can catch errors, we should return an InternalException.
+                // https://github.com/mozilla/uniffi-rs/issues/351
+                return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+            }
+        }
+    };
+
+    static RustBuffer InvokeOnUpdate(RoomListServiceSyncIndicatorListener callback, BigEndianStream stream) {callback.OnUpdate(FfiConverterTypeRoomListServiceSyncIndicator.INSTANCE.Read(stream));
+        return new RustBuffer();
+    }
+
+    
+}
+
+// The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
+class FfiConverterTypeRoomListServiceSyncIndicatorListener: FfiConverterCallbackInterface<RoomListServiceSyncIndicatorListener> {
+    public static FfiConverterTypeRoomListServiceSyncIndicatorListener INSTANCE = new FfiConverterTypeRoomListServiceSyncIndicatorListener();
+
+    public override void Register() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_init_callback_roomlistservicesyncindicatorlistener(ForeignCallbackTypeRoomListServiceSyncIndicatorListener.INSTANCE, ref status);
+        });
+    }
+}
+
+
+
+
+
+public interface SessionVerificationControllerDelegate {
+    void DidAcceptVerificationRequest();
+    void DidStartSasVerification();
+    void DidReceiveVerificationData(List<SessionVerificationEmoji> @data);
+    void DidFail();
+    void DidCancel();
+    void DidFinish();
+}
+
+// The ForeignCallback that is passed to Rust.
+class ForeignCallbackTypeSessionVerificationControllerDelegate {
+    // This cannot be a static method. Although C# supports implicitly using a static method as a
+    // delegate, the behaviour is incorrect for this use case. Using static method as a delegate
+    // argument creates an implicit delegate object, that is later going to be collected by GC. Any
+    // attempt to invoke a garbage collected delegate results in an error:
+    //   > A callback was made on a garbage collected delegate of type 'ForeignCallback::..'
+    public static ForeignCallback INSTANCE = (ulong handle, uint method, IntPtr argsData, int argsLength, ref RustBuffer outBuf) => {
+        var cb = FfiConverterTypeSessionVerificationControllerDelegate.INSTANCE.Lift(handle);
+        switch (method) {
+            case 0: {
+                // 0 means Rust is done with the callback, and the callback
+                // can be dropped by the foreign language.
+                FfiConverterTypeSessionVerificationControllerDelegate.INSTANCE.Drop(handle);
+                // No return value.
+                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
+                return 0;
+            }
+
+            
+            case 1: {
+                try {
+                    outBuf = InvokeDidAcceptVerificationRequest(cb, RustBuffer.MemoryStream(argsData, argsLength));
+                    return UniffiCallbackResponseCode.SUCCESS;
+                } catch (Exception e) {
+                    // Unexpected error
+                    try {
+                        // Try to serialize the error into a string
+                        outBuf = FfiConverterString.INSTANCE.Lower(e.Message);
+                    } catch {
+                        // If that fails, then it's time to give up and just return
+                    }
+                    return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+                }
+            }
+
+            
+            case 2: {
+                try {
+                    outBuf = InvokeDidStartSasVerification(cb, RustBuffer.MemoryStream(argsData, argsLength));
+                    return UniffiCallbackResponseCode.SUCCESS;
+                } catch (Exception e) {
+                    // Unexpected error
+                    try {
+                        // Try to serialize the error into a string
+                        outBuf = FfiConverterString.INSTANCE.Lower(e.Message);
+                    } catch {
+                        // If that fails, then it's time to give up and just return
+                    }
+                    return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+                }
+            }
+
+            
+            case 3: {
+                try {
+                    outBuf = InvokeDidReceiveVerificationData(cb, RustBuffer.MemoryStream(argsData, argsLength));
+                    return UniffiCallbackResponseCode.SUCCESS;
+                } catch (Exception e) {
+                    // Unexpected error
+                    try {
+                        // Try to serialize the error into a string
+                        outBuf = FfiConverterString.INSTANCE.Lower(e.Message);
+                    } catch {
+                        // If that fails, then it's time to give up and just return
+                    }
+                    return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+                }
+            }
+
+            
+            case 4: {
+                try {
+                    outBuf = InvokeDidFail(cb, RustBuffer.MemoryStream(argsData, argsLength));
+                    return UniffiCallbackResponseCode.SUCCESS;
+                } catch (Exception e) {
+                    // Unexpected error
+                    try {
+                        // Try to serialize the error into a string
+                        outBuf = FfiConverterString.INSTANCE.Lower(e.Message);
+                    } catch {
+                        // If that fails, then it's time to give up and just return
+                    }
+                    return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+                }
+            }
+
+            
+            case 5: {
+                try {
+                    outBuf = InvokeDidCancel(cb, RustBuffer.MemoryStream(argsData, argsLength));
+                    return UniffiCallbackResponseCode.SUCCESS;
+                } catch (Exception e) {
+                    // Unexpected error
+                    try {
+                        // Try to serialize the error into a string
+                        outBuf = FfiConverterString.INSTANCE.Lower(e.Message);
+                    } catch {
+                        // If that fails, then it's time to give up and just return
+                    }
+                    return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+                }
+            }
+
+            
+            case 6: {
+                try {
+                    outBuf = InvokeDidFinish(cb, RustBuffer.MemoryStream(argsData, argsLength));
+                    return UniffiCallbackResponseCode.SUCCESS;
+                } catch (Exception e) {
+                    // Unexpected error
+                    try {
+                        // Try to serialize the error into a string
+                        outBuf = FfiConverterString.INSTANCE.Lower(e.Message);
+                    } catch {
+                        // If that fails, then it's time to give up and just return
+                    }
+                    return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+                }
+            }
+
+            
+            default: {
+                // This should never happen, because an out of bounds method index won't
+                // ever be used. Once we can catch errors, we should return an InternalException.
+                // https://github.com/mozilla/uniffi-rs/issues/351
+                return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+            }
+        }
+    };
+
+    static RustBuffer InvokeDidAcceptVerificationRequest(SessionVerificationControllerDelegate callback, BigEndianStream stream) {callback.DidAcceptVerificationRequest();
+        return new RustBuffer();
+    }
+
+    static RustBuffer InvokeDidStartSasVerification(SessionVerificationControllerDelegate callback, BigEndianStream stream) {callback.DidStartSasVerification();
+        return new RustBuffer();
+    }
+
+    static RustBuffer InvokeDidReceiveVerificationData(SessionVerificationControllerDelegate callback, BigEndianStream stream) {callback.DidReceiveVerificationData(FfiConverterSequenceTypeSessionVerificationEmoji.INSTANCE.Read(stream));
+        return new RustBuffer();
+    }
+
+    static RustBuffer InvokeDidFail(SessionVerificationControllerDelegate callback, BigEndianStream stream) {callback.DidFail();
+        return new RustBuffer();
+    }
+
+    static RustBuffer InvokeDidCancel(SessionVerificationControllerDelegate callback, BigEndianStream stream) {callback.DidCancel();
+        return new RustBuffer();
+    }
+
+    static RustBuffer InvokeDidFinish(SessionVerificationControllerDelegate callback, BigEndianStream stream) {callback.DidFinish();
+        return new RustBuffer();
+    }
+
+    
+}
+
+// The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
+class FfiConverterTypeSessionVerificationControllerDelegate: FfiConverterCallbackInterface<SessionVerificationControllerDelegate> {
+    public static FfiConverterTypeSessionVerificationControllerDelegate INSTANCE = new FfiConverterTypeSessionVerificationControllerDelegate();
+
+    public override void Register() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_init_callback_sessionverificationcontrollerdelegate(ForeignCallbackTypeSessionVerificationControllerDelegate.INSTANCE, ref status);
+        });
+    }
+}
+
+
+
+
+
+public interface SyncServiceStateObserver {
+    void OnUpdate(SyncServiceState @state);
+}
+
+// The ForeignCallback that is passed to Rust.
+class ForeignCallbackTypeSyncServiceStateObserver {
+    // This cannot be a static method. Although C# supports implicitly using a static method as a
+    // delegate, the behaviour is incorrect for this use case. Using static method as a delegate
+    // argument creates an implicit delegate object, that is later going to be collected by GC. Any
+    // attempt to invoke a garbage collected delegate results in an error:
+    //   > A callback was made on a garbage collected delegate of type 'ForeignCallback::..'
+    public static ForeignCallback INSTANCE = (ulong handle, uint method, IntPtr argsData, int argsLength, ref RustBuffer outBuf) => {
+        var cb = FfiConverterTypeSyncServiceStateObserver.INSTANCE.Lift(handle);
+        switch (method) {
+            case 0: {
+                // 0 means Rust is done with the callback, and the callback
+                // can be dropped by the foreign language.
+                FfiConverterTypeSyncServiceStateObserver.INSTANCE.Drop(handle);
+                // No return value.
+                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
+                return 0;
+            }
+
+            
+            case 1: {
+                try {
+                    outBuf = InvokeOnUpdate(cb, RustBuffer.MemoryStream(argsData, argsLength));
+                    return UniffiCallbackResponseCode.SUCCESS;
+                } catch (Exception e) {
+                    // Unexpected error
+                    try {
+                        // Try to serialize the error into a string
+                        outBuf = FfiConverterString.INSTANCE.Lower(e.Message);
+                    } catch {
+                        // If that fails, then it's time to give up and just return
+                    }
+                    return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+                }
+            }
+
+            
+            default: {
+                // This should never happen, because an out of bounds method index won't
+                // ever be used. Once we can catch errors, we should return an InternalException.
+                // https://github.com/mozilla/uniffi-rs/issues/351
+                return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+            }
+        }
+    };
+
+    static RustBuffer InvokeOnUpdate(SyncServiceStateObserver callback, BigEndianStream stream) {callback.OnUpdate(FfiConverterTypeSyncServiceState.INSTANCE.Read(stream));
+        return new RustBuffer();
+    }
+
+    
+}
+
+// The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
+class FfiConverterTypeSyncServiceStateObserver: FfiConverterCallbackInterface<SyncServiceStateObserver> {
+    public static FfiConverterTypeSyncServiceStateObserver INSTANCE = new FfiConverterTypeSyncServiceStateObserver();
+
+    public override void Register() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_init_callback_syncservicestateobserver(ForeignCallbackTypeSyncServiceStateObserver.INSTANCE, ref status);
+        });
+    }
+}
+
+
+
+
+
+public interface TimelineListener {
+    void OnUpdate(List<TimelineDiff> @diff);
+}
+
+// The ForeignCallback that is passed to Rust.
+class ForeignCallbackTypeTimelineListener {
+    // This cannot be a static method. Although C# supports implicitly using a static method as a
+    // delegate, the behaviour is incorrect for this use case. Using static method as a delegate
+    // argument creates an implicit delegate object, that is later going to be collected by GC. Any
+    // attempt to invoke a garbage collected delegate results in an error:
+    //   > A callback was made on a garbage collected delegate of type 'ForeignCallback::..'
+    public static ForeignCallback INSTANCE = (ulong handle, uint method, IntPtr argsData, int argsLength, ref RustBuffer outBuf) => {
+        var cb = FfiConverterTypeTimelineListener.INSTANCE.Lift(handle);
+        switch (method) {
+            case 0: {
+                // 0 means Rust is done with the callback, and the callback
+                // can be dropped by the foreign language.
+                FfiConverterTypeTimelineListener.INSTANCE.Drop(handle);
+                // No return value.
+                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
+                return 0;
+            }
+
+            
+            case 1: {
+                try {
+                    outBuf = InvokeOnUpdate(cb, RustBuffer.MemoryStream(argsData, argsLength));
+                    return UniffiCallbackResponseCode.SUCCESS;
+                } catch (Exception e) {
+                    // Unexpected error
+                    try {
+                        // Try to serialize the error into a string
+                        outBuf = FfiConverterString.INSTANCE.Lower(e.Message);
+                    } catch {
+                        // If that fails, then it's time to give up and just return
+                    }
+                    return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+                }
+            }
+
+            
+            default: {
+                // This should never happen, because an out of bounds method index won't
+                // ever be used. Once we can catch errors, we should return an InternalException.
+                // https://github.com/mozilla/uniffi-rs/issues/351
+                return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+            }
+        }
+    };
+
+    static RustBuffer InvokeOnUpdate(TimelineListener callback, BigEndianStream stream) {callback.OnUpdate(FfiConverterSequenceTypeTimelineDiff.INSTANCE.Read(stream));
+        return new RustBuffer();
+    }
+
+    
+}
+
+// The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
+class FfiConverterTypeTimelineListener: FfiConverterCallbackInterface<TimelineListener> {
+    public static FfiConverterTypeTimelineListener INSTANCE = new FfiConverterTypeTimelineListener();
+
+    public override void Register() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_init_callback_timelinelistener(ForeignCallbackTypeTimelineListener.INSTANCE, ref status);
+        });
+    }
+}
+
+
+
+
+
+public interface WidgetCapabilitiesProvider {
+    WidgetCapabilities AcquireCapabilities(WidgetCapabilities @capabilities);
+}
+
+// The ForeignCallback that is passed to Rust.
+class ForeignCallbackTypeWidgetCapabilitiesProvider {
+    // This cannot be a static method. Although C# supports implicitly using a static method as a
+    // delegate, the behaviour is incorrect for this use case. Using static method as a delegate
+    // argument creates an implicit delegate object, that is later going to be collected by GC. Any
+    // attempt to invoke a garbage collected delegate results in an error:
+    //   > A callback was made on a garbage collected delegate of type 'ForeignCallback::..'
+    public static ForeignCallback INSTANCE = (ulong handle, uint method, IntPtr argsData, int argsLength, ref RustBuffer outBuf) => {
+        var cb = FfiConverterTypeWidgetCapabilitiesProvider.INSTANCE.Lift(handle);
+        switch (method) {
+            case 0: {
+                // 0 means Rust is done with the callback, and the callback
+                // can be dropped by the foreign language.
+                FfiConverterTypeWidgetCapabilitiesProvider.INSTANCE.Drop(handle);
+                // No return value.
+                // See docs of ForeignCallback in `uniffi/src/ffi/foreigncallbacks.rs`
+                return 0;
+            }
+
+            
+            case 1: {
+                try {
+                    outBuf = InvokeAcquireCapabilities(cb, RustBuffer.MemoryStream(argsData, argsLength));
+                    return UniffiCallbackResponseCode.SUCCESS;
+                } catch (Exception e) {
+                    // Unexpected error
+                    try {
+                        // Try to serialize the error into a string
+                        outBuf = FfiConverterString.INSTANCE.Lower(e.Message);
+                    } catch {
+                        // If that fails, then it's time to give up and just return
+                    }
+                    return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+                }
+            }
+
+            
+            default: {
+                // This should never happen, because an out of bounds method index won't
+                // ever be used. Once we can catch errors, we should return an InternalException.
+                // https://github.com/mozilla/uniffi-rs/issues/351
+                return UniffiCallbackResponseCode.UNEXPECTED_ERROR;
+            }
+        }
+    };
+
+    static RustBuffer InvokeAcquireCapabilities(WidgetCapabilitiesProvider callback, BigEndianStream stream) {
+        var result =callback.AcquireCapabilities(FfiConverterTypeWidgetCapabilities.INSTANCE.Read(stream));
+        return FfiConverterTypeWidgetCapabilities.INSTANCE.LowerIntoRustBuffer(result);
+    }
+
+    
+}
+
+// The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
+class FfiConverterTypeWidgetCapabilitiesProvider: FfiConverterCallbackInterface<WidgetCapabilitiesProvider> {
+    public static FfiConverterTypeWidgetCapabilitiesProvider INSTANCE = new FfiConverterTypeWidgetCapabilitiesProvider();
+
+    public override void Register() {
+        _UniffiHelpers.RustCall((ref RustCallStatus status) => {
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_init_callback_widgetcapabilitiesprovider(ForeignCallbackTypeWidgetCapabilitiesProvider.INSTANCE, ref status);
+        });
+    }
+}
+
+
+
+
+class FfiConverterOptionalUInt8: FfiConverterRustBuffer<byte?> {
+    public static FfiConverterOptionalUInt8 INSTANCE = new FfiConverterOptionalUInt8();
+
+    public override byte? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterUInt8.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(byte? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterUInt8.INSTANCE.AllocationSize((byte)value);
+        }
+    }
+
+    public override void Write(byte? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterUInt8.INSTANCE.Write((byte)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalUInt32: FfiConverterRustBuffer<uint?> {
+    public static FfiConverterOptionalUInt32 INSTANCE = new FfiConverterOptionalUInt32();
+
+    public override uint? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterUInt32.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(uint? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterUInt32.INSTANCE.AllocationSize((uint)value);
+        }
+    }
+
+    public override void Write(uint? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterUInt32.INSTANCE.Write((uint)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalInt32: FfiConverterRustBuffer<int?> {
+    public static FfiConverterOptionalInt32 INSTANCE = new FfiConverterOptionalInt32();
+
+    public override int? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterInt32.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(int? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterInt32.INSTANCE.AllocationSize((int)value);
+        }
+    }
+
+    public override void Write(int? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterInt32.INSTANCE.Write((int)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalUInt64: FfiConverterRustBuffer<ulong?> {
+    public static FfiConverterOptionalUInt64 INSTANCE = new FfiConverterOptionalUInt64();
+
+    public override ulong? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterUInt64.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(ulong? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterUInt64.INSTANCE.AllocationSize((ulong)value);
+        }
+    }
+
+    public override void Write(ulong? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterUInt64.INSTANCE.Write((ulong)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalDouble: FfiConverterRustBuffer<double?> {
+    public static FfiConverterOptionalDouble INSTANCE = new FfiConverterOptionalDouble();
+
+    public override double? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterDouble.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(double? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterDouble.INSTANCE.AllocationSize((double)value);
+        }
+    }
+
+    public override void Write(double? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterDouble.INSTANCE.Write((double)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalBoolean: FfiConverterRustBuffer<bool?> {
+    public static FfiConverterOptionalBoolean INSTANCE = new FfiConverterOptionalBoolean();
+
+    public override bool? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterBoolean.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(bool? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterBoolean.INSTANCE.AllocationSize((bool)value);
+        }
+    }
+
+    public override void Write(bool? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterBoolean.INSTANCE.Write((bool)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalString: FfiConverterRustBuffer<String?> {
+    public static FfiConverterOptionalString INSTANCE = new FfiConverterOptionalString();
+
+    public override String? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterString.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(String? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterString.INSTANCE.AllocationSize((String)value);
+        }
+    }
+
+    public override void Write(String? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterString.INSTANCE.Write((String)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalDuration: FfiConverterRustBuffer<TimeSpan?> {
+    public static FfiConverterOptionalDuration INSTANCE = new FfiConverterOptionalDuration();
+
+    public override TimeSpan? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterDuration.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(TimeSpan? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterDuration.INSTANCE.AllocationSize((TimeSpan)value);
+        }
+    }
+
+    public override void Write(TimeSpan? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterDuration.INSTANCE.Write((TimeSpan)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeEventTimelineItem: FfiConverterRustBuffer<EventTimelineItem?> {
+    public static FfiConverterOptionalTypeEventTimelineItem INSTANCE = new FfiConverterOptionalTypeEventTimelineItem();
+
+    public override EventTimelineItem? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeEventTimelineItem.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(EventTimelineItem? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeEventTimelineItem.INSTANCE.AllocationSize((EventTimelineItem)value);
+        }
+    }
+
+    public override void Write(EventTimelineItem? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeEventTimelineItem.INSTANCE.Write((EventTimelineItem)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeHomeserverLoginDetails: FfiConverterRustBuffer<HomeserverLoginDetails?> {
+    public static FfiConverterOptionalTypeHomeserverLoginDetails INSTANCE = new FfiConverterOptionalTypeHomeserverLoginDetails();
+
+    public override HomeserverLoginDetails? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeHomeserverLoginDetails.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(HomeserverLoginDetails? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeHomeserverLoginDetails.INSTANCE.AllocationSize((HomeserverLoginDetails)value);
+        }
+    }
+
+    public override void Write(HomeserverLoginDetails? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeHomeserverLoginDetails.INSTANCE.Write((HomeserverLoginDetails)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeMediaSource: FfiConverterRustBuffer<MediaSource?> {
+    public static FfiConverterOptionalTypeMediaSource INSTANCE = new FfiConverterOptionalTypeMediaSource();
+
+    public override MediaSource? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeMediaSource.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(MediaSource? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeMediaSource.INSTANCE.AllocationSize((MediaSource)value);
+        }
+    }
+
+    public override void Write(MediaSource? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeMediaSource.INSTANCE.Write((MediaSource)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeMessage: FfiConverterRustBuffer<Message?> {
+    public static FfiConverterOptionalTypeMessage INSTANCE = new FfiConverterOptionalTypeMessage();
+
+    public override Message? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeMessage.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(Message? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeMessage.INSTANCE.AllocationSize((Message)value);
+        }
+    }
+
+    public override void Write(Message? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeMessage.INSTANCE.Write((Message)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeRoom: FfiConverterRustBuffer<Room?> {
+    public static FfiConverterOptionalTypeRoom INSTANCE = new FfiConverterOptionalTypeRoom();
+
+    public override Room? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeRoom.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(Room? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeRoom.INSTANCE.AllocationSize((Room)value);
+        }
+    }
+
+    public override void Write(Room? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeRoom.INSTANCE.Write((Room)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeRoomMember: FfiConverterRustBuffer<RoomMember?> {
+    public static FfiConverterOptionalTypeRoomMember INSTANCE = new FfiConverterOptionalTypeRoomMember();
+
+    public override RoomMember? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeRoomMember.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(RoomMember? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeRoomMember.INSTANCE.AllocationSize((RoomMember)value);
+        }
+    }
+
+    public override void Write(RoomMember? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeRoomMember.INSTANCE.Write((RoomMember)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeTaskHandle: FfiConverterRustBuffer<TaskHandle?> {
+    public static FfiConverterOptionalTypeTaskHandle INSTANCE = new FfiConverterOptionalTypeTaskHandle();
+
+    public override TaskHandle? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeTaskHandle.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(TaskHandle? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeTaskHandle.INSTANCE.AllocationSize((TaskHandle)value);
+        }
+    }
+
+    public override void Write(TaskHandle? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeTaskHandle.INSTANCE.Write((TaskHandle)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeTimelineItem: FfiConverterRustBuffer<TimelineItem?> {
+    public static FfiConverterOptionalTypeTimelineItem INSTANCE = new FfiConverterOptionalTypeTimelineItem();
+
+    public override TimelineItem? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeTimelineItem.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(TimelineItem? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeTimelineItem.INSTANCE.AllocationSize((TimelineItem)value);
+        }
+    }
+
+    public override void Write(TimelineItem? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeTimelineItem.INSTANCE.Write((TimelineItem)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeAudioInfo: FfiConverterRustBuffer<AudioInfo?> {
+    public static FfiConverterOptionalTypeAudioInfo INSTANCE = new FfiConverterOptionalTypeAudioInfo();
+
+    public override AudioInfo? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeAudioInfo.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(AudioInfo? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeAudioInfo.INSTANCE.AllocationSize((AudioInfo)value);
+        }
+    }
+
+    public override void Write(AudioInfo? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeAudioInfo.INSTANCE.Write((AudioInfo)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeFileInfo: FfiConverterRustBuffer<FileInfo?> {
+    public static FfiConverterOptionalTypeFileInfo INSTANCE = new FfiConverterOptionalTypeFileInfo();
+
+    public override FileInfo? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeFileInfo.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(FileInfo? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeFileInfo.INSTANCE.AllocationSize((FileInfo)value);
+        }
+    }
+
+    public override void Write(FileInfo? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeFileInfo.INSTANCE.Write((FileInfo)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeFormattedBody: FfiConverterRustBuffer<FormattedBody?> {
+    public static FfiConverterOptionalTypeFormattedBody INSTANCE = new FfiConverterOptionalTypeFormattedBody();
+
+    public override FormattedBody? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeFormattedBody.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(FormattedBody? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeFormattedBody.INSTANCE.AllocationSize((FormattedBody)value);
+        }
+    }
+
+    public override void Write(FormattedBody? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeFormattedBody.INSTANCE.Write((FormattedBody)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeImageInfo: FfiConverterRustBuffer<ImageInfo?> {
+    public static FfiConverterOptionalTypeImageInfo INSTANCE = new FfiConverterOptionalTypeImageInfo();
+
+    public override ImageInfo? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeImageInfo.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(ImageInfo? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeImageInfo.INSTANCE.AllocationSize((ImageInfo)value);
+        }
+    }
+
+    public override void Write(ImageInfo? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeImageInfo.INSTANCE.Write((ImageInfo)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeInReplyToDetails: FfiConverterRustBuffer<InReplyToDetails?> {
+    public static FfiConverterOptionalTypeInReplyToDetails INSTANCE = new FfiConverterOptionalTypeInReplyToDetails();
+
+    public override InReplyToDetails? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeInReplyToDetails.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(InReplyToDetails? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeInReplyToDetails.INSTANCE.AllocationSize((InReplyToDetails)value);
+        }
+    }
+
+    public override void Write(InReplyToDetails? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeInReplyToDetails.INSTANCE.Write((InReplyToDetails)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeInsertData: FfiConverterRustBuffer<InsertData?> {
+    public static FfiConverterOptionalTypeInsertData INSTANCE = new FfiConverterOptionalTypeInsertData();
+
+    public override InsertData? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeInsertData.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(InsertData? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeInsertData.INSTANCE.AllocationSize((InsertData)value);
+        }
+    }
+
+    public override void Write(InsertData? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeInsertData.INSTANCE.Write((InsertData)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeNotificationItem: FfiConverterRustBuffer<NotificationItem?> {
+    public static FfiConverterOptionalTypeNotificationItem INSTANCE = new FfiConverterOptionalTypeNotificationItem();
+
+    public override NotificationItem? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeNotificationItem.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(NotificationItem? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeNotificationItem.INSTANCE.AllocationSize((NotificationItem)value);
+        }
+    }
+
+    public override void Write(NotificationItem? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeNotificationItem.INSTANCE.Write((NotificationItem)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeOidcConfiguration: FfiConverterRustBuffer<OidcConfiguration?> {
+    public static FfiConverterOptionalTypeOidcConfiguration INSTANCE = new FfiConverterOptionalTypeOidcConfiguration();
+
+    public override OidcConfiguration? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeOidcConfiguration.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(OidcConfiguration? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeOidcConfiguration.INSTANCE.AllocationSize((OidcConfiguration)value);
+        }
+    }
+
+    public override void Write(OidcConfiguration? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeOidcConfiguration.INSTANCE.Write((OidcConfiguration)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeRoomSubscription: FfiConverterRustBuffer<RoomSubscription?> {
+    public static FfiConverterOptionalTypeRoomSubscription INSTANCE = new FfiConverterOptionalTypeRoomSubscription();
+
+    public override RoomSubscription? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeRoomSubscription.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(RoomSubscription? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeRoomSubscription.INSTANCE.AllocationSize((RoomSubscription)value);
+        }
+    }
+
+    public override void Write(RoomSubscription? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeRoomSubscription.INSTANCE.Write((RoomSubscription)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeSetData: FfiConverterRustBuffer<SetData?> {
+    public static FfiConverterOptionalTypeSetData INSTANCE = new FfiConverterOptionalTypeSetData();
+
+    public override SetData? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeSetData.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(SetData? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeSetData.INSTANCE.AllocationSize((SetData)value);
+        }
+    }
+
+    public override void Write(SetData? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeSetData.INSTANCE.Write((SetData)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeThumbnailInfo: FfiConverterRustBuffer<ThumbnailInfo?> {
+    public static FfiConverterOptionalTypeThumbnailInfo INSTANCE = new FfiConverterOptionalTypeThumbnailInfo();
+
+    public override ThumbnailInfo? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeThumbnailInfo.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(ThumbnailInfo? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeThumbnailInfo.INSTANCE.AllocationSize((ThumbnailInfo)value);
+        }
+    }
+
+    public override void Write(ThumbnailInfo? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeThumbnailInfo.INSTANCE.Write((ThumbnailInfo)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeTracingFileConfiguration: FfiConverterRustBuffer<TracingFileConfiguration?> {
+    public static FfiConverterOptionalTypeTracingFileConfiguration INSTANCE = new FfiConverterOptionalTypeTracingFileConfiguration();
+
+    public override TracingFileConfiguration? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeTracingFileConfiguration.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(TracingFileConfiguration? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeTracingFileConfiguration.INSTANCE.AllocationSize((TracingFileConfiguration)value);
+        }
+    }
+
+    public override void Write(TracingFileConfiguration? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeTracingFileConfiguration.INSTANCE.Write((TracingFileConfiguration)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeUnstableAudioDetailsContent: FfiConverterRustBuffer<UnstableAudioDetailsContent?> {
+    public static FfiConverterOptionalTypeUnstableAudioDetailsContent INSTANCE = new FfiConverterOptionalTypeUnstableAudioDetailsContent();
+
+    public override UnstableAudioDetailsContent? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeUnstableAudioDetailsContent.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(UnstableAudioDetailsContent? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeUnstableAudioDetailsContent.INSTANCE.AllocationSize((UnstableAudioDetailsContent)value);
+        }
+    }
+
+    public override void Write(UnstableAudioDetailsContent? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeUnstableAudioDetailsContent.INSTANCE.Write((UnstableAudioDetailsContent)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeUnstableVoiceContent: FfiConverterRustBuffer<UnstableVoiceContent?> {
+    public static FfiConverterOptionalTypeUnstableVoiceContent INSTANCE = new FfiConverterOptionalTypeUnstableVoiceContent();
+
+    public override UnstableVoiceContent? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeUnstableVoiceContent.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(UnstableVoiceContent? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeUnstableVoiceContent.INSTANCE.AllocationSize((UnstableVoiceContent)value);
+        }
+    }
+
+    public override void Write(UnstableVoiceContent? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeUnstableVoiceContent.INSTANCE.Write((UnstableVoiceContent)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeVideoInfo: FfiConverterRustBuffer<VideoInfo?> {
+    public static FfiConverterOptionalTypeVideoInfo INSTANCE = new FfiConverterOptionalTypeVideoInfo();
+
+    public override VideoInfo? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeVideoInfo.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(VideoInfo? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeVideoInfo.INSTANCE.AllocationSize((VideoInfo)value);
+        }
+    }
+
+    public override void Write(VideoInfo? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeVideoInfo.INSTANCE.Write((VideoInfo)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeAccountManagementAction: FfiConverterRustBuffer<AccountManagementAction?> {
+    public static FfiConverterOptionalTypeAccountManagementAction INSTANCE = new FfiConverterOptionalTypeAccountManagementAction();
+
+    public override AccountManagementAction? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeAccountManagementAction.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(AccountManagementAction? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeAccountManagementAction.INSTANCE.AllocationSize((AccountManagementAction)value);
+        }
+    }
+
+    public override void Write(AccountManagementAction? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeAccountManagementAction.INSTANCE.Write((AccountManagementAction)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeAssetType: FfiConverterRustBuffer<AssetType?> {
+    public static FfiConverterOptionalTypeAssetType INSTANCE = new FfiConverterOptionalTypeAssetType();
+
+    public override AssetType? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeAssetType.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(AssetType? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeAssetType.INSTANCE.AllocationSize((AssetType)value);
+        }
+    }
+
+    public override void Write(AssetType? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeAssetType.INSTANCE.Write((AssetType)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeEventItemOrigin: FfiConverterRustBuffer<EventItemOrigin?> {
+    public static FfiConverterOptionalTypeEventItemOrigin INSTANCE = new FfiConverterOptionalTypeEventItemOrigin();
+
+    public override EventItemOrigin? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeEventItemOrigin.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(EventItemOrigin? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeEventItemOrigin.INSTANCE.AllocationSize((EventItemOrigin)value);
+        }
+    }
+
+    public override void Write(EventItemOrigin? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeEventItemOrigin.INSTANCE.Write((EventItemOrigin)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeEventSendState: FfiConverterRustBuffer<EventSendState?> {
+    public static FfiConverterOptionalTypeEventSendState INSTANCE = new FfiConverterOptionalTypeEventSendState();
+
+    public override EventSendState? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeEventSendState.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(EventSendState? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeEventSendState.INSTANCE.AllocationSize((EventSendState)value);
+        }
+    }
+
+    public override void Write(EventSendState? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeEventSendState.INSTANCE.Write((EventSendState)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeMembershipChange: FfiConverterRustBuffer<MembershipChange?> {
+    public static FfiConverterOptionalTypeMembershipChange INSTANCE = new FfiConverterOptionalTypeMembershipChange();
+
+    public override MembershipChange? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeMembershipChange.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(MembershipChange? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeMembershipChange.INSTANCE.AllocationSize((MembershipChange)value);
+        }
+    }
+
+    public override void Write(MembershipChange? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeMembershipChange.INSTANCE.Write((MembershipChange)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypePushFormat: FfiConverterRustBuffer<PushFormat?> {
+    public static FfiConverterOptionalTypePushFormat INSTANCE = new FfiConverterOptionalTypePushFormat();
+
+    public override PushFormat? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypePushFormat.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(PushFormat? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypePushFormat.INSTANCE.AllocationSize((PushFormat)value);
+        }
+    }
+
+    public override void Write(PushFormat? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypePushFormat.INSTANCE.Write((PushFormat)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeRoomNotificationMode: FfiConverterRustBuffer<RoomNotificationMode?> {
+    public static FfiConverterOptionalTypeRoomNotificationMode INSTANCE = new FfiConverterOptionalTypeRoomNotificationMode();
+
+    public override RoomNotificationMode? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeRoomNotificationMode.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(RoomNotificationMode? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeRoomNotificationMode.INSTANCE.AllocationSize((RoomNotificationMode)value);
+        }
+    }
+
+    public override void Write(RoomNotificationMode? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeRoomNotificationMode.INSTANCE.Write((RoomNotificationMode)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeVirtualTimelineItem: FfiConverterRustBuffer<VirtualTimelineItem?> {
+    public static FfiConverterOptionalTypeVirtualTimelineItem INSTANCE = new FfiConverterOptionalTypeVirtualTimelineItem();
+
+    public override VirtualTimelineItem? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeVirtualTimelineItem.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(VirtualTimelineItem? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeVirtualTimelineItem.INSTANCE.AllocationSize((VirtualTimelineItem)value);
+        }
+    }
+
+    public override void Write(VirtualTimelineItem? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeVirtualTimelineItem.INSTANCE.Write((VirtualTimelineItem)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeClientDelegate: FfiConverterRustBuffer<ClientDelegate?> {
+    public static FfiConverterOptionalTypeClientDelegate INSTANCE = new FfiConverterOptionalTypeClientDelegate();
+
+    public override ClientDelegate? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeClientDelegate.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(ClientDelegate? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeClientDelegate.INSTANCE.AllocationSize((ClientDelegate)value);
+        }
+    }
+
+    public override void Write(ClientDelegate? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeClientDelegate.INSTANCE.Write((ClientDelegate)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeClientSessionDelegate: FfiConverterRustBuffer<ClientSessionDelegate?> {
+    public static FfiConverterOptionalTypeClientSessionDelegate INSTANCE = new FfiConverterOptionalTypeClientSessionDelegate();
+
+    public override ClientSessionDelegate? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeClientSessionDelegate.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(ClientSessionDelegate? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeClientSessionDelegate.INSTANCE.AllocationSize((ClientSessionDelegate)value);
+        }
+    }
+
+    public override void Write(ClientSessionDelegate? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeClientSessionDelegate.INSTANCE.Write((ClientSessionDelegate)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeNotificationSettingsDelegate: FfiConverterRustBuffer<NotificationSettingsDelegate?> {
+    public static FfiConverterOptionalTypeNotificationSettingsDelegate INSTANCE = new FfiConverterOptionalTypeNotificationSettingsDelegate();
+
+    public override NotificationSettingsDelegate? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeNotificationSettingsDelegate.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(NotificationSettingsDelegate? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeNotificationSettingsDelegate.INSTANCE.AllocationSize((NotificationSettingsDelegate)value);
+        }
+    }
+
+    public override void Write(NotificationSettingsDelegate? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeNotificationSettingsDelegate.INSTANCE.Write((NotificationSettingsDelegate)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeProgressWatcher: FfiConverterRustBuffer<ProgressWatcher?> {
+    public static FfiConverterOptionalTypeProgressWatcher INSTANCE = new FfiConverterOptionalTypeProgressWatcher();
+
+    public override ProgressWatcher? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeProgressWatcher.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(ProgressWatcher? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeProgressWatcher.INSTANCE.AllocationSize((ProgressWatcher)value);
+        }
+    }
+
+    public override void Write(ProgressWatcher? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeProgressWatcher.INSTANCE.Write((ProgressWatcher)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalTypeSessionVerificationControllerDelegate: FfiConverterRustBuffer<SessionVerificationControllerDelegate?> {
+    public static FfiConverterOptionalTypeSessionVerificationControllerDelegate INSTANCE = new FfiConverterOptionalTypeSessionVerificationControllerDelegate();
+
+    public override SessionVerificationControllerDelegate? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterTypeSessionVerificationControllerDelegate.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(SessionVerificationControllerDelegate? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterTypeSessionVerificationControllerDelegate.INSTANCE.AllocationSize((SessionVerificationControllerDelegate)value);
+        }
+    }
+
+    public override void Write(SessionVerificationControllerDelegate? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterTypeSessionVerificationControllerDelegate.INSTANCE.Write((SessionVerificationControllerDelegate)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalSequenceString: FfiConverterRustBuffer<List<String>?> {
+    public static FfiConverterOptionalSequenceString INSTANCE = new FfiConverterOptionalSequenceString();
+
+    public override List<String>? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterSequenceString.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(List<String>? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterSequenceString.INSTANCE.AllocationSize((List<String>)value);
+        }
+    }
+
+    public override void Write(List<String>? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterSequenceString.INSTANCE.Write((List<String>)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalSequenceTypeRoomMember: FfiConverterRustBuffer<List<RoomMember>?> {
+    public static FfiConverterOptionalSequenceTypeRoomMember INSTANCE = new FfiConverterOptionalSequenceTypeRoomMember();
+
+    public override List<RoomMember>? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterSequenceTypeRoomMember.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(List<RoomMember>? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterSequenceTypeRoomMember.INSTANCE.AllocationSize((List<RoomMember>)value);
+        }
+    }
+
+    public override void Write(List<RoomMember>? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterSequenceTypeRoomMember.INSTANCE.Write((List<RoomMember>)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalSequenceTypeTimelineItem: FfiConverterRustBuffer<List<TimelineItem>?> {
+    public static FfiConverterOptionalSequenceTypeTimelineItem INSTANCE = new FfiConverterOptionalSequenceTypeTimelineItem();
+
+    public override List<TimelineItem>? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterSequenceTypeTimelineItem.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(List<TimelineItem>? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterSequenceTypeTimelineItem.INSTANCE.AllocationSize((List<TimelineItem>)value);
+        }
+    }
+
+    public override void Write(List<TimelineItem>? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterSequenceTypeTimelineItem.INSTANCE.Write((List<TimelineItem>)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterOptionalSequenceTypeRequiredState: FfiConverterRustBuffer<List<RequiredState>?> {
+    public static FfiConverterOptionalSequenceTypeRequiredState INSTANCE = new FfiConverterOptionalSequenceTypeRequiredState();
+
+    public override List<RequiredState>? Read(BigEndianStream stream) {
+        if (stream.ReadByte() == 0) {
+            return null;
+        }
+        return FfiConverterSequenceTypeRequiredState.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(List<RequiredState>? value) {
+        if (value == null) {
+            return 1;
+        } else {
+            return 1 + FfiConverterSequenceTypeRequiredState.INSTANCE.AllocationSize((List<RequiredState>)value);
+        }
+    }
+
+    public override void Write(List<RequiredState>? value, BigEndianStream stream) {
+        if (value == null) {
+            stream.WriteByte(0);
+        } else {
+            stream.WriteByte(1);
+            FfiConverterSequenceTypeRequiredState.INSTANCE.Write((List<RequiredState>)value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterSequenceUInt16: FfiConverterRustBuffer<List<ushort>> {
+    public static FfiConverterSequenceUInt16 INSTANCE = new FfiConverterSequenceUInt16();
+
+    public override List<ushort> Read(BigEndianStream stream) {
+        var length = stream.ReadInt();
+        var result = new List<ushort>(length);
+        for (int i = 0; i < length; i++) {
+            result.Add(FfiConverterUInt16.INSTANCE.Read(stream));
+        }
+        return result;
+    }
+
+    public override int AllocationSize(List<ushort> value) {
+        var sizeForLength = 4;
+
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            return sizeForLength;
+        }
+
+        var sizeForItems = value.Select(item => FfiConverterUInt16.INSTANCE.AllocationSize(item)).Sum();
+        return sizeForLength + sizeForItems;
+    }
+
+    public override void Write(List<ushort> value, BigEndianStream stream) {
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            stream.WriteInt(0);
+            return;
+        }
+
+        stream.WriteInt(value.Count);
+        value.ForEach(item => FfiConverterUInt16.INSTANCE.Write(item, stream));
+    }
+}
 
 
 
@@ -1010,7 +19075,796 @@ class FfiConverterSequenceString: FfiConverterRustBuffer<List<String>> {
         value.ForEach(item => FfiConverterString.INSTANCE.Write(item, stream));
     }
 }
+
+
+
+
+class FfiConverterSequenceTypeRoom: FfiConverterRustBuffer<List<Room>> {
+    public static FfiConverterSequenceTypeRoom INSTANCE = new FfiConverterSequenceTypeRoom();
+
+    public override List<Room> Read(BigEndianStream stream) {
+        var length = stream.ReadInt();
+        var result = new List<Room>(length);
+        for (int i = 0; i < length; i++) {
+            result.Add(FfiConverterTypeRoom.INSTANCE.Read(stream));
+        }
+        return result;
+    }
+
+    public override int AllocationSize(List<Room> value) {
+        var sizeForLength = 4;
+
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            return sizeForLength;
+        }
+
+        var sizeForItems = value.Select(item => FfiConverterTypeRoom.INSTANCE.AllocationSize(item)).Sum();
+        return sizeForLength + sizeForItems;
+    }
+
+    public override void Write(List<Room> value, BigEndianStream stream) {
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            stream.WriteInt(0);
+            return;
+        }
+
+        stream.WriteInt(value.Count);
+        value.ForEach(item => FfiConverterTypeRoom.INSTANCE.Write(item, stream));
+    }
+}
+
+
+
+
+class FfiConverterSequenceTypeRoomMember: FfiConverterRustBuffer<List<RoomMember>> {
+    public static FfiConverterSequenceTypeRoomMember INSTANCE = new FfiConverterSequenceTypeRoomMember();
+
+    public override List<RoomMember> Read(BigEndianStream stream) {
+        var length = stream.ReadInt();
+        var result = new List<RoomMember>(length);
+        for (int i = 0; i < length; i++) {
+            result.Add(FfiConverterTypeRoomMember.INSTANCE.Read(stream));
+        }
+        return result;
+    }
+
+    public override int AllocationSize(List<RoomMember> value) {
+        var sizeForLength = 4;
+
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            return sizeForLength;
+        }
+
+        var sizeForItems = value.Select(item => FfiConverterTypeRoomMember.INSTANCE.AllocationSize(item)).Sum();
+        return sizeForLength + sizeForItems;
+    }
+
+    public override void Write(List<RoomMember> value, BigEndianStream stream) {
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            stream.WriteInt(0);
+            return;
+        }
+
+        stream.WriteInt(value.Count);
+        value.ForEach(item => FfiConverterTypeRoomMember.INSTANCE.Write(item, stream));
+    }
+}
+
+
+
+
+class FfiConverterSequenceTypeSessionVerificationEmoji: FfiConverterRustBuffer<List<SessionVerificationEmoji>> {
+    public static FfiConverterSequenceTypeSessionVerificationEmoji INSTANCE = new FfiConverterSequenceTypeSessionVerificationEmoji();
+
+    public override List<SessionVerificationEmoji> Read(BigEndianStream stream) {
+        var length = stream.ReadInt();
+        var result = new List<SessionVerificationEmoji>(length);
+        for (int i = 0; i < length; i++) {
+            result.Add(FfiConverterTypeSessionVerificationEmoji.INSTANCE.Read(stream));
+        }
+        return result;
+    }
+
+    public override int AllocationSize(List<SessionVerificationEmoji> value) {
+        var sizeForLength = 4;
+
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            return sizeForLength;
+        }
+
+        var sizeForItems = value.Select(item => FfiConverterTypeSessionVerificationEmoji.INSTANCE.AllocationSize(item)).Sum();
+        return sizeForLength + sizeForItems;
+    }
+
+    public override void Write(List<SessionVerificationEmoji> value, BigEndianStream stream) {
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            stream.WriteInt(0);
+            return;
+        }
+
+        stream.WriteInt(value.Count);
+        value.ForEach(item => FfiConverterTypeSessionVerificationEmoji.INSTANCE.Write(item, stream));
+    }
+}
+
+
+
+
+class FfiConverterSequenceTypeTimelineDiff: FfiConverterRustBuffer<List<TimelineDiff>> {
+    public static FfiConverterSequenceTypeTimelineDiff INSTANCE = new FfiConverterSequenceTypeTimelineDiff();
+
+    public override List<TimelineDiff> Read(BigEndianStream stream) {
+        var length = stream.ReadInt();
+        var result = new List<TimelineDiff>(length);
+        for (int i = 0; i < length; i++) {
+            result.Add(FfiConverterTypeTimelineDiff.INSTANCE.Read(stream));
+        }
+        return result;
+    }
+
+    public override int AllocationSize(List<TimelineDiff> value) {
+        var sizeForLength = 4;
+
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            return sizeForLength;
+        }
+
+        var sizeForItems = value.Select(item => FfiConverterTypeTimelineDiff.INSTANCE.AllocationSize(item)).Sum();
+        return sizeForLength + sizeForItems;
+    }
+
+    public override void Write(List<TimelineDiff> value, BigEndianStream stream) {
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            stream.WriteInt(0);
+            return;
+        }
+
+        stream.WriteInt(value.Count);
+        value.ForEach(item => FfiConverterTypeTimelineDiff.INSTANCE.Write(item, stream));
+    }
+}
+
+
+
+
+class FfiConverterSequenceTypeTimelineItem: FfiConverterRustBuffer<List<TimelineItem>> {
+    public static FfiConverterSequenceTypeTimelineItem INSTANCE = new FfiConverterSequenceTypeTimelineItem();
+
+    public override List<TimelineItem> Read(BigEndianStream stream) {
+        var length = stream.ReadInt();
+        var result = new List<TimelineItem>(length);
+        for (int i = 0; i < length; i++) {
+            result.Add(FfiConverterTypeTimelineItem.INSTANCE.Read(stream));
+        }
+        return result;
+    }
+
+    public override int AllocationSize(List<TimelineItem> value) {
+        var sizeForLength = 4;
+
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            return sizeForLength;
+        }
+
+        var sizeForItems = value.Select(item => FfiConverterTypeTimelineItem.INSTANCE.AllocationSize(item)).Sum();
+        return sizeForLength + sizeForItems;
+    }
+
+    public override void Write(List<TimelineItem> value, BigEndianStream stream) {
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            stream.WriteInt(0);
+            return;
+        }
+
+        stream.WriteInt(value.Count);
+        value.ForEach(item => FfiConverterTypeTimelineItem.INSTANCE.Write(item, stream));
+    }
+}
+
+
+
+
+class FfiConverterSequenceTypePollAnswer: FfiConverterRustBuffer<List<PollAnswer>> {
+    public static FfiConverterSequenceTypePollAnswer INSTANCE = new FfiConverterSequenceTypePollAnswer();
+
+    public override List<PollAnswer> Read(BigEndianStream stream) {
+        var length = stream.ReadInt();
+        var result = new List<PollAnswer>(length);
+        for (int i = 0; i < length; i++) {
+            result.Add(FfiConverterTypePollAnswer.INSTANCE.Read(stream));
+        }
+        return result;
+    }
+
+    public override int AllocationSize(List<PollAnswer> value) {
+        var sizeForLength = 4;
+
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            return sizeForLength;
+        }
+
+        var sizeForItems = value.Select(item => FfiConverterTypePollAnswer.INSTANCE.AllocationSize(item)).Sum();
+        return sizeForLength + sizeForItems;
+    }
+
+    public override void Write(List<PollAnswer> value, BigEndianStream stream) {
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            stream.WriteInt(0);
+            return;
+        }
+
+        stream.WriteInt(value.Count);
+        value.ForEach(item => FfiConverterTypePollAnswer.INSTANCE.Write(item, stream));
+    }
+}
+
+
+
+
+class FfiConverterSequenceTypeReaction: FfiConverterRustBuffer<List<Reaction>> {
+    public static FfiConverterSequenceTypeReaction INSTANCE = new FfiConverterSequenceTypeReaction();
+
+    public override List<Reaction> Read(BigEndianStream stream) {
+        var length = stream.ReadInt();
+        var result = new List<Reaction>(length);
+        for (int i = 0; i < length; i++) {
+            result.Add(FfiConverterTypeReaction.INSTANCE.Read(stream));
+        }
+        return result;
+    }
+
+    public override int AllocationSize(List<Reaction> value) {
+        var sizeForLength = 4;
+
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            return sizeForLength;
+        }
+
+        var sizeForItems = value.Select(item => FfiConverterTypeReaction.INSTANCE.AllocationSize(item)).Sum();
+        return sizeForLength + sizeForItems;
+    }
+
+    public override void Write(List<Reaction> value, BigEndianStream stream) {
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            stream.WriteInt(0);
+            return;
+        }
+
+        stream.WriteInt(value.Count);
+        value.ForEach(item => FfiConverterTypeReaction.INSTANCE.Write(item, stream));
+    }
+}
+
+
+
+
+class FfiConverterSequenceTypeReactionSenderData: FfiConverterRustBuffer<List<ReactionSenderData>> {
+    public static FfiConverterSequenceTypeReactionSenderData INSTANCE = new FfiConverterSequenceTypeReactionSenderData();
+
+    public override List<ReactionSenderData> Read(BigEndianStream stream) {
+        var length = stream.ReadInt();
+        var result = new List<ReactionSenderData>(length);
+        for (int i = 0; i < length; i++) {
+            result.Add(FfiConverterTypeReactionSenderData.INSTANCE.Read(stream));
+        }
+        return result;
+    }
+
+    public override int AllocationSize(List<ReactionSenderData> value) {
+        var sizeForLength = 4;
+
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            return sizeForLength;
+        }
+
+        var sizeForItems = value.Select(item => FfiConverterTypeReactionSenderData.INSTANCE.AllocationSize(item)).Sum();
+        return sizeForLength + sizeForItems;
+    }
+
+    public override void Write(List<ReactionSenderData> value, BigEndianStream stream) {
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            stream.WriteInt(0);
+            return;
+        }
+
+        stream.WriteInt(value.Count);
+        value.ForEach(item => FfiConverterTypeReactionSenderData.INSTANCE.Write(item, stream));
+    }
+}
+
+
+
+
+class FfiConverterSequenceTypeRequiredState: FfiConverterRustBuffer<List<RequiredState>> {
+    public static FfiConverterSequenceTypeRequiredState INSTANCE = new FfiConverterSequenceTypeRequiredState();
+
+    public override List<RequiredState> Read(BigEndianStream stream) {
+        var length = stream.ReadInt();
+        var result = new List<RequiredState>(length);
+        for (int i = 0; i < length; i++) {
+            result.Add(FfiConverterTypeRequiredState.INSTANCE.Read(stream));
+        }
+        return result;
+    }
+
+    public override int AllocationSize(List<RequiredState> value) {
+        var sizeForLength = 4;
+
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            return sizeForLength;
+        }
+
+        var sizeForItems = value.Select(item => FfiConverterTypeRequiredState.INSTANCE.AllocationSize(item)).Sum();
+        return sizeForLength + sizeForItems;
+    }
+
+    public override void Write(List<RequiredState> value, BigEndianStream stream) {
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            stream.WriteInt(0);
+            return;
+        }
+
+        stream.WriteInt(value.Count);
+        value.ForEach(item => FfiConverterTypeRequiredState.INSTANCE.Write(item, stream));
+    }
+}
+
+
+
+
+class FfiConverterSequenceTypeRoomListRange: FfiConverterRustBuffer<List<RoomListRange>> {
+    public static FfiConverterSequenceTypeRoomListRange INSTANCE = new FfiConverterSequenceTypeRoomListRange();
+
+    public override List<RoomListRange> Read(BigEndianStream stream) {
+        var length = stream.ReadInt();
+        var result = new List<RoomListRange>(length);
+        for (int i = 0; i < length; i++) {
+            result.Add(FfiConverterTypeRoomListRange.INSTANCE.Read(stream));
+        }
+        return result;
+    }
+
+    public override int AllocationSize(List<RoomListRange> value) {
+        var sizeForLength = 4;
+
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            return sizeForLength;
+        }
+
+        var sizeForItems = value.Select(item => FfiConverterTypeRoomListRange.INSTANCE.AllocationSize(item)).Sum();
+        return sizeForLength + sizeForItems;
+    }
+
+    public override void Write(List<RoomListRange> value, BigEndianStream stream) {
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            stream.WriteInt(0);
+            return;
+        }
+
+        stream.WriteInt(value.Count);
+        value.ForEach(item => FfiConverterTypeRoomListRange.INSTANCE.Write(item, stream));
+    }
+}
+
+
+
+
+class FfiConverterSequenceTypeUserProfile: FfiConverterRustBuffer<List<UserProfile>> {
+    public static FfiConverterSequenceTypeUserProfile INSTANCE = new FfiConverterSequenceTypeUserProfile();
+
+    public override List<UserProfile> Read(BigEndianStream stream) {
+        var length = stream.ReadInt();
+        var result = new List<UserProfile>(length);
+        for (int i = 0; i < length; i++) {
+            result.Add(FfiConverterTypeUserProfile.INSTANCE.Read(stream));
+        }
+        return result;
+    }
+
+    public override int AllocationSize(List<UserProfile> value) {
+        var sizeForLength = 4;
+
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            return sizeForLength;
+        }
+
+        var sizeForItems = value.Select(item => FfiConverterTypeUserProfile.INSTANCE.AllocationSize(item)).Sum();
+        return sizeForLength + sizeForItems;
+    }
+
+    public override void Write(List<UserProfile> value, BigEndianStream stream) {
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            stream.WriteInt(0);
+            return;
+        }
+
+        stream.WriteInt(value.Count);
+        value.ForEach(item => FfiConverterTypeUserProfile.INSTANCE.Write(item, stream));
+    }
+}
+
+
+
+
+class FfiConverterSequenceTypeRoomListEntriesUpdate: FfiConverterRustBuffer<List<RoomListEntriesUpdate>> {
+    public static FfiConverterSequenceTypeRoomListEntriesUpdate INSTANCE = new FfiConverterSequenceTypeRoomListEntriesUpdate();
+
+    public override List<RoomListEntriesUpdate> Read(BigEndianStream stream) {
+        var length = stream.ReadInt();
+        var result = new List<RoomListEntriesUpdate>(length);
+        for (int i = 0; i < length; i++) {
+            result.Add(FfiConverterTypeRoomListEntriesUpdate.INSTANCE.Read(stream));
+        }
+        return result;
+    }
+
+    public override int AllocationSize(List<RoomListEntriesUpdate> value) {
+        var sizeForLength = 4;
+
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            return sizeForLength;
+        }
+
+        var sizeForItems = value.Select(item => FfiConverterTypeRoomListEntriesUpdate.INSTANCE.AllocationSize(item)).Sum();
+        return sizeForLength + sizeForItems;
+    }
+
+    public override void Write(List<RoomListEntriesUpdate> value, BigEndianStream stream) {
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            stream.WriteInt(0);
+            return;
+        }
+
+        stream.WriteInt(value.Count);
+        value.ForEach(item => FfiConverterTypeRoomListEntriesUpdate.INSTANCE.Write(item, stream));
+    }
+}
+
+
+
+
+class FfiConverterSequenceTypeRoomListEntry: FfiConverterRustBuffer<List<RoomListEntry>> {
+    public static FfiConverterSequenceTypeRoomListEntry INSTANCE = new FfiConverterSequenceTypeRoomListEntry();
+
+    public override List<RoomListEntry> Read(BigEndianStream stream) {
+        var length = stream.ReadInt();
+        var result = new List<RoomListEntry>(length);
+        for (int i = 0; i < length; i++) {
+            result.Add(FfiConverterTypeRoomListEntry.INSTANCE.Read(stream));
+        }
+        return result;
+    }
+
+    public override int AllocationSize(List<RoomListEntry> value) {
+        var sizeForLength = 4;
+
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            return sizeForLength;
+        }
+
+        var sizeForItems = value.Select(item => FfiConverterTypeRoomListEntry.INSTANCE.AllocationSize(item)).Sum();
+        return sizeForLength + sizeForItems;
+    }
+
+    public override void Write(List<RoomListEntry> value, BigEndianStream stream) {
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            stream.WriteInt(0);
+            return;
+        }
+
+        stream.WriteInt(value.Count);
+        value.ForEach(item => FfiConverterTypeRoomListEntry.INSTANCE.Write(item, stream));
+    }
+}
+
+
+
+
+class FfiConverterSequenceTypeWidgetEventFilter: FfiConverterRustBuffer<List<WidgetEventFilter>> {
+    public static FfiConverterSequenceTypeWidgetEventFilter INSTANCE = new FfiConverterSequenceTypeWidgetEventFilter();
+
+    public override List<WidgetEventFilter> Read(BigEndianStream stream) {
+        var length = stream.ReadInt();
+        var result = new List<WidgetEventFilter>(length);
+        for (int i = 0; i < length; i++) {
+            result.Add(FfiConverterTypeWidgetEventFilter.INSTANCE.Read(stream));
+        }
+        return result;
+    }
+
+    public override int AllocationSize(List<WidgetEventFilter> value) {
+        var sizeForLength = 4;
+
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            return sizeForLength;
+        }
+
+        var sizeForItems = value.Select(item => FfiConverterTypeWidgetEventFilter.INSTANCE.AllocationSize(item)).Sum();
+        return sizeForLength + sizeForItems;
+    }
+
+    public override void Write(List<WidgetEventFilter> value, BigEndianStream stream) {
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            stream.WriteInt(0);
+            return;
+        }
+
+        stream.WriteInt(value.Count);
+        value.ForEach(item => FfiConverterTypeWidgetEventFilter.INSTANCE.Write(item, stream));
+    }
+}
+
+
+
+
+class FfiConverterDictionaryStringString: FfiConverterRustBuffer<Dictionary<String, String>> {
+    public static FfiConverterDictionaryStringString INSTANCE = new FfiConverterDictionaryStringString();
+
+    public override Dictionary<String, String> Read(BigEndianStream stream) {
+        var result = new Dictionary<String, String>();
+        var len = stream.ReadInt();
+        for (int i = 0; i < len; i++) {
+            var key = FfiConverterString.INSTANCE.Read(stream);
+            var value = FfiConverterString.INSTANCE.Read(stream);
+            result[key] = value;
+        }
+        return result;
+    }
+
+    public override int AllocationSize(Dictionary<String, String> value) {
+        var sizeForLength = 4;
+
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            return sizeForLength;
+        }
+
+        var sizeForItems = value.Select(item => {
+            return FfiConverterString.INSTANCE.AllocationSize(item.Key) +
+                FfiConverterString.INSTANCE.AllocationSize(item.Value);
+        }).Sum();
+        return sizeForLength + sizeForItems;
+    }
+
+    public override void Write(Dictionary<String, String> value, BigEndianStream stream) {
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            stream.WriteInt(0);
+            return;
+        }
+
+        stream.WriteInt(value.Count);
+        foreach (var item in value) {
+            FfiConverterString.INSTANCE.Write(item.Key, stream);
+            FfiConverterString.INSTANCE.Write(item.Value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterDictionaryStringTypeReceipt: FfiConverterRustBuffer<Dictionary<String, Receipt>> {
+    public static FfiConverterDictionaryStringTypeReceipt INSTANCE = new FfiConverterDictionaryStringTypeReceipt();
+
+    public override Dictionary<String, Receipt> Read(BigEndianStream stream) {
+        var result = new Dictionary<String, Receipt>();
+        var len = stream.ReadInt();
+        for (int i = 0; i < len; i++) {
+            var key = FfiConverterString.INSTANCE.Read(stream);
+            var value = FfiConverterTypeReceipt.INSTANCE.Read(stream);
+            result[key] = value;
+        }
+        return result;
+    }
+
+    public override int AllocationSize(Dictionary<String, Receipt> value) {
+        var sizeForLength = 4;
+
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            return sizeForLength;
+        }
+
+        var sizeForItems = value.Select(item => {
+            return FfiConverterString.INSTANCE.AllocationSize(item.Key) +
+                FfiConverterTypeReceipt.INSTANCE.AllocationSize(item.Value);
+        }).Sum();
+        return sizeForLength + sizeForItems;
+    }
+
+    public override void Write(Dictionary<String, Receipt> value, BigEndianStream stream) {
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            stream.WriteInt(0);
+            return;
+        }
+
+        stream.WriteInt(value.Count);
+        foreach (var item in value) {
+            FfiConverterString.INSTANCE.Write(item.Key, stream);
+            FfiConverterTypeReceipt.INSTANCE.Write(item.Value, stream);
+        }
+    }
+}
+
+
+
+
+class FfiConverterDictionaryStringSequenceString: FfiConverterRustBuffer<Dictionary<String, List<String>>> {
+    public static FfiConverterDictionaryStringSequenceString INSTANCE = new FfiConverterDictionaryStringSequenceString();
+
+    public override Dictionary<String, List<String>> Read(BigEndianStream stream) {
+        var result = new Dictionary<String, List<String>>();
+        var len = stream.ReadInt();
+        for (int i = 0; i < len; i++) {
+            var key = FfiConverterString.INSTANCE.Read(stream);
+            var value = FfiConverterSequenceString.INSTANCE.Read(stream);
+            result[key] = value;
+        }
+        return result;
+    }
+
+    public override int AllocationSize(Dictionary<String, List<String>> value) {
+        var sizeForLength = 4;
+
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            return sizeForLength;
+        }
+
+        var sizeForItems = value.Select(item => {
+            return FfiConverterString.INSTANCE.AllocationSize(item.Key) +
+                FfiConverterSequenceString.INSTANCE.AllocationSize(item.Value);
+        }).Sum();
+        return sizeForLength + sizeForItems;
+    }
+
+    public override void Write(Dictionary<String, List<String>> value, BigEndianStream stream) {
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null) {
+            stream.WriteInt(0);
+            return;
+        }
+
+        stream.WriteInt(value.Count);
+        foreach (var item in value) {
+            FfiConverterString.INSTANCE.Write(item.Key, stream);
+            FfiConverterSequenceString.INSTANCE.Write(item.Value, stream);
+        }
+    }
+}
 #pragma warning restore 8625
 public static class MatrixSdkFfiMethods {
+    public static String GenTransactionId() {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_gen_transaction_id( ref _status)
+));
+    }
+
+    /// <exception cref="ParseException"></exception>
+    public static String GenerateWebviewUrl(WidgetSettings @widgetSettings, Room @room, ClientProperties @props) {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeParseException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_generate_webview_url(FfiConverterTypeWidgetSettings.INSTANCE.Lower(@widgetSettings), FfiConverterTypeRoom.INSTANCE.Lower(@room), FfiConverterTypeClientProperties.INSTANCE.Lower(@props), ref _status)
+));
+    }
+
+    public static void LogEvent(String @file, uint? @line, LogLevel @level, String @target, String @message) {
+        
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_log_event(FfiConverterString.INSTANCE.Lower(@file), FfiConverterOptionalUInt32.INSTANCE.Lower(@line), FfiConverterTypeLogLevel.INSTANCE.Lower(@level), FfiConverterString.INSTANCE.Lower(@target), FfiConverterString.INSTANCE.Lower(@message), ref _status)
+);
+    }
+
+    /// <exception cref="ParseException"></exception>
+    public static WidgetDriverAndHandle MakeWidgetDriver(WidgetSettings @settings) {
+        return FfiConverterTypeWidgetDriverAndHandle.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeParseException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_make_widget_driver(FfiConverterTypeWidgetSettings.INSTANCE.Lower(@settings), ref _status)
+));
+    }
+
+    public static MediaSource MediaSourceFromUrl(String @url) {
+        return FfiConverterTypeMediaSource.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_media_source_from_url(FfiConverterString.INSTANCE.Lower(@url), ref _status)
+));
+    }
+
+    public static RoomMessageEventContentWithoutRelation MessageEventContentFromHtml(String @body, String @htmlBody) {
+        return FfiConverterTypeRoomMessageEventContentWithoutRelation.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_message_event_content_from_html(FfiConverterString.INSTANCE.Lower(@body), FfiConverterString.INSTANCE.Lower(@htmlBody), ref _status)
+));
+    }
+
+    public static RoomMessageEventContentWithoutRelation MessageEventContentFromHtmlAsEmote(String @body, String @htmlBody) {
+        return FfiConverterTypeRoomMessageEventContentWithoutRelation.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_message_event_content_from_html_as_emote(FfiConverterString.INSTANCE.Lower(@body), FfiConverterString.INSTANCE.Lower(@htmlBody), ref _status)
+));
+    }
+
+    public static RoomMessageEventContentWithoutRelation MessageEventContentFromMarkdown(String @md) {
+        return FfiConverterTypeRoomMessageEventContentWithoutRelation.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_message_event_content_from_markdown(FfiConverterString.INSTANCE.Lower(@md), ref _status)
+));
+    }
+
+    public static RoomMessageEventContentWithoutRelation MessageEventContentFromMarkdownAsEmote(String @md) {
+        return FfiConverterTypeRoomMessageEventContentWithoutRelation.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_message_event_content_from_markdown_as_emote(FfiConverterString.INSTANCE.Lower(@md), ref _status)
+));
+    }
+
+    /// <exception cref="ClientException"></exception>
+    public static RoomMessageEventContentWithoutRelation MessageEventContentNew(MessageType @msgtype) {
+        return FfiConverterTypeRoomMessageEventContentWithoutRelation.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_message_event_content_new(FfiConverterTypeMessageType.INSTANCE.Lower(@msgtype), ref _status)
+));
+    }
+
+    /// <exception cref="ParseException"></exception>
+    public static WidgetSettings NewVirtualElementCallWidget(VirtualElementCallWidgetOptions @props) {
+        return FfiConverterTypeWidgetSettings.INSTANCE.Lift(
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeParseException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_new_virtual_element_call_widget(FfiConverterTypeVirtualElementCallWidgetOptions.INSTANCE.Lower(@props), ref _status)
+));
+    }
+
+    public static String SdkGitSha() {
+        return FfiConverterString.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_sdk_git_sha( ref _status)
+));
+    }
+
+    public static void SetupOtlpTracing(OtlpTracingConfiguration @config) {
+        
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_setup_otlp_tracing(FfiConverterTypeOtlpTracingConfiguration.INSTANCE.Lower(@config), ref _status)
+);
+    }
+
+    public static void SetupTracing(TracingConfiguration @config) {
+        
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_setup_tracing(FfiConverterTypeTracingConfiguration.INSTANCE.Lower(@config), ref _status)
+);
+    }
+
 }
 
