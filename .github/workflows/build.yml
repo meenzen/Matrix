@@ -28,15 +28,17 @@ jobs:
         with:
           dotnet-version: 7.0.x
 
-      - name: Load cache
+      - name: Rust cache
         uses: Swatinem/rust-cache@v2
         with:
           key: "${{ matrix.name }}"
           save-if: ${{ github.ref == 'refs/heads/main' }}
+          workspaces: |
+            external/matrix-rust-sdk
 
       - name: Build matrix-rust-sdk
         run: cargo build
-        working-directory: external/matrix-rust-sdk/bindings/matrix-sdk-ffi
+        working-directory: external/matrix-rust-sdk
 
       - name: Restore dependencies
         run: dotnet restore
