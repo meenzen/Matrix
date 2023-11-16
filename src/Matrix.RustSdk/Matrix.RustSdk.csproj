@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
 
         <PackageId>Matrix.RustSdk</PackageId>
         <PackageDescription>A C# wrapper for the matrix-rust-sdk crate.</PackageDescription>
