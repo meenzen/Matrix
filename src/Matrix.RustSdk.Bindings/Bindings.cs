@@ -840,6 +840,10 @@ static class _UniFFILib {
     );
 
     [DllImport("matrix_sdk_ffi")]
+    public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_notificationsettings_can_homeserver_push_encrypted_event_to_device(NotificationSettingsSafeHandle @ptr
+    );
+
+    [DllImport("matrix_sdk_ffi")]
     public static extern IntPtr uniffi_matrix_sdk_ffi_fn_method_notificationsettings_contains_keywords_rules(NotificationSettingsSafeHandle @ptr
     );
 
@@ -983,6 +987,10 @@ static class _UniFFILib {
 
     [DllImport("matrix_sdk_ffi")]
     public static extern void uniffi_matrix_sdk_ffi_fn_method_room_edit(RoomSafeHandle @ptr,RoomMessageEventContentWithoutRelationSafeHandle @newContent,EventTimelineItemSafeHandle @editItem,ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern void uniffi_matrix_sdk_ffi_fn_method_room_edit_poll(RoomSafeHandle @ptr,RustBuffer @question,RustBuffer @answers,byte @maxSelections,RustBuffer @pollKind,EventTimelineItemSafeHandle @editItem,ref RustCallStatus _uniffi_out_err
     );
 
     [DllImport("matrix_sdk_ffi")]
@@ -1730,6 +1738,10 @@ static class _UniFFILib {
     );
 
     [DllImport("matrix_sdk_ffi")]
+    public static extern RustBuffer uniffi_matrix_sdk_ffi_fn_func_get_element_call_required_permissions(ref RustCallStatus _uniffi_out_err
+    );
+
+    [DllImport("matrix_sdk_ffi")]
     public static extern void uniffi_matrix_sdk_ffi_fn_func_log_event(RustBuffer @file,RustBuffer @line,RustBuffer @level,RustBuffer @target,RustBuffer @message,ref RustCallStatus _uniffi_out_err
     );
 
@@ -2011,6 +2023,10 @@ static class _UniFFILib {
 
     [DllImport("matrix_sdk_ffi")]
     public static extern ushort uniffi_matrix_sdk_ffi_checksum_func_generate_webview_url(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_func_get_element_call_required_permissions(
     );
 
     [DllImport("matrix_sdk_ffi")]
@@ -2398,6 +2414,10 @@ static class _UniFFILib {
     );
 
     [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_can_homeserver_push_encrypted_event_to_device(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
     public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_contains_keywords_rules(
     );
 
@@ -2531,6 +2551,10 @@ static class _UniFFILib {
 
     [DllImport("matrix_sdk_ffi")]
     public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_edit(
+    );
+
+    [DllImport("matrix_sdk_ffi")]
+    public static extern ushort uniffi_matrix_sdk_ffi_checksum_method_room_edit_poll(
     );
 
     [DllImport("matrix_sdk_ffi")]
@@ -3236,6 +3260,12 @@ static class _UniFFILib {
             }
         }
         {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_func_get_element_call_required_permissions();
+            if (checksum != 51289) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_func_get_element_call_required_permissions` checksum `51289`, library returned `{checksum}`");
+            }
+        }
+        {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_func_log_event();
             if (checksum != 58164) {
                 throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_func_log_event` checksum `58164`, library returned `{checksum}`");
@@ -3812,6 +3842,12 @@ static class _UniFFILib {
             }
         }
         {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_can_homeserver_push_encrypted_event_to_device();
+            if (checksum != 22382) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_can_homeserver_push_encrypted_event_to_device` checksum `22382`, library returned `{checksum}`");
+            }
+        }
+        {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_contains_keywords_rules();
             if (checksum != 42972) {
                 throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_contains_keywords_rules` checksum `42972`, library returned `{checksum}`");
@@ -4013,6 +4049,12 @@ static class _UniFFILib {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_edit();
             if (checksum != 38490) {
                 throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_edit` checksum `38490`, library returned `{checksum}`");
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_edit_poll();
+            if (checksum != 18073) {
+                throw new UniffiContractChecksumException($"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_edit_poll` checksum `18073`, library returned `{checksum}`");
             }
         }
         {
@@ -6786,6 +6828,8 @@ class FfiConverterTypeNotificationClientBuilder: FfiConverter<NotificationClient
 
 public interface INotificationSettings {
     
+    bool CanHomeserverPushEncryptedEventToDevice();
+    
     bool ContainsKeywordsRules();
     
     RoomNotificationMode GetDefaultRoomNotificationMode(bool @isEncrypted, bool @isOneToOne);
@@ -6847,6 +6891,13 @@ public class NotificationSettingsSafeHandle: FFISafeHandle {
 public class NotificationSettings: FFIObject<NotificationSettingsSafeHandle>, INotificationSettings {
     public NotificationSettings(NotificationSettingsSafeHandle pointer): base(pointer) {}
 
+    
+    public bool CanHomeserverPushEncryptedEventToDevice() {
+        return FfiConverterBoolean.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_notificationsettings_can_homeserver_push_encrypted_event_to_device(this.GetHandle(),  ref _status)
+));
+    }
     
     public bool ContainsKeywordsRules() {
         return FfiConverterBoolean.INSTANCE.Lift(
@@ -7106,6 +7157,9 @@ public interface IRoom {
     
     /// <exception cref="ClientException"></exception>
     void Edit(RoomMessageEventContentWithoutRelation @newContent, EventTimelineItem @editItem);
+    
+    /// <exception cref="ClientException"></exception>
+    void EditPoll(String @question, List<String> @answers, byte @maxSelections, PollKind @pollKind, EventTimelineItem @editItem);
     
     /// <exception cref="ClientException"></exception>
     void EndPoll(String @pollStartId, String @text);
@@ -7379,6 +7433,14 @@ public class Room: FFIObject<RoomSafeHandle>, IRoom {
     public void Edit(RoomMessageEventContentWithoutRelation @newContent, EventTimelineItem @editItem) {
     _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
     _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_edit(this.GetHandle(), FfiConverterTypeRoomMessageEventContentWithoutRelation.INSTANCE.Lower(@newContent), FfiConverterTypeEventTimelineItem.INSTANCE.Lower(@editItem), ref _status)
+);
+    }
+    
+    
+    /// <exception cref="ClientException"></exception>
+    public void EditPoll(String @question, List<String> @answers, byte @maxSelections, PollKind @pollKind, EventTimelineItem @editItem) {
+    _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_edit_poll(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@question), FfiConverterSequenceString.INSTANCE.Lower(@answers), FfiConverterUInt8.INSTANCE.Lower(@maxSelections), FfiConverterTypePollKind.INSTANCE.Lower(@pollKind), FfiConverterTypeEventTimelineItem.INSTANCE.Lower(@editItem), ref _status)
 );
     }
     
@@ -15807,7 +15869,7 @@ public record TimelineItemContentKind: IDisposable  {
     ) : TimelineItemContentKind {}
     
     public record Poll (
-        String @question,PollKind @kind,ulong @maxSelections,List<PollAnswer> @answers,Dictionary<String, List<String>> @votes,ulong? @endTime
+        String @question,PollKind @kind,ulong @maxSelections,List<PollAnswer> @answers,Dictionary<String, List<String>> @votes,ulong? @endTime,bool @hasBeenEdited
     ) : TimelineItemContentKind {}
     
     public record UnableToDecrypt (
@@ -15857,7 +15919,8 @@ public record TimelineItemContentKind: IDisposable  {
             variant_value.@maxSelections,
             variant_value.@answers,
             variant_value.@votes,
-            variant_value.@endTime);
+            variant_value.@endTime,
+            variant_value.@hasBeenEdited);
                 break;
             case TimelineItemContentKind.UnableToDecrypt variant_value:
                 
@@ -15929,7 +15992,8 @@ class FfiConverterTypeTimelineItemContentKind : FfiConverterRustBuffer<TimelineI
                     FfiConverterUInt64.INSTANCE.Read(stream),
                     FfiConverterSequenceTypePollAnswer.INSTANCE.Read(stream),
                     FfiConverterDictionaryStringSequenceString.INSTANCE.Read(stream),
-                    FfiConverterOptionalUInt64.INSTANCE.Read(stream)
+                    FfiConverterOptionalUInt64.INSTANCE.Read(stream),
+                    FfiConverterBoolean.INSTANCE.Read(stream)
                 );
             case 5:
                 return new TimelineItemContentKind.UnableToDecrypt(
@@ -15986,7 +16050,8 @@ class FfiConverterTypeTimelineItemContentKind : FfiConverterRustBuffer<TimelineI
                     + FfiConverterUInt64.INSTANCE.AllocationSize(variant_value.@maxSelections)
                     + FfiConverterSequenceTypePollAnswer.INSTANCE.AllocationSize(variant_value.@answers)
                     + FfiConverterDictionaryStringSequenceString.INSTANCE.AllocationSize(variant_value.@votes)
-                    + FfiConverterOptionalUInt64.INSTANCE.AllocationSize(variant_value.@endTime);
+                    + FfiConverterOptionalUInt64.INSTANCE.AllocationSize(variant_value.@endTime)
+                    + FfiConverterBoolean.INSTANCE.AllocationSize(variant_value.@hasBeenEdited);
             case TimelineItemContentKind.UnableToDecrypt variant_value:
                 return 4
                     + FfiConverterTypeEncryptedMessage.INSTANCE.AllocationSize(variant_value.@msg);
@@ -16040,6 +16105,7 @@ class FfiConverterTypeTimelineItemContentKind : FfiConverterRustBuffer<TimelineI
                 FfiConverterSequenceTypePollAnswer.INSTANCE.Write(variant_value.@answers, stream);
                 FfiConverterDictionaryStringSequenceString.INSTANCE.Write(variant_value.@votes, stream);
                 FfiConverterOptionalUInt64.INSTANCE.Write(variant_value.@endTime, stream);
+                FfiConverterBoolean.INSTANCE.Write(variant_value.@hasBeenEdited, stream);
                 break;
             case TimelineItemContentKind.UnableToDecrypt variant_value:
                 stream.WriteInt(5);
@@ -19776,6 +19842,13 @@ public static class MatrixSdkFfiMethods {
         return FfiConverterString.INSTANCE.Lift(
     _UniffiHelpers.RustCallWithError(FfiConverterTypeParseException.INSTANCE, (ref RustCallStatus _status) =>
     _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_generate_webview_url(FfiConverterTypeWidgetSettings.INSTANCE.Lower(@widgetSettings), FfiConverterTypeRoom.INSTANCE.Lower(@room), FfiConverterTypeClientProperties.INSTANCE.Lower(@props), ref _status)
+));
+    }
+
+    public static WidgetCapabilities GetElementCallRequiredPermissions() {
+        return FfiConverterTypeWidgetCapabilities.INSTANCE.Lift(
+    _UniffiHelpers.RustCall( (ref RustCallStatus _status) =>
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_get_element_call_required_permissions( ref _status)
 ));
     }
 
