@@ -8,6 +8,13 @@ BASE_DIRECTORY=$(pwd)
 SDK_DIRECTORY=external/matrix-rust-sdk/bindings/matrix-sdk-ffi
 CROSS_TOML_FILE=external/matrix-rust-sdk/Cross.toml
 
+# enable the experimental parallel front-end, see https://blog.rust-lang.org/2023/11/09/parallel-rustc.html
+export RUSTFLAGS="-Z threads=8"
+export CARGO_TARGET_X86_64_PC_WINDOWS_GNU_RUSTFLAGS="$RUSTFLAGS"
+export CARGO_TARGET_I686_PC_WINDOWS_GNU_RUSTFLAGS="$RUSTFLAGS"
+export CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS="$RUSTFLAGS"
+export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_RUSTFLAGS="$RUSTFLAGS"
+
 cp Cross.toml $CROSS_TOML_FILE
 cd $SDK_DIRECTORY
 
