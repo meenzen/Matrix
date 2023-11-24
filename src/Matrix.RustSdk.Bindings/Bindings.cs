@@ -5337,39 +5337,21 @@ class FfiConverterString: FfiConverter<string, RustBuffer> {
 
 
 
-class FfiConverterSequenceUInt8: FfiConverterRustBuffer<List<byte>> {
-    public static FfiConverterSequenceUInt8 INSTANCE = new FfiConverterSequenceUInt8();
+class FfiConverterByteArray: FfiConverterRustBuffer<byte[]> {
+    public static FfiConverterByteArray INSTANCE = new FfiConverterByteArray();
 
-    public override List<byte> Read(BigEndianStream stream) {
+    public override byte[] Read(BigEndianStream stream) {
         var length = stream.ReadInt();
-        var result = new List<byte>(length);
-        for (int i = 0; i < length; i++) {
-            result.Add(FfiConverterUInt8.INSTANCE.Read(stream));
-        }
-        return result;
+        return stream.ReadBytes(length);
     }
 
-    public override int AllocationSize(List<byte> value) {
-        var sizeForLength = 4;
-
-        // details/1-empty-list-as-default-method-parameter.md
-        if (value == null) {
-            return sizeForLength;
-        }
-
-        var sizeForItems = value.Select(item => FfiConverterUInt8.INSTANCE.AllocationSize(item)).Sum();
-        return sizeForLength + sizeForItems;
+    public override int AllocationSize(byte[] value) {
+        return 4 + value.Length;
     }
 
-    public override void Write(List<byte> value, BigEndianStream stream) {
-        // details/1-empty-list-as-default-method-parameter.md
-        if (value == null) {
-            stream.WriteInt(0);
-            return;
-        }
-
-        stream.WriteInt(value.Count);
-        value.ForEach(item => FfiConverterUInt8.INSTANCE.Write(item, stream));
+    public override void Write(byte[] value, BigEndianStream stream) {
+        stream.WriteInt(value.Length);
+        stream.WriteBytes(value);
     }
 }
 
@@ -5623,13 +5605,13 @@ public interface IClient {
     Room? GetDmRoom(String @userId);
     
     /// <exception cref="ClientException"></exception>
-    List<byte> GetMediaContent(MediaSource @mediaSource);
+    byte[] GetMediaContent(MediaSource @mediaSource);
     
     /// <exception cref="ClientException"></exception>
     MediaFileHandle GetMediaFile(MediaSource @mediaSource, String? @body, String @mimeType, bool @useCache, String? @tempDir);
     
     /// <exception cref="ClientException"></exception>
-    List<byte> GetMediaThumbnail(MediaSource @mediaSource, ulong @width, ulong @height);
+    byte[] GetMediaThumbnail(MediaSource @mediaSource, ulong @width, ulong @height);
     
     NotificationSettings GetNotificationSettings();
     
@@ -5684,10 +5666,10 @@ public interface IClient {
     void UnignoreUser(String @userId);
     
     /// <exception cref="ClientException"></exception>
-    void UploadAvatar(String @mimeType, List<byte> @data);
+    void UploadAvatar(String @mimeType, byte[] @data);
     
     /// <exception cref="ClientException"></exception>
-    String UploadMedia(String @mimeType, List<byte> @data, ProgressWatcher? @progressWatcher);
+    String UploadMedia(String @mimeType, byte[] @data, ProgressWatcher? @progressWatcher);
     
     /// <exception cref="ClientException"></exception>
     String UserId();
@@ -5775,8 +5757,8 @@ public class Client: FFIObject<ClientSafeHandle>, IClient {
     }
     
     /// <exception cref="ClientException"></exception>
-    public List<byte> GetMediaContent(MediaSource @mediaSource) {
-        return FfiConverterSequenceUInt8.INSTANCE.Lift(
+    public byte[] GetMediaContent(MediaSource @mediaSource) {
+        return FfiConverterByteArray.INSTANCE.Lift(
     _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
     _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_get_media_content(this.GetHandle(), FfiConverterTypeMediaSource.INSTANCE.Lower(@mediaSource), ref _status)
 ));
@@ -5791,8 +5773,8 @@ public class Client: FFIObject<ClientSafeHandle>, IClient {
     }
     
     /// <exception cref="ClientException"></exception>
-    public List<byte> GetMediaThumbnail(MediaSource @mediaSource, ulong @width, ulong @height) {
-        return FfiConverterSequenceUInt8.INSTANCE.Lift(
+    public byte[] GetMediaThumbnail(MediaSource @mediaSource, ulong @width, ulong @height) {
+        return FfiConverterByteArray.INSTANCE.Lift(
     _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
     _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_get_media_thumbnail(this.GetHandle(), FfiConverterTypeMediaSource.INSTANCE.Lower(@mediaSource), FfiConverterUInt64.INSTANCE.Lower(@width), FfiConverterUInt64.INSTANCE.Lower(@height), ref _status)
 ));
@@ -5946,18 +5928,18 @@ public class Client: FFIObject<ClientSafeHandle>, IClient {
     
     
     /// <exception cref="ClientException"></exception>
-    public void UploadAvatar(String @mimeType, List<byte> @data) {
+    public void UploadAvatar(String @mimeType, byte[] @data) {
     _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
-    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_upload_avatar(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@mimeType), FfiConverterSequenceUInt8.INSTANCE.Lower(@data), ref _status)
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_upload_avatar(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@mimeType), FfiConverterByteArray.INSTANCE.Lower(@data), ref _status)
 );
     }
     
     
     /// <exception cref="ClientException"></exception>
-    public String UploadMedia(String @mimeType, List<byte> @data, ProgressWatcher? @progressWatcher) {
+    public String UploadMedia(String @mimeType, byte[] @data, ProgressWatcher? @progressWatcher) {
         return FfiConverterString.INSTANCE.Lift(
     _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
-    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_upload_media(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@mimeType), FfiConverterSequenceUInt8.INSTANCE.Lower(@data), FfiConverterOptionalTypeProgressWatcher.INSTANCE.Lower(@progressWatcher), ref _status)
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_upload_media(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@mimeType), FfiConverterByteArray.INSTANCE.Lower(@data), FfiConverterOptionalTypeProgressWatcher.INSTANCE.Lower(@progressWatcher), ref _status)
 ));
     }
     
@@ -7288,7 +7270,7 @@ public interface IRoom {
     String? Topic();
     
     /// <exception cref="ClientException"></exception>
-    void UploadAvatar(String @mimeType, List<byte> @data, ImageInfo? @mediaInfo);
+    void UploadAvatar(String @mimeType, byte[] @data, ImageInfo? @mediaInfo);
     
 }
 
@@ -7822,9 +7804,9 @@ public class Room: FFIObject<RoomSafeHandle>, IRoom {
     }
     
     /// <exception cref="ClientException"></exception>
-    public void UploadAvatar(String @mimeType, List<byte> @data, ImageInfo? @mediaInfo) {
+    public void UploadAvatar(String @mimeType, byte[] @data, ImageInfo? @mediaInfo) {
     _UniffiHelpers.RustCallWithError(FfiConverterTypeClientException.INSTANCE, (ref RustCallStatus _status) =>
-    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_upload_avatar(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@mimeType), FfiConverterSequenceUInt8.INSTANCE.Lower(@data), FfiConverterOptionalTypeImageInfo.INSTANCE.Lower(@mediaInfo), ref _status)
+    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_upload_avatar(this.GetHandle(), FfiConverterString.INSTANCE.Lower(@mimeType), FfiConverterByteArray.INSTANCE.Lower(@data), FfiConverterOptionalTypeImageInfo.INSTANCE.Lower(@mediaInfo), ref _status)
 );
     }
     
