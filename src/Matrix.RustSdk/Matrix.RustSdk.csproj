@@ -1,36 +1,24 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-
-        <PackageId>Matrix.RustSdk</PackageId>
-        <PackageDescription>A C# wrapper for the matrix-rust-sdk crate.</PackageDescription>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    </PropertyGroup>
-    
-    <ItemGroup>
-        <PackageReference Include="Roslynator.Analyzers" Version="4.12.9">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        <PackageReference Include="SonarAnalyzer.CSharp" Version="9.32.0.97167">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Include="../../README.md" Pack="true" PackagePath="/" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Matrix.RustSdk.Bindings\Matrix.RustSdk.Bindings.csproj" />
-    </ItemGroup>
-
-    <!-- set HUSKY to 0 in CI/CD disable this -->
-    <Target Name="husky" BeforeTargets="Restore;CollectPackageReferences" Condition="'$(HUSKY)' != 0">
-        <Exec Command="dotnet tool restore" StandardOutputImportance="Low" StandardErrorImportance="High" />
-        <Exec Command="dotnet husky install" StandardOutputImportance="Low" StandardErrorImportance="High" WorkingDirectory="../../" />
-    </Target>
-
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <PackageId>Matrix.RustSdk</PackageId>
+    <PackageDescription>A C# wrapper for the matrix-rust-sdk crate.</PackageDescription>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Roslynator.Analyzers" Version="4.12.9">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="9.32.0.97167">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Matrix.RustSdk.Bindings\Matrix.RustSdk.Bindings.csproj" />
+  </ItemGroup>
 </Project>

@@ -1,49 +1,50 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
-    <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-
-        <PackageId>Matrix.RustSdk.Bindings</PackageId>
-        <PackageDescription>UniFFI bindings for the matrix-rust-sdk crate.</PackageDescription>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <None Include="README.md" Pack="true" PackagePath="/" />
-    </ItemGroup>
-
-    <ItemGroup Condition="'$(Configuration)'=='DEBUG'">
-        <Content Include="../../external/matrix-rust-sdk/target/debug/libmatrix_sdk_ffi.so" Condition="$([MSBuild]::IsOSPlatform('Linux'))">
-            <Pack>true</Pack>
-            <PackagePath>runtimes/linux-x64/native/libmatrix_sdk_ffi.so</PackagePath>
-            <Visible>false</Visible>
-        </Content>
-        <Content Include="../../external/matrix-rust-sdk/target/debug/matrix_sdk_ffi.dll" Condition="$([MSBuild]::IsOSPlatform('Windows'))">
-            <Pack>true</Pack>
-            <PackagePath>runtimes/win-x64/native/matrix_sdk_ffi.dll</PackagePath>
-            <Visible>false</Visible>
-        </Content>
-    </ItemGroup>
-    
-    <ItemGroup Condition="'$(Configuration)'=='RELEASE'">
-        <Content Include="../../external/matrix-rust-sdk/target/x86_64-pc-windows-gnu/release/matrix_sdk_ffi.dll">
-            <Pack>true</Pack>
-            <PackagePath>runtimes/win-x64/native/matrix_sdk_ffi.dll</PackagePath>
-        </Content>
-        <Content Include="../../external/matrix-rust-sdk/target/i686-pc-windows-gnu/release/matrix_sdk_ffi.dll">
-            <Pack>true</Pack>
-            <PackagePath>runtimes/win-x86/native/matrix_sdk_ffi.dll</PackagePath>
-        </Content>
-        <Content Include="../../external/matrix-rust-sdk/target/x86_64-unknown-linux-gnu/release/libmatrix_sdk_ffi.so">
-            <Pack>true</Pack>
-            <PackagePath>runtimes/linux-x64/native/libmatrix_sdk_ffi.so</PackagePath>
-        </Content>
-        <Content Include="../../external/matrix-rust-sdk/target/aarch64-unknown-linux-gnu/release/libmatrix_sdk_ffi.so">
-            <Pack>true</Pack>
-            <PackagePath>runtimes/linux-arm64/native/libmatrix_sdk_ffi.so</PackagePath>
-        </Content>
-    </ItemGroup>
-
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <PackageId>Matrix.RustSdk.Bindings</PackageId>
+    <PackageDescription>UniFFI bindings for the matrix-rust-sdk crate.</PackageDescription>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <NoWarn>CS1570</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)'=='DEBUG'">
+    <Content
+      Include="../../external/matrix-rust-sdk/target/debug/libmatrix_sdk_ffi.so"
+      Condition="$([MSBuild]::IsOSPlatform('Linux'))"
+    >
+      <Pack>true</Pack>
+      <PackagePath>runtimes/linux-x64/native/libmatrix_sdk_ffi.so</PackagePath>
+      <Visible>false</Visible>
+    </Content>
+    <Content
+      Include="../../external/matrix-rust-sdk/target/debug/matrix_sdk_ffi.dll"
+      Condition="$([MSBuild]::IsOSPlatform('Windows'))"
+    >
+      <Pack>true</Pack>
+      <PackagePath>runtimes/win-x64/native/matrix_sdk_ffi.dll</PackagePath>
+      <Visible>false</Visible>
+    </Content>
+  </ItemGroup>
+  <ItemGroup Condition="'$(Configuration)'=='RELEASE'">
+    <Content Include="../../external/matrix-rust-sdk/target/x86_64-pc-windows-gnu/release/matrix_sdk_ffi.dll">
+      <Pack>true</Pack>
+      <PackagePath>runtimes/win-x64/native/matrix_sdk_ffi.dll</PackagePath>
+    </Content>
+    <Content Include="../../external/matrix-rust-sdk/target/i686-pc-windows-gnu/release/matrix_sdk_ffi.dll">
+      <Pack>true</Pack>
+      <PackagePath>runtimes/win-x86/native/matrix_sdk_ffi.dll</PackagePath>
+    </Content>
+    <Content Include="../../external/matrix-rust-sdk/target/x86_64-unknown-linux-gnu/release/libmatrix_sdk_ffi.so">
+      <Pack>true</Pack>
+      <PackagePath>runtimes/linux-x64/native/libmatrix_sdk_ffi.so</PackagePath>
+    </Content>
+    <Content Include="../../external/matrix-rust-sdk/target/aarch64-unknown-linux-gnu/release/libmatrix_sdk_ffi.so">
+      <Pack>true</Pack>
+      <PackagePath>runtimes/linux-arm64/native/libmatrix_sdk_ffi.so</PackagePath>
+    </Content>
+  </ItemGroup>
 </Project>

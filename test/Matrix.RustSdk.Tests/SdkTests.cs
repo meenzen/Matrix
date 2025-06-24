@@ -54,14 +54,14 @@ public class SdkTests : IAsyncLifetime
             "/_matrix/client/r0/register",
             new StringContent(
                 """
-            {
-                "username": "test",
-                "password": "test",
-                "auth": {
-                    "type":"m.login.dummy"
+                {
+                    "username": "test",
+                    "password": "test",
+                    "auth": {
+                        "type":"m.login.dummy"
+                    }
                 }
-            }
-            """
+                """
             )
         );
 
@@ -72,15 +72,15 @@ public class SdkTests : IAsyncLifetime
             "/_matrix/client/r0/login",
             new StringContent(
                 """
-            {
-                "type": "m.login.password",
-                "identifier": {
-                    "type": "m.id.user",
-                    "user": "test"
-                },
-                "password": "test"
-            }
-            """
+                {
+                    "type": "m.login.password",
+                    "identifier": {
+                        "type": "m.id.user",
+                        "user": "test"
+                    },
+                    "password": "test"
+                }
+                """
             )
         );
 
@@ -97,17 +97,16 @@ public class SdkTests : IAsyncLifetime
         Client client = builder.HomeserverUrl(GetConduitUrl()).Username("@admin:localhost").Build();
         client.Login("@admin:localhost", "admin", null, null);
 
-        CreateRoomParameters parameters =
-            new(
-                name: "TestRoom",
-                isEncrypted: false,
-                visibility: RoomVisibility.Private,
-                preset: RoomPreset.PrivateChat,
-                topic: null,
-                avatar: null,
-                isDirect: false,
-                invite: null
-            );
+        CreateRoomParameters parameters = new(
+            name: "TestRoom",
+            isEncrypted: false,
+            visibility: RoomVisibility.Private,
+            preset: RoomPreset.PrivateChat,
+            topic: null,
+            avatar: null,
+            isDirect: false,
+            invite: null
+        );
         client.CreateRoom(parameters);
 
         List<Room> rooms = client.Rooms();
