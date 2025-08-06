@@ -11,10 +11,7 @@ in {
   env = {
     UNIFFI_BINDGEN_CS_VERSION = "0.9.1";
     UNIFFI_RS_VERSION = "0.28.3";
-    CROSS_VERSION = "0.2.5";
-
     CROSS_CUSTOM_TOOLCHAIN = "1";
-    # Adapt this for your use case:
     CROSS_CUSTOM_TOOLCHAIN_COMPAT = "x86_64-amd64-linux-musl";
   };
 
