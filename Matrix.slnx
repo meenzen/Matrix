@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="src/Matrix.RustSdk.Bindings/Matrix.RustSdk.Bindings.csproj" />
+  <Project Path="src/Matrix.RustSdk/Matrix.RustSdk.csproj" />
+  <Project Path="test/Matrix.RustSdk.Tests/Matrix.RustSdk.Tests.csproj" />
+</Solution>
