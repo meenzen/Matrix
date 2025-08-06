@@ -43,9 +43,6 @@ in {
   # https://devenv.sh/scripts/
   scripts = {
     uniffi-bindgen-cs.exec = ''$DEVENV_STATE/cargo-install/bin/uniffi-bindgen-cs "$@"'';
-    cross.exec = ''$DEVENV_STATE/cargo-install/bin/cross "$@"'';
-    cross-util.exec = ''$DEVENV_STATE/cargo-install/bin/cross-util "$@"'';
-
     # uniffi-bindgen-cs expects csharpier to be in the path
     dotnet-csharpier.exec = ''dotnet csharpier format "$@"'';
   };
