@@ -29,6 +29,9 @@ The native libraries only work with the bindings of the exact same version, so t
 that version of `Matrix.RustSdk.Bindings`. The glibc libraries require glibc 2.35 or newer (Ubuntu 22.04, Debian 12,
 RHEL 10), the musl libraries `libgcc` (installed with .NET on Alpine).
 
+The packages contain matrix-rust-sdk and the Rust crates it depends on, their licenses and copyright notices are in
+`THIRD-PARTY-NOTICES.txt` in every package.
+
 The bindings are generated from [matrix-rust-sdk](https://github.com/matrix-org/matrix-rust-sdk), the release notes of
 each package name the `matrix-sdk-ffi` release it was built from. The API follows the upstream SDK, which changes with
 almost every release, so minor versions of the packages contain breaking changes until 1.0.

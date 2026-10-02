@@ -15,6 +15,8 @@
   packages = [
     pkgs.git
     pkgs.sqlite
+    # generates THIRD-PARTY-NOTICES.txt, see scripts/generate-notices.sh
+    pkgs.cargo-about
   ];
 
   # https://devenv.sh/languages/

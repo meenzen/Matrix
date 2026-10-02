@@ -13,7 +13,7 @@
     <PackageTags>Matrix matrix-rust-sdk FFI UniFFI</PackageTags>
     <RepositoryUrl>https://github.com/meenzen/Matrix</RepositoryUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <Copyright>Copyright (c) 2023 Samuel Meenzen</Copyright>
+    <Copyright>Copyright (c) 2023 Samuel Meenzen. Contains matrix-rust-sdk, Copyright 2020 The Matrix.org Foundation C.I.C. and contributors, and third-party software, see THIRD-PARTY-NOTICES.txt.</Copyright>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
