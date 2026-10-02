@@ -26,7 +26,7 @@
     };
     dotnet = {
       enable = true;
-      package = pkgs.dotnetCorePackages.sdk_9_0;
+      package = pkgs.dotnetCorePackages.sdk_10_0;
     };
   };
 

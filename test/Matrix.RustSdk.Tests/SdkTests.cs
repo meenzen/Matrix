@@ -13,8 +13,7 @@ public class SdkTests : IAsyncLifetime
 
     private const int HomeserverPort = 8008;
 
-    private readonly IContainer _container = new ContainerBuilder()
-        .WithImage("ghcr.io/matrix-construct/tuwunel:v1.9.3")
+    private readonly IContainer _container = new ContainerBuilder("ghcr.io/matrix-construct/tuwunel:v1.9.3")
         .WithEnvironment("TUWUNEL_SERVER_NAME", "localhost")
         .WithEnvironment("TUWUNEL_ADDRESS", "0.0.0.0")
         .WithEnvironment("TUWUNEL_PORT", HomeserverPort.ToString(CultureInfo.InvariantCulture))
