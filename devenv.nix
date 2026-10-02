@@ -4,21 +4,16 @@
   config,
   inputs,
   ...
-}: let
-  crossPkg = pkgs.callPackage ./cross.nix {};
-in {
+}: {
   # https://devenv.sh/basics/
   env = {
     UNIFFI_BINDGEN_CS_VERSION = "0.9.1";
     UNIFFI_RS_VERSION = "0.28.3";
-    CROSS_CUSTOM_TOOLCHAIN = "1";
-    CROSS_CUSTOM_TOOLCHAIN_COMPAT = "x86_64-amd64-linux-musl";
   };
 
   # https://devenv.sh/packages/
   packages = [
     pkgs.git
-    pkgs.openssl
     pkgs.sqlite
   ];
 
@@ -27,12 +22,6 @@ in {
     rust = {
       enable = true;
       channel = "nightly";
-      targets = [
-        "x86_64-pc-windows-gnu"
-        "i686-pc-windows-gnu"
-        "aarch64-unknown-linux-gnu"
-        "x86_64-unknown-linux-gnu"
-      ];
     };
     dotnet = {
       enable = true;
@@ -56,15 +45,9 @@ in {
       # workaround wrong version number: https://github.com/NordSecurity/uniffi-bindgen-cs/issues/115
       status = ''$DEVENV_STATE/cargo-install/bin/uniffi-bindgen-cs --version | grep -q -F "v$UNIFFI_RS_VERSION"'';
     };
-    "setupCross" = {
-      exec = ''
-        export PATH="${crossPkg}/bin:$PATH"
-      '';
-    };
     "devenv:enterShell".after = [
       "dotnet:tool:restore"
       "cargo:install:bindgen"
-      "setupCross"
     ];
   };
 
