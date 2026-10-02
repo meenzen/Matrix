@@ -83,7 +83,8 @@ obvious:
 - Every package contains `LICENSE` and `THIRD-PARTY-NOTICES.txt` (licenses of matrix-rust-sdk and all linked crates,
   generated with cargo-about by `scripts/generate-notices.sh`), release builds fail without the notices. Don't accept
   new licenses in `licenses/about.toml` without checking them, see RELEASING.md.
-- Publishing uses nuget.org trusted publishing (OIDC, `NuGet/login`), there's no API key secret.
+- Publishing uses nuget.org trusted publishing (OIDC, `NuGet/login`), there's no API key secret. Afterwards the
+  `release` job creates the GitHub release and tag with the job token (`.github/scripts/create-release.sh`).
 - nuget.org rejects packages over 250 MB, the native libraries are ~25 MB compressed each, keep the per-OS split in
   mind when adding platforms.
 - Cross compiling the native libraries locally (cross, cargo-zigbuild, cargo-xwin) was tried and removed in favor of
