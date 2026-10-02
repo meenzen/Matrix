@@ -222,8 +222,9 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
+      # the test project is part of the solution, but packing doesn't run the tests
       - name: Build
-        run: dotnet build -c Release --no-restore
+        run: dotnet build -c Release --no-restore -p:RequireNativeLibrary=false
 
       - name: Show packages
         run: ls -la src/*/bin/Release/*.nupkg
