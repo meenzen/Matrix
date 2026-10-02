@@ -37,7 +37,7 @@ jobs:
             library: matrix_sdk_ffi.dll
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
 
@@ -75,7 +75,7 @@ jobs:
           mkdir -p native/runtimes/${{ matrix.rid }}/native
           cp external/matrix-rust-sdk/target/${{ matrix.target }}/"$CARGO_PROFILE"/${{ matrix.library }} native/runtimes/${{ matrix.rid }}/native/
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: native-${{ matrix.rid }}
           path: native/
@@ -88,11 +88,11 @@ jobs:
     environment: production
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           pattern: native-*
           path: native/
@@ -102,7 +102,7 @@ jobs:
         run: find native -type f -exec ls -la {} \;
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
 
@@ -112,7 +112,7 @@ jobs:
       - name: Build
         run: dotnet build -c Release --no-restore
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: nuget-packages
           path: src/*/bin/Release/*.nupkg
