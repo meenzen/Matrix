@@ -13,7 +13,7 @@ PACKAGES_DIRECTORY=$1
 # the version of the published packages, e.g. Matrix.RustSdk.Bindings.0.1.0-rc.3.nupkg -> 0.1.0-rc.3
 PACKAGE=$(find "$PACKAGES_DIRECTORY" -name 'Matrix.RustSdk.Bindings.[0-9]*.nupkg' -printf '%f\n' | head -n 1)
 VERSION=$(echo "$PACKAGE" | sed -E 's/^Matrix\.RustSdk\.Bindings\.(.+)\.nupkg$/\1/')
-if [ -z "$VERSION" ]; then
+if [[ -z "$VERSION" ]]; then
   echo "error: Matrix.RustSdk.Bindings package not found in $PACKAGES_DIRECTORY" >&2
   exit 1
 fi
@@ -26,6 +26,16 @@ UNIFFI_VERSION=$(sed -nE 's/.*UNIFFI_RS_VERSION = "(.+)";/\1/p' devenv.nix)
 if gh release view "$TAG" >/dev/null 2>&1; then
   echo "=> Release $TAG already exists, skipping"
   exit 0
+fi
+
+# gh release create silently uses an existing tag and ignores --target, so a tag on another commit would create the
+# release for the wrong commit. The peeled ref (^{}) is the commit of an annotated tag.
+TAG_REFS=$(git ls-remote --tags origin "refs/tags/$TAG" "refs/tags/$TAG^{}")
+TAG_SHA=$(echo "$TAG_REFS" | awk '$2 ~ /\^\{\}$/ { print $1; exit }')
+TAG_SHA=${TAG_SHA:-$(echo "$TAG_REFS" | awk 'NR == 1 { print $1 }')}
+if [[ -n "$TAG_SHA" && "$TAG_SHA" != "$GITHUB_SHA" ]]; then
+  echo "error: tag $TAG already exists on $TAG_SHA, but the packages were published from $GITHUB_SHA" >&2
+  exit 1
 fi
 
 if [[ "$VERSION" == *-* ]]; then
