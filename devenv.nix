@@ -7,8 +7,8 @@
 }: {
   # https://devenv.sh/basics/
   env = {
-    UNIFFI_BINDGEN_CS_VERSION = "0.9.1";
-    UNIFFI_RS_VERSION = "0.28.3";
+    UNIFFI_BINDGEN_CS_VERSION = "0.11.0";
+    UNIFFI_RS_VERSION = "0.31.0";
   };
 
   # https://devenv.sh/packages/
@@ -21,7 +21,7 @@
   languages = {
     rust = {
       enable = true;
-      channel = "nightly";
+      channel = "stable";
     };
     dotnet = {
       enable = true;
@@ -33,7 +33,7 @@
   scripts = {
     uniffi-bindgen-cs.exec = ''$DEVENV_STATE/cargo-install/bin/uniffi-bindgen-cs "$@"'';
     # uniffi-bindgen-cs expects csharpier to be in the path
-    dotnet-csharpier.exec = ''dotnet csharpier format "$@"'';
+    csharpier.exec = ''dotnet csharpier "$@"'';
   };
 
   # https://devenv.sh/tasks/

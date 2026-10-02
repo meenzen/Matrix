@@ -91,25 +91,41 @@ public class SdkTests : IAsyncLifetime
     }
 
     [Fact]
-    public void Login_ShouldBeSuccessful()
+    public async Task Login_ShouldBeSuccessful()
     {
-        ClientBuilder builder = new();
-        Client client = builder.HomeserverUrl(GetConduitUrl()).Username("@admin:localhost").Build();
-        client.Login("@admin:localhost", "admin", null, null);
+        // Arrange
+        HttpClient http = new() { BaseAddress = new Uri(GetConduitUrl()) };
+        var register = await http.PostAsync(
+            "/_matrix/client/v3/register",
+            new StringContent(
+                """
+                {
+                    "username": "sdk",
+                    "password": "sdk",
+                    "auth": {
+                        "type": "m.login.dummy"
+                    }
+                }
+                """
+            )
+        );
+        register.IsSuccessStatusCode.Should().BeTrue();
+
+        using Client client = await new ClientBuilder().HomeserverUrl(GetConduitUrl()).InMemoryStore().Build();
+
+        // Act
+        await client.Login("sdk", "sdk", null, null);
 
         CreateRoomParameters parameters = new(
-            name: "TestRoom",
-            isEncrypted: false,
-            visibility: RoomVisibility.Private,
-            preset: RoomPreset.PrivateChat,
-            topic: null,
-            avatar: null,
-            isDirect: false,
-            invite: null
+            Name: "TestRoom",
+            IsEncrypted: false,
+            Visibility: new RoomVisibility.Private(),
+            Preset: RoomPreset.PrivateChat
         );
-        client.CreateRoom(parameters);
+        string roomId = await client.CreateRoom(parameters);
 
-        List<Room> rooms = client.Rooms();
-        Assert.Single(rooms);
+        // Assert
+        client.UserId().Should().Be("@sdk:localhost");
+        client.Rooms().Should().ContainSingle().Which.Id().Should().Be(roomId);
     }
 }
