@@ -6,7 +6,8 @@
     <PackageId>Matrix.RustSdk.Bindings</PackageId>
     <PackageDescription>UniFFI bindings for the matrix-rust-sdk crate.</PackageDescription>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <NoWarn>CS1570</NoWarn>
+    <!-- generated code: doc comments from rust don't map cleanly to C# XML docs -->
+    <NoWarn>$(NoWarn);CS1570;CS1573;CS1587</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="/" />
