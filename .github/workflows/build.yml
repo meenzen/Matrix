@@ -25,6 +25,9 @@ jobs:
           fetch-depth: 0
           submodules: recursive
 
+      - name: Check matrix-rust-sdk version
+        run: ./scripts/check-sdk-version.sh
+
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
