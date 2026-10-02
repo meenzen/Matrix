@@ -26,18 +26,18 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 9.0.x
 
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
         with:
-          key: "${{ matrix.name }}"
+          key: debug
           save-if: ${{ github.ref == 'refs/heads/main' }}
           workspaces: |
             external/matrix-rust-sdk
 
       - name: Build matrix-rust-sdk
-        run: cargo build
+        run: cargo build -p matrix-sdk-ffi
         working-directory: external/matrix-rust-sdk
 
       - name: Restore dependencies
