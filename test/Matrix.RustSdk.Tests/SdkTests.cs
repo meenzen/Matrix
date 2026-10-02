@@ -6,8 +6,14 @@ using Matrix.RustSdk.Bindings;
 
 namespace Matrix.RustSdk.Tests;
 
+/// <summary>
+/// Integration tests against a tuwunel homeserver, they require docker with linux containers.
+/// </summary>
+[Category(Category)]
 public class SdkTests
 {
+    public const string Category = "Homeserver";
+
     private const int HomeserverPort = 8008;
 
     private readonly IContainer _container = new ContainerBuilder("ghcr.io/matrix-construct/tuwunel:v1.9.3")
