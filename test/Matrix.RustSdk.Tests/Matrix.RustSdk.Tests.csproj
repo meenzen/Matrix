@@ -25,12 +25,17 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- always copy, otherwise switching NativeLibraryPath can leave a newer, different library in the output -->
-    <Content Include="$(NativeLibraryPath)" Link="$(NativeLibraryName)">
+    <Content
+      Include="$(NativeLibraryPath)"
+      Link="$(NativeLibraryName)"
+      Condition="'$(RequireNativeLibrary)' != 'false' Or Exists('$(NativeLibraryPath)')"
+    >
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <Visible>false</Visible>
     </Content>
   </ItemGroup>
-  <Target Name="EnsureNativeLibrary" BeforeTargets="PrepareForBuild">
+  <!-- builds that don't run the tests, like CodeQL, can skip the native library with -p:RequireNativeLibrary=false -->
+  <Target Name="EnsureNativeLibrary" BeforeTargets="PrepareForBuild" Condition="'$(RequireNativeLibrary)' != 'false'">
     <Error
       Condition="!Exists('$(NativeLibraryPath)')"
       Text="Native library not found at $(NativeLibraryPath), run ./scripts/build-debug.sh first."

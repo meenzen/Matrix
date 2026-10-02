@@ -44,7 +44,8 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
-        run: dotnet build --no-restore
+        # the analysis doesn't need the native library, which is only used by the tests
+        run: dotnet build --no-restore -p:RequireNativeLibrary=false
 
       # Analyze
       - name: Perform CodeQL Analysis
