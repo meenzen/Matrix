@@ -22,6 +22,7 @@
     rust = {
       enable = true;
       channel = "stable";
+      # release builds for all platforms happen natively on CI runners, see .github/workflows/nuget.yml
     };
     dotnet = {
       enable = true;

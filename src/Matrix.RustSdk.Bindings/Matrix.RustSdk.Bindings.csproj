@@ -30,22 +30,18 @@
       <Visible>false</Visible>
     </Content>
   </ItemGroup>
+  <!-- release builds pack the native libraries built by CI, see .github/workflows/nuget.yml -->
   <ItemGroup Condition="'$(Configuration)'=='RELEASE'">
-    <Content Include="../../external/matrix-rust-sdk/target/x86_64-pc-windows-gnu/release/matrix_sdk_ffi.dll">
+    <Content Include="../../native/runtimes/**/*">
       <Pack>true</Pack>
-      <PackagePath>runtimes/win-x64/native/matrix_sdk_ffi.dll</PackagePath>
-    </Content>
-    <Content Include="../../external/matrix-rust-sdk/target/i686-pc-windows-gnu/release/matrix_sdk_ffi.dll">
-      <Pack>true</Pack>
-      <PackagePath>runtimes/win-x86/native/matrix_sdk_ffi.dll</PackagePath>
-    </Content>
-    <Content Include="../../external/matrix-rust-sdk/target/x86_64-unknown-linux-gnu/release/libmatrix_sdk_ffi.so">
-      <Pack>true</Pack>
-      <PackagePath>runtimes/linux-x64/native/libmatrix_sdk_ffi.so</PackagePath>
-    </Content>
-    <Content Include="../../external/matrix-rust-sdk/target/aarch64-unknown-linux-gnu/release/libmatrix_sdk_ffi.so">
-      <Pack>true</Pack>
-      <PackagePath>runtimes/linux-arm64/native/libmatrix_sdk_ffi.so</PackagePath>
+      <PackagePath>runtimes/</PackagePath>
+      <Visible>false</Visible>
     </Content>
   </ItemGroup>
+  <Target Name="EnsureNativeLibraries" BeforeTargets="Build" Condition="'$(Configuration)'=='RELEASE'">
+    <Error
+      Condition="!Exists('../../native/runtimes/linux-x64/native/libmatrix_sdk_ffi.so') Or !Exists('../../native/runtimes/linux-arm64/native/libmatrix_sdk_ffi.so') Or !Exists('../../native/runtimes/win-x64/native/matrix_sdk_ffi.dll') Or !Exists('../../native/runtimes/win-arm64/native/matrix_sdk_ffi.dll')"
+      Text="Native libraries are missing, release builds expect them in native/runtimes/&lt;rid&gt;/native (built by CI)."
+    />
+  </Target>
 </Project>
