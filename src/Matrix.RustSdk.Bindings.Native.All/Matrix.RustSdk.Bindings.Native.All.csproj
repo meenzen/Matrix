@@ -5,6 +5,7 @@
     <PackageDescription>Native matrix-rust-sdk libraries for all supported platforms.</PackageDescription>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <GeneratePackageOnBuild Condition="'$(Configuration)'=='Release'">true</GeneratePackageOnBuild>
+    <ExactProjectReferenceVersions>true</ExactProjectReferenceVersions>
     <!-- the package intentionally only consists of dependencies -->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
   </PropertyGroup>

@@ -1,0 +1,17 @@
+<Project>
+  <!--
+    Projects setting ExactProjectReferenceVersions pack their project references as exact version dependencies
+    ([1.2.3]) instead of minimum version dependencies (>= 1.2.3).
+  -->
+  <Target
+    Name="UseExactProjectReferenceVersions"
+    AfterTargets="_GetProjectReferenceVersions"
+    Condition="'$(ExactProjectReferenceVersions)' == 'true'"
+  >
+    <ItemGroup>
+      <_ProjectReferencesWithVersions>
+        <ProjectVersion>[%(_ProjectReferencesWithVersions.ProjectVersion)]</ProjectVersion>
+      </_ProjectReferencesWithVersions>
+    </ItemGroup>
+  </Target>
+</Project>
