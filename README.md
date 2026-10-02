@@ -10,23 +10,28 @@ A C# wrapper for the matrix-rust-sdk crate.
 ## Installation
 
 The managed bindings and the native libraries are shipped in separate packages, so applications only download the
-platforms they need. Reference `Matrix.RustSdk` and the native packages for the platforms the application runs on:
+platforms they need. Reference the native packages for the platforms the application runs on, they bring the matching
+`Matrix.RustSdk.Bindings` package:
 
 ```xml
-<PackageReference Include="Matrix.RustSdk" Version="..." />
-<PackageReference Include="Matrix.RustSdk.Bindings.Native.Linux" Version="..." />
+<PackageReference Include="Matrix.RustSdk.Bindings.Native.Linux" Version="0.1.0" />
+<PackageReference Include="Matrix.RustSdk.Bindings.Native.Windows" Version="0.1.0" />
 ```
 
-| Package                                  | Platforms                                                       |
-|------------------------------------------|-----------------------------------------------------------------|
+| Package                                  | Platforms                                                        |
+|------------------------------------------|------------------------------------------------------------------|
 | `Matrix.RustSdk.Bindings.Native.Linux`   | `linux-x64`, `linux-arm64`, `linux-musl-x64`, `linux-musl-arm64` |
-| `Matrix.RustSdk.Bindings.Native.Windows` | `win-x64`, `win-arm64`                                          |
-| `Matrix.RustSdk.Bindings.Native.MacOS`   | `osx-x64`, `osx-arm64`                                          |
-| `Matrix.RustSdk.Bindings.Native.All`     | all of the above                                                |
+| `Matrix.RustSdk.Bindings.Native.Windows` | `win-x64`, `win-arm64`                                           |
+| `Matrix.RustSdk.Bindings.Native.MacOS`   | `osx-x64`, `osx-arm64`                                           |
+| `Matrix.RustSdk.Bindings.Native.All`     | all of the above                                                 |
 
-The native packages have to use the same version as `Matrix.RustSdk`, a mismatch is detected when the library is
-loaded. The glibc libraries require glibc 2.35 or newer (Ubuntu 22.04, Debian 12, RHEL 10), the musl libraries
-`libgcc` (installed with .NET on Alpine).
+The native libraries only work with the bindings of the exact same version, so the native packages depend on exactly
+that version of `Matrix.RustSdk.Bindings`. The glibc libraries require glibc 2.35 or newer (Ubuntu 22.04, Debian 12,
+RHEL 10), the musl libraries `libgcc` (installed with .NET on Alpine).
+
+The bindings are generated from [matrix-rust-sdk](https://github.com/matrix-org/matrix-rust-sdk), the release notes of
+each package name the `matrix-sdk-ffi` release it was built from. The API follows the upstream SDK, which changes with
+almost every release, so minor versions of the packages contain breaking changes until 1.0.
 
 ## Development
 
@@ -45,6 +50,8 @@ The uniffi version used by `external/matrix-rust-sdk` has to match the one uniff
 version matches the latest uniffi-bindgen-cs release.
 
 ## Releases
+
+See [RELEASING.md](RELEASING.md) for versioning and the release process.
 
 The [Packages](.github/workflows/packages.yml) workflow builds the native libraries on native GitHub runners for every
 platform, tests them and packs the NuGet packages, the [Publish NuGet package](.github/workflows/nuget.yml) workflow
