@@ -1,47 +1,44 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <NoWarn>VSTHRD200</NoWarn>
+    <!-- TUnit runs on Microsoft.Testing.Platform, test projects are executables -->
+    <OutputType>Exe</OutputType>
+    <NoWarn>$(NoWarn);VSTHRD200</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="coverlet.msbuild" Version="6.0.2">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="FluentAssertions" Version="6.12.2" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
-    <PackageReference Include="Testcontainers" Version="3.10.0" />
-    <PackageReference Include="xunit" Version="2.9.2" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="coverlet.collector" Version="6.0.2">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
+    <PackageReference Include="Testcontainers" Version="4.15.0" />
+    <PackageReference Include="TUnit" Version="1.72.16" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Matrix.RustSdk\Matrix.RustSdk.csproj" />
   </ItemGroup>
+  <!-- the native library under test, defaults to the debug build, CI passes the release build with -p:NativeLibraryPath=... -->
+  <PropertyGroup>
+    <NativeLibraryName Condition="$([MSBuild]::IsOSPlatform('Windows'))">matrix_sdk_ffi.dll</NativeLibraryName>
+    <NativeLibraryName Condition="$([MSBuild]::IsOSPlatform('OSX'))">libmatrix_sdk_ffi.dylib</NativeLibraryName>
+    <NativeLibraryName Condition="'$(NativeLibraryName)' == ''">libmatrix_sdk_ffi.so</NativeLibraryName>
+    <NativeLibraryPath Condition="'$(NativeLibraryPath)' == ''"
+      >../../external/matrix-rust-sdk/target/debug/$(NativeLibraryName)</NativeLibraryPath>
+  </PropertyGroup>
   <ItemGroup>
+    <!-- always copy, otherwise switching NativeLibraryPath can leave a newer, different library in the output -->
     <Content
-      Include="../../external/matrix-rust-sdk/target/debug/libmatrix_sdk_ffi.so"
-      Condition="$([MSBuild]::IsOSPlatform('Linux'))"
+      Include="$(NativeLibraryPath)"
+      Link="$(NativeLibraryName)"
+      Condition="'$(RequireNativeLibrary)' != 'false' Or Exists('$(NativeLibraryPath)')"
     >
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Visible>false</Visible>
-    </Content>
-    <Content
-      Include="../../external/matrix-rust-sdk/target/debug/matrix_sdk_ffi.dll"
-      Condition="$([MSBuild]::IsOSPlatform('Windows'))"
-    >
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <Visible>false</Visible>
     </Content>
   </ItemGroup>
+  <!-- builds that don't run the tests, like CodeQL, can skip the native library with -p:RequireNativeLibrary=false -->
+  <Target Name="EnsureNativeLibrary" BeforeTargets="PrepareForBuild" Condition="'$(RequireNativeLibrary)' != 'false'">
+    <Error
+      Condition="!Exists('$(NativeLibraryPath)')"
+      Text="Native library not found at $(NativeLibraryPath), run ./scripts/build-debug.sh first."
+    />
+  </Target>
 </Project>

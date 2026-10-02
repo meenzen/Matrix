@@ -1,2 +1,2 @@
 [bindings.csharp]
-namespace = "Matrix.RustSdk.Bindings"
+access_modifier = "public"

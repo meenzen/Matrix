@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -12,10 +13,13 @@
     <PackageTags>Matrix matrix-rust-sdk FFI UniFFI</PackageTags>
     <RepositoryUrl>https://github.com/meenzen/Matrix</RepositoryUrl>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <Copyright>Copyright (c) 2023 Samuel Meenzen</Copyright>
+    <Copyright>Copyright (c) 2023 Samuel Meenzen. Contains matrix-rust-sdk, Copyright 2020 The Matrix.org Foundation C.I.C. and contributors, and third-party software, see THIRD-PARTY-NOTICES.txt.</Copyright>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <!-- the matrix-rust-sdk release the bindings are generated from, has to match the external/matrix-rust-sdk submodule -->
+    <MatrixSdkFfiTag>matrix-sdk-ffi/20260909</MatrixSdkFfiTag>
+    <PackageReleaseNotes>Built from matrix-rust-sdk $(MatrixSdkFfiTag): https://github.com/matrix-org/matrix-rust-sdk/tree/$(MatrixSdkFfiTag)</PackageReleaseNotes>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
   <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
@@ -24,9 +28,9 @@
   <ItemGroup>
     <PackageReference Include="Nerdbank.GitVersioning" Condition="!Exists('packages.config')">
       <PrivateAssets>all</PrivateAssets>
-      <Version>3.6.146</Version>
+      <Version>3.10.94</Version>
     </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.12.19">
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="18.7.23">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

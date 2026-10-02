@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageDescription>Native matrix-rust-sdk libraries for macOS (x64 and arm64).</PackageDescription>
+  </PropertyGroup>
+  <ItemGroup>
+    <NativeLibrary
+      Include="$(NativeLibrariesDirectory)osx-x64/native/libmatrix_sdk_ffi.dylib"
+      PackagePath="runtimes/osx-x64/native/"
+    />
+    <NativeLibrary
+      Include="$(NativeLibrariesDirectory)osx-arm64/native/libmatrix_sdk_ffi.dylib"
+      PackagePath="runtimes/osx-arm64/native/"
+    />
+  </ItemGroup>
+  <Import Project="../Native.targets" />
+</Project>

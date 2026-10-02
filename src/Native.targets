@@ -1,0 +1,30 @@
+<Project>
+  <!--
+    Shared settings for the native library packages. They only contain the native libraries listed as NativeLibrary
+    items, which CI builds on native runners and assembles in native/runtimes/<rid>/native before packing.
+  -->
+  <PropertyGroup>
+    <PackageId>$(MSBuildProjectName)</PackageId>
+    <NativeLibrariesDirectory>$(MSBuildThisFileDirectory)../native/runtimes/</NativeLibrariesDirectory>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <!-- the native libraries only work with the bindings of the exact same version, uniffi verifies checksums on load -->
+    <ExactProjectReferenceVersions>true</ExactProjectReferenceVersions>
+    <!-- the packages intentionally only contain native libraries and dependencies, no managed assemblies -->
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <!-- the native libraries only exist for release builds, debug builds would produce empty packages -->
+    <GeneratePackageOnBuild Condition="'$(Configuration)'=='Release'">true</GeneratePackageOnBuild>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)Matrix.RustSdk.Bindings/Matrix.RustSdk.Bindings.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)../README.md" Pack="true" PackagePath="/" Visible="false" />
+    <None Include="@(NativeLibrary)" Pack="true" Visible="false" />
+  </ItemGroup>
+  <Target Name="EnsureNativeLibraries" BeforeTargets="Build" Condition="'$(Configuration)'=='Release'">
+    <Error
+      Condition="!Exists('%(NativeLibrary.Identity)')"
+      Text="Native library %(NativeLibrary.Identity) is missing, release builds expect them in native/runtimes/&lt;rid&gt;/native (built by CI)."
+    />
+  </Target>
+</Project>

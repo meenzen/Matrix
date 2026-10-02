@@ -1,57 +1,63 @@
-using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Net.Http.Headers;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using Matrix.RustSdk.Bindings;
-using Xunit.Abstractions;
 
 namespace Matrix.RustSdk.Tests;
 
-public class SdkTests : IAsyncLifetime
+/// <summary>
+/// Integration tests against a tuwunel homeserver, they require docker with linux containers.
+/// </summary>
+[Category(Category)]
+public class SdkTests
 {
-    private readonly ITestOutputHelper _output;
+    public const string Category = "Homeserver";
 
-    private readonly IContainer _container = new ContainerBuilder()
-        .WithImage("matrixconduit/matrix-conduit:v0.6.0")
-        .WithEnvironment("CONDUIT_SERVER_NAME", "localhost")
-        .WithEnvironment("CONDUIT_DATABASE_BACKEND", "rocksdb")
-        .WithEnvironment("CONDUIT_ALLOW_REGISTRATION", "true")
-        .WithEnvironment("CONDUIT_ALLOW_CHECK_FOR_UPDATES", "false")
-        .WithEnvironment("CONDUIT_LOG", "debug")
-        .WithExposedPort(6167)
-        .WithWaitStrategy(Wait.ForUnixContainer().UntilPortIsAvailable(6167))
+    private const int HomeserverPort = 8008;
+
+    private readonly IContainer _container = new ContainerBuilder("ghcr.io/matrix-construct/tuwunel:v1.9.3")
+        .WithEnvironment("TUWUNEL_SERVER_NAME", "localhost")
+        .WithEnvironment("TUWUNEL_ADDRESS", "0.0.0.0")
+        .WithEnvironment("TUWUNEL_PORT", HomeserverPort.ToString(CultureInfo.InvariantCulture))
+        .WithEnvironment("TUWUNEL_ALLOW_REGISTRATION", "true")
+        .WithEnvironment("TUWUNEL_YES_I_AM_VERY_VERY_SURE_I_WANT_AN_OPEN_REGISTRATION_SERVER_PRONE_TO_ABUSE", "true")
+        .WithEnvironment("TUWUNEL_ALLOW_CHECK_FOR_UPDATES", "false")
+        .WithPortBinding(HomeserverPort, true)
+        .WithWaitStrategy(
+            Wait.ForUnixContainer()
+                .UntilHttpRequestIsSucceeded(r => r.ForPort(HomeserverPort).ForPath("/_matrix/client/versions"))
+        )
         .WithOutputConsumer(Consume.RedirectStdoutAndStderrToConsole())
         .Build();
 
-    public SdkTests(ITestOutputHelper output)
-    {
-        _output = output;
-    }
-
-    public Task InitializeAsync()
+    [Before(Test)]
+    public Task StartHomeserver()
     {
         return _container.StartAsync();
     }
 
-    public Task DisposeAsync()
+    [After(Test)]
+    public async Task StopHomeserver()
     {
-        return _container.DisposeAsync().AsTask();
+        await _container.DisposeAsync();
     }
 
-    private string GetConduitUrl() => $"http://{_container.IpAddress}:6167";
+    private string GetHomeserverUrl() =>
+        $"http://{_container.Hostname}:{_container.GetMappedPublicPort(HomeserverPort)}";
 
-    [Fact]
-    public async Task Conduit_ShouldBeWorking()
+    [Test]
+    public async Task Homeserver_ShouldBeWorking()
     {
         // Arrange
         HttpClient client = new();
-        client.BaseAddress = new Uri(GetConduitUrl());
+        client.BaseAddress = new Uri(GetHomeserverUrl());
         client.DefaultRequestHeaders.Accept.Clear();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
         // Create user
         var result = await client.PostAsync(
-            "/_matrix/client/r0/register",
+            "/_matrix/client/v3/register",
             new StringContent(
                 """
                 {
@@ -65,11 +71,11 @@ public class SdkTests : IAsyncLifetime
             )
         );
 
-        result.IsSuccessStatusCode.Should().BeTrue();
+        await Assert.That(result.IsSuccessStatusCode).IsTrue();
 
         // Login
         result = await client.PostAsync(
-            "/_matrix/client/r0/login",
+            "/_matrix/client/v3/login",
             new StringContent(
                 """
                 {
@@ -85,31 +91,48 @@ public class SdkTests : IAsyncLifetime
         );
 
         string response = await result.Content.ReadAsStringAsync();
-        _output.WriteLine("Login response: " + response);
+        Console.WriteLine("Login response: " + response);
 
-        result.IsSuccessStatusCode.Should().BeTrue();
+        await Assert.That(result.IsSuccessStatusCode).IsTrue();
     }
 
-    [Fact]
-    public void Login_ShouldBeSuccessful()
+    [Test]
+    public async Task Login_ShouldBeSuccessful()
     {
-        ClientBuilder builder = new();
-        Client client = builder.HomeserverUrl(GetConduitUrl()).Username("@admin:localhost").Build();
-        client.Login("@admin:localhost", "admin", null, null);
+        // Arrange
+        HttpClient http = new() { BaseAddress = new Uri(GetHomeserverUrl()) };
+        var register = await http.PostAsync(
+            "/_matrix/client/v3/register",
+            new StringContent(
+                """
+                {
+                    "username": "sdk",
+                    "password": "sdk",
+                    "auth": {
+                        "type": "m.login.dummy"
+                    }
+                }
+                """
+            )
+        );
+        await Assert.That(register.IsSuccessStatusCode).IsTrue();
+
+        using Client client = await new ClientBuilder().HomeserverUrl(GetHomeserverUrl()).InMemoryStore().Build();
+
+        // Act
+        await client.Login("sdk", "sdk", null, null);
 
         CreateRoomParameters parameters = new(
-            name: "TestRoom",
-            isEncrypted: false,
-            visibility: RoomVisibility.Private,
-            preset: RoomPreset.PrivateChat,
-            topic: null,
-            avatar: null,
-            isDirect: false,
-            invite: null
+            Name: "TestRoom",
+            IsEncrypted: false,
+            Visibility: new RoomVisibility.Private(),
+            Preset: RoomPreset.PrivateChat
         );
-        client.CreateRoom(parameters);
+        string roomId = await client.CreateRoom(parameters);
 
-        List<Room> rooms = client.Rooms();
-        Assert.Single(rooms);
+        // Assert
+        await Assert.That(client.UserId()).IsEqualTo("@sdk:localhost");
+        Room room = await Assert.That(client.Rooms()).HasSingleItem();
+        await Assert.That(room.Id()).IsEqualTo(roomId);
     }
 }

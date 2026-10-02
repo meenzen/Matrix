@@ -1,0 +1,158 @@
+# Releasing
+
+## Packages
+
+| Package                                  | Contents                                                                |
+|------------------------------------------|-------------------------------------------------------------------------|
+| `Matrix.RustSdk.Bindings`                | the generated C# bindings, no native libraries                          |
+| `Matrix.RustSdk.Bindings.Native.Linux`   | `linux-x64`, `linux-arm64`, `linux-musl-x64`, `linux-musl-arm64`        |
+| `Matrix.RustSdk.Bindings.Native.Windows` | `win-x64`, `win-arm64`                                                  |
+| `Matrix.RustSdk.Bindings.Native.MacOS`   | `osx-x64`, `osx-arm64`                                                  |
+| `Matrix.RustSdk.Bindings.Native.All`     | depends on all native packages                                          |
+| `Matrix.RustSdk`                         | not published yet (`IsPackable=false`) until it provides helpers        |
+
+All packages are built from the same commit and share one version. The native packages depend on **exactly** that
+version of `Matrix.RustSdk.Bindings` (`[x.y.z]`, see `ExactProjectReferenceVersions` in `Directory.Build.targets`):
+uniffi verifies API checksums when the native library is loaded, so bindings and native libraries of different versions
+never work together. The exact dependency turns such a mismatch into a NuGet restore error instead of a runtime
+exception.
+
+## Versioning
+
+Versions are computed by [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning) from
+`version.json`, the patch number (or prerelease number) is the git height: the number of commits since the `version`
+field was last changed, minus one (`versionHeightOffset`).
+
+| `version` in `version.json` | Resulting versions                  |
+|-----------------------------|-------------------------------------|
+| `0.1-rc.{height}`           | `0.1.0-rc.0`, `0.1.0-rc.1`, ...     |
+| `0.1`                       | `0.1.0`, `0.1.1`, ...               |
+
+Only builds of `main` (and `vX.Y` servicing branches) get clean versions, other branches get a `-g<commit>` suffix, so
+packages are only published from `main`.
+
+The packages follow [SemVer](https://semver.org) with a `0.x` major version. The bindings mirror the upstream
+`matrix-sdk-ffi` API, which has breaking changes in almost every release, so:
+
+| Change                                                         | Version bump                              |
+|----------------------------------------------------------------|-------------------------------------------|
+| Updating to a new `matrix-sdk-ffi` release                     | minor, e.g. `0.1` → `0.2` in version.json |
+| Fixes to packaging, CI or the bindings generation, same API    | patch, automatic via the git height       |
+| A stable, hand-written API in `Matrix.RustSdk`                 | consider `1.0`                            |
+
+The `matrix-sdk-ffi` release the bindings are generated from is `MatrixSdkFfiTag` in `Directory.Build.props`. It ends
+up in the release notes of every package and in the `MatrixSdkFfiTag` assembly metadata of the bindings, and CI checks
+that it matches the `external/matrix-rust-sdk` submodule (`scripts/check-sdk-version.sh`).
+
+## Release process
+
+1. Make sure the latest **Build and Test** run on `main` is green, it builds and tests the native libraries for all
+   platforms and packs the packages, exactly like the release.
+2. Check the version that will be published: the `nuget-packages` artifact of that run contains the packages, or run
+   `nbgv get-version` locally on `main` (`dotnet tool install -g nbgv`). If the version should change, edit
+   `version.json` in a pull request first, see [Versioning](#versioning).
+3. Run the **Publish NuGet package** workflow on `main` (Actions → Publish NuGet package → Run workflow). It builds and
+   tests everything again, then the `publish` job pushes all packages to nuget.org with
+   [trusted publishing](#trusted-publishing). Configure required reviewers on the `production` environment to get an
+   approval step before the push.
+4. Verify the release: reference the native package from a small console app on the platforms you care about, e.g.
+   Windows, macOS and an Alpine container, and create a client (see `test/Matrix.RustSdk.Tests/NativeLibraryTests.cs`).
+5. Tag the released commit and create a GitHub release that names the `matrix-sdk-ffi` release:
+
+   ```bash
+   git tag v0.1.0 <commit>
+   git push origin v0.1.0
+   ```
+
+### Going from release candidate to stable
+
+Release candidates use `0.1-rc.{height}`. Once a release candidate is verified, change `version` in `version.json` to
+`0.1`, the first commit with that change is `0.1.0`. Publishing that commit releases the same code as the verified
+release candidate if nothing else changed.
+
+### Servicing older versions
+
+To publish a fix for an older minor version, create a `vX.Y` branch (e.g. `v0.1`) from its last release, these branches
+are public release branches in `version.json`, and run the publish workflow on it.
+
+## Trusted publishing
+
+The publish job doesn't use a long-lived API key: `NuGet/login` exchanges the GitHub OIDC token for an API key that is
+valid for one hour. This requires, once:
+
+1. A trusted publishing policy on nuget.org (username → Trusted Publishing → Add), owned by the account that owns the
+   packages:
+   - Repository Owner: `meenzen`
+   - Repository: `Matrix`
+   - Workflow File: `nuget.yml`
+   - Environment: `production`
+2. A `NUGET_USER` secret (in the `production` environment or the repository) with the nuget.org **profile name** of
+   that account, not the email address.
+
+The old `NUGET_API_KEY` secret is no longer used and can be deleted, as can the API key on nuget.org. A policy for a
+private repository is only temporarily active until the first successful publish, see the
+[nuget.org documentation](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing).
+
+## Licenses
+
+The packages redistribute matrix-rust-sdk (Apache-2.0) and the ~430 crates linked into the native libraries (mostly
+MIT and Apache-2.0, some MPL-2.0, BSD, ISC, Zlib and others), the generated bindings contain code from the templates of
+uniffi-bindgen-cs (MPL-2.0). Most of these licenses require their copyright notices and license texts to be included
+in binary distributions, so every package contains:
+
+- `LICENSE`: the license of this project (Apache-2.0)
+- `THIRD-PARTY-NOTICES.txt`: the notices of matrix-rust-sdk, uniffi-bindgen-cs and the license texts of all crates
+  with the crates they apply to, generated by `scripts/generate-notices.sh` with
+  [cargo-about](https://github.com/EmbarkStudios/cargo-about) (`licenses/about.toml`, `licenses/about.hbs`)
+
+The pack job generates the notices, release builds fail without them. When a matrix-rust-sdk update brings a crate with
+a license that isn't in `accepted` in `licenses/about.toml`, the generation fails: check whether the license allows
+redistribution in binary form (copyleft licenses like GPL or LGPL don't, without further obligations) before adding
+it. The cargo-about version is pinned in the pack job and should match devenv.
+
+## Updating matrix-rust-sdk
+
+The uniffi version of matrix-rust-sdk has to match the one [uniffi-bindgen-cs](https://github.com/NordSecurity/uniffi-bindgen-cs)
+is built for, otherwise the generated bindings don't work. uniffi-bindgen-cs usually lags behind, so the newest
+`matrix-sdk-ffi` release is often not usable yet.
+
+1. Find the latest uniffi-bindgen-cs release, its tag names the uniffi version (`vX.Y.Z+vA.B.C` targets uniffi `A.B.C`):
+
+   ```bash
+   git ls-remote --tags https://github.com/NordSecurity/uniffi-bindgen-cs | grep -v '\^{}' | sort -V -k2 | tail -3
+   ```
+
+2. Find the newest `matrix-sdk-ffi/*` release using a compatible uniffi version (same `A.B`):
+
+   ```bash
+   for t in $(git ls-remote --tags https://github.com/matrix-org/matrix-rust-sdk 'matrix-sdk-ffi/*' \
+       | awk '{print $2}' | grep -v '\^{}' | sed 's#refs/tags/##' | sort -V | tail -10); do
+     echo "$t $(curl -fsSL "https://raw.githubusercontent.com/matrix-org/matrix-rust-sdk/$t/Cargo.toml" \
+       | grep -E '^uniffi = ' | grep -oE 'version = "[0-9.]+"')"
+   done
+   ```
+
+3. Update the submodule to that tag and `MatrixSdkFfiTag` in `Directory.Build.props`:
+
+   ```bash
+   git -C external/matrix-rust-sdk fetch --depth 1 origin tag matrix-sdk-ffi/YYYYMMDD
+   git -C external/matrix-rust-sdk checkout matrix-sdk-ffi/YYYYMMDD
+   ./scripts/check-sdk-version.sh
+   ```
+
+4. If a newer uniffi-bindgen-cs is needed, update `UNIFFI_BINDGEN_CS_VERSION` and `UNIFFI_RS_VERSION` in `devenv.nix`,
+   devenv installs it when entering the shell. Also check the `rust-version` of matrix-rust-sdk, devenv uses the latest
+   stable Rust.
+5. Regenerate the bindings, check the licenses of the new dependencies and run the tests:
+
+   ```bash
+   devenv shell
+   ./scripts/build-debug.sh
+   ./scripts/generate-notices.sh
+   dotnet build && dotnet test
+   ```
+
+   Fix generator or API issues, see the known issues in [AGENTS.md](AGENTS.md). The tests may need updates for upstream
+   API changes.
+6. Bump the minor version in `version.json` (e.g. `0.1` → `0.2`), the bindings API changes with every SDK update.
+7. Open a pull request, CI builds and tests the native libraries for all platforms.

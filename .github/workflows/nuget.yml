@@ -4,24 +4,38 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  packages:
+    uses: ./.github/workflows/packages.yml
 
+  publish:
+    name: Publish to nuget.org
+    needs: packages
     runs-on: ubuntu-latest
     environment: production
+    permissions:
+      # trusted publishing: nuget.org exchanges the GitHub OIDC token for a short-lived API key
+      id-token: write
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
-    - name: Restore dependencies
-      run: dotnet restore
-    - name: Build
-      run: dotnet build -c Release --no-restore
-    - name: Push to nuget.org
-      env:
-        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-      run: dotnet nuget push "src/*/bin/Release/*.nupkg" --api-key "$NUGET_API_KEY" --skip-duplicate --source https://api.nuget.org/v3/index.json
+      - uses: actions/download-artifact@v8
+        with:
+          name: nuget-packages
+          path: packages/
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      # requires a trusted publishing policy on nuget.org for this repository, nuget.yml and the production environment
+      - name: NuGet login
+        id: login
+        uses: NuGet/login@v1
+        with:
+          # the nuget.org profile name, not the email address
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Push to nuget.org
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        run: dotnet nuget push "packages/**/*.nupkg" --api-key "$NUGET_API_KEY" --skip-duplicate --source https://api.nuget.org/v3/index.json
