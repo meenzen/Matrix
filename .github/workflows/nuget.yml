@@ -31,14 +31,19 @@ jobs:
             os: windows-latest
             target: x86_64-pc-windows-msvc
             library: matrix_sdk_ffi.dll
+            # windows runners can't run the linux homeserver container, so only the smoke tests run there
+            test-filter: /*/*/*/*[Category!=Homeserver]
           - rid: win-arm64
             os: windows-11-arm
             target: aarch64-pc-windows-msvc
             library: matrix_sdk_ffi.dll
+            test-filter: /*/*/*/*[Category!=Homeserver]
 
     steps:
       - uses: actions/checkout@v7
         with:
+          # Nerdbank.GitVersioning needs the full history to compute the version when building the tests
+          fetch-depth: 0
           submodules: recursive
 
       - name: Install Rust
@@ -68,6 +73,21 @@ jobs:
         shell: bash
         run: cargo build -p matrix-sdk-ffi --profile "$CARGO_PROFILE" --target ${{ matrix.target }}
         working-directory: external/matrix-rust-sdk
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      # test the exact library that ends up in the package
+      - name: Test native library
+        shell: bash
+        env:
+          TEST_FILTER: ${{ matrix.test-filter }}
+        run: >-
+          dotnet test --project test/Matrix.RustSdk.Tests
+          -p:NativeLibraryPath="../../external/matrix-rust-sdk/target/${{ matrix.target }}/$CARGO_PROFILE/${{ matrix.library }}"
+          ${TEST_FILTER:+--treenode-filter "$TEST_FILTER"}
 
       - name: Collect native library
         shell: bash

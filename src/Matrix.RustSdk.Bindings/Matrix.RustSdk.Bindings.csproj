@@ -11,10 +11,11 @@
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
+  <!-- debug packages include the local debug build if it exists, CI runners testing release builds don't have one -->
   <ItemGroup Condition="'$(Configuration)'=='DEBUG'">
     <Content
       Include="../../external/matrix-rust-sdk/target/debug/libmatrix_sdk_ffi.so"
-      Condition="$([MSBuild]::IsOSPlatform('Linux'))"
+      Condition="$([MSBuild]::IsOSPlatform('Linux')) And Exists('../../external/matrix-rust-sdk/target/debug/libmatrix_sdk_ffi.so')"
     >
       <Pack>true</Pack>
       <PackagePath>runtimes/linux-x64/native/libmatrix_sdk_ffi.so</PackagePath>
@@ -22,7 +23,7 @@
     </Content>
     <Content
       Include="../../external/matrix-rust-sdk/target/debug/matrix_sdk_ffi.dll"
-      Condition="$([MSBuild]::IsOSPlatform('Windows'))"
+      Condition="$([MSBuild]::IsOSPlatform('Windows')) And Exists('../../external/matrix-rust-sdk/target/debug/matrix_sdk_ffi.dll')"
     >
       <Pack>true</Pack>
       <PackagePath>runtimes/win-x64/native/matrix_sdk_ffi.dll</PackagePath>
