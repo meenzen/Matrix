@@ -18,6 +18,7 @@
   <!-- the native library under test, defaults to the debug build, CI passes the release build with -p:NativeLibraryPath=... -->
   <PropertyGroup>
     <NativeLibraryName Condition="$([MSBuild]::IsOSPlatform('Windows'))">matrix_sdk_ffi.dll</NativeLibraryName>
+    <NativeLibraryName Condition="$([MSBuild]::IsOSPlatform('OSX'))">libmatrix_sdk_ffi.dylib</NativeLibraryName>
     <NativeLibraryName Condition="'$(NativeLibraryName)' == ''">libmatrix_sdk_ffi.so</NativeLibraryName>
     <NativeLibraryPath Condition="'$(NativeLibraryPath)' == ''"
       >../../external/matrix-rust-sdk/target/debug/$(NativeLibraryName)</NativeLibraryPath>

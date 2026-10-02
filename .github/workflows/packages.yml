@@ -1,0 +1,221 @@
+name: Packages
+
+# Builds the native library with the release profile on native runners for every supported platform, tests it and
+# packs the NuGet packages from them. Used by the build workflow for pull requests and by the NuGet workflow, which
+# publishes the nuget-packages artifact.
+on:
+  workflow_call:
+
+env:
+  CARGO_TERM_COLOR: always
+  # upstream's size optimized profile (opt-level "s" + LTO), additionally strip the symbol table to keep the package small
+  CARGO_PROFILE: small-release-stripped
+  CARGO_PROFILE_SMALL_RELEASE_STRIPPED_STRIP: symbols
+
+jobs:
+  native:
+    name: Build native library (${{ matrix.rid }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # the linux runners determine the minimum glibc version of the native library (2.35 for ubuntu 22.04)
+          - rid: linux-x64
+            os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            library: libmatrix_sdk_ffi.so
+          - rid: linux-arm64
+            os: ubuntu-22.04-arm
+            target: aarch64-unknown-linux-gnu
+            library: libmatrix_sdk_ffi.so
+          - rid: win-x64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            library: matrix_sdk_ffi.dll
+            # windows runners can't run the linux homeserver container, so only the smoke tests run there
+            test-filter: /*/*/*/*[Category!=Homeserver]
+          - rid: win-arm64
+            os: windows-11-arm
+            target: aarch64-pc-windows-msvc
+            library: matrix_sdk_ffi.dll
+            test-filter: /*/*/*/*[Category!=Homeserver]
+          # macOS runners don't provide docker either
+          - rid: osx-x64
+            os: macos-15-intel
+            target: x86_64-apple-darwin
+            library: libmatrix_sdk_ffi.dylib
+            test-filter: /*/*/*/*[Category!=Homeserver]
+          - rid: osx-arm64
+            os: macos-latest
+            target: aarch64-apple-darwin
+            library: libmatrix_sdk_ffi.dylib
+            test-filter: /*/*/*/*[Category!=Homeserver]
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Nerdbank.GitVersioning needs the full history to compute the version when building the tests
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+          workspaces: |
+            external/matrix-rust-sdk
+
+      # aws-lc-sys requires clang-cl on windows arm64, Visual Studio ships one
+      - name: Add clang-cl to PATH
+        if: matrix.rid == 'win-arm64'
+        shell: pwsh
+        run: |
+          if (Get-Command clang-cl -ErrorAction SilentlyContinue) { exit 0 }
+          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
+          $llvm = Join-Path $vs 'VC\Tools\Llvm\ARM64\bin'
+          if (-not (Test-Path (Join-Path $llvm 'clang-cl.exe'))) { throw "clang-cl not found in $llvm" }
+          Add-Content $env:GITHUB_PATH $llvm
+
+      - name: Build matrix-sdk-ffi
+        shell: bash
+        run: cargo build -p matrix-sdk-ffi --profile "$CARGO_PROFILE" --target ${{ matrix.target }}
+        working-directory: external/matrix-rust-sdk
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      # test the exact library that ends up in the package
+      - name: Test native library
+        shell: bash
+        env:
+          TEST_FILTER: ${{ matrix.test-filter }}
+        run: >-
+          dotnet test --project test/Matrix.RustSdk.Tests
+          -p:NativeLibraryPath="../../external/matrix-rust-sdk/target/${{ matrix.target }}/$CARGO_PROFILE/${{ matrix.library }}"
+          ${TEST_FILTER:+--treenode-filter "$TEST_FILTER"}
+
+      - name: Collect native library
+        shell: bash
+        run: |
+          mkdir -p native/runtimes/${{ matrix.rid }}/native
+          cp external/matrix-rust-sdk/target/${{ matrix.target }}/"$CARGO_PROFILE"/${{ matrix.library }} native/runtimes/${{ matrix.rid }}/native/
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: native-${{ matrix.rid }}
+          path: native/
+          if-no-files-found: error
+          # pull requests upload them too, they're only needed until the package is assembled
+          retention-days: 7
+
+  native-musl:
+    name: Build native library (${{ matrix.rid }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - rid: linux-musl-x64
+            os: ubuntu-22.04
+            target: x86_64-unknown-linux-musl
+          - rid: linux-musl-arm64
+            os: ubuntu-22.04-arm
+            target: aarch64-unknown-linux-musl
+
+    # GitHub's javascript actions don't run inside alpine containers on arm64, so the build and the tests run in
+    # containers started by the steps instead of a job container.
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Nerdbank.GitVersioning needs the full history to compute the version when building the tests
+          fetch-depth: 0
+          submodules: recursive
+
+      # only used by the rust cache on the host, the build itself uses the toolchain of the alpine image
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+          workspaces: |
+            external/matrix-rust-sdk
+
+      - name: Build matrix-sdk-ffi
+        run: >-
+          docker run --rm -v "$PWD:/work" -w /work -v "$HOME/.cargo:/cargo" -e CARGO_HOME=/cargo
+          -e CARGO_TERM_COLOR -e CARGO_PROFILE -e CARGO_PROFILE_SMALL_RELEASE_STRIPPED_STRIP
+          -e TARGET=${{ matrix.target }} -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)"
+          rust:1-alpine .github/scripts/build-musl.sh
+
+      # test the exact library that ends up in the package, docker is available so all tests run
+      - name: Test native library
+        run: >-
+          docker run --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -v "$PWD:/work" -w /work
+          -e NATIVE_LIBRARY_PATH="../../external/matrix-rust-sdk/target/${{ matrix.target }}/$CARGO_PROFILE/libmatrix_sdk_ffi.so"
+          -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)"
+          mcr.microsoft.com/dotnet/sdk:10.0-alpine .github/scripts/test-musl.sh
+
+      - name: Collect native library
+        run: |
+          mkdir -p native/runtimes/${{ matrix.rid }}/native
+          cp external/matrix-rust-sdk/target/${{ matrix.target }}/"$CARGO_PROFILE"/libmatrix_sdk_ffi.so native/runtimes/${{ matrix.rid }}/native/
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: native-${{ matrix.rid }}
+          path: native/
+          if-no-files-found: error
+          retention-days: 7
+
+  pack:
+    name: Pack NuGet packages
+    needs: [native, native-musl]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: native-*
+          path: native/
+          merge-multiple: true
+
+      - name: Show native libraries
+        run: find native -type f -exec ls -la {} \;
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build -c Release --no-restore
+
+      - name: Show packages
+        run: ls -la src/*/bin/Release/*.nupkg
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: nuget-packages
+          path: src/*/bin/Release/*.nupkg
+          if-no-files-found: error

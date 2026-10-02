@@ -62,6 +62,6 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   # the release builds for all platforms are expensive, only run them once the basic build and tests passed
-  native:
+  packages:
     needs: build
-    uses: ./.github/workflows/native.yml
+    uses: ./.github/workflows/packages.yml
