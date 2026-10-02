@@ -26,6 +26,8 @@ version matches the latest uniffi-bindgen-cs release.
 ## Releases
 
 The native libraries are built on native GitHub runners for `linux-x64`, `linux-arm64`, `win-x64` and `win-arm64`
-and packed into the NuGet package by the [Publish NuGet package](.github/workflows/nuget.yml) workflow.
+by the [Native libraries](.github/workflows/native.yml) workflow and packed into the NuGet package by the
+[Publish NuGet package](.github/workflows/nuget.yml) workflow. Pull requests run the same native builds and tests once
+the basic build and tests passed.
 Each library is tested on its runner before it is packed: the Linux runners run all tests, the Windows runners can't
 run the Linux homeserver container and only run the smoke tests that don't need a homeserver.

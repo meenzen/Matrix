@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ "main" ]
 
+# cancel superseded runs of the same pull request, pushes to main always run
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 env:
   CARGO_TERM_COLOR: always
 
@@ -55,3 +60,8 @@ jobs:
           files: TestResults/coverage.cobertura.xml
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  # the release builds for all platforms are expensive, only run them once the basic build and tests passed
+  native:
+    needs: build
+    uses: ./.github/workflows/native.yml
