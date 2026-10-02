@@ -3,14 +3,11 @@ using System.Net.Http.Headers;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using Matrix.RustSdk.Bindings;
-using Xunit.Abstractions;
 
 namespace Matrix.RustSdk.Tests;
 
-public class SdkTests : IAsyncLifetime
+public class SdkTests
 {
-    private readonly ITestOutputHelper _output;
-
     private const int HomeserverPort = 8008;
 
     private readonly IContainer _container = new ContainerBuilder("ghcr.io/matrix-construct/tuwunel:v1.9.3")
@@ -28,25 +25,22 @@ public class SdkTests : IAsyncLifetime
         .WithOutputConsumer(Consume.RedirectStdoutAndStderrToConsole())
         .Build();
 
-    public SdkTests(ITestOutputHelper output)
-    {
-        _output = output;
-    }
-
-    public Task InitializeAsync()
+    [Before(Test)]
+    public Task StartHomeserver()
     {
         return _container.StartAsync();
     }
 
-    public Task DisposeAsync()
+    [After(Test)]
+    public async Task StopHomeserver()
     {
-        return _container.DisposeAsync().AsTask();
+        await _container.DisposeAsync();
     }
 
     private string GetHomeserverUrl() =>
         $"http://{_container.Hostname}:{_container.GetMappedPublicPort(HomeserverPort)}";
 
-    [Fact]
+    [Test]
     public async Task Homeserver_ShouldBeWorking()
     {
         // Arrange
@@ -71,7 +65,7 @@ public class SdkTests : IAsyncLifetime
             )
         );
 
-        result.IsSuccessStatusCode.Should().BeTrue();
+        await Assert.That(result.IsSuccessStatusCode).IsTrue();
 
         // Login
         result = await client.PostAsync(
@@ -91,12 +85,12 @@ public class SdkTests : IAsyncLifetime
         );
 
         string response = await result.Content.ReadAsStringAsync();
-        _output.WriteLine("Login response: " + response);
+        Console.WriteLine("Login response: " + response);
 
-        result.IsSuccessStatusCode.Should().BeTrue();
+        await Assert.That(result.IsSuccessStatusCode).IsTrue();
     }
 
-    [Fact]
+    [Test]
     public async Task Login_ShouldBeSuccessful()
     {
         // Arrange
@@ -115,7 +109,7 @@ public class SdkTests : IAsyncLifetime
                 """
             )
         );
-        register.IsSuccessStatusCode.Should().BeTrue();
+        await Assert.That(register.IsSuccessStatusCode).IsTrue();
 
         using Client client = await new ClientBuilder().HomeserverUrl(GetHomeserverUrl()).InMemoryStore().Build();
 
@@ -131,7 +125,8 @@ public class SdkTests : IAsyncLifetime
         string roomId = await client.CreateRoom(parameters);
 
         // Assert
-        client.UserId().Should().Be("@sdk:localhost");
-        client.Rooms().Should().ContainSingle().Which.Id().Should().Be(roomId);
+        await Assert.That(client.UserId()).IsEqualTo("@sdk:localhost");
+        Room room = await Assert.That(client.Rooms()).HasSingleItem();
+        await Assert.That(room.Id()).IsEqualTo(roomId);
     }
 }
