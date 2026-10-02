@@ -1,0 +1,6 @@
+# Configuration for the changelog GitHub generates for releases (used by .github/scripts/create-release.sh)
+changelog:
+  exclude:
+    # dependency updates aren't interesting for consumers of the packages, the packages pin what they need
+    authors:
+      - renovate[bot]
