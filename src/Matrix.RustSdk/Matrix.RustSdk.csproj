@@ -2,7 +2,8 @@
   <PropertyGroup>
     <PackageId>Matrix.RustSdk</PackageId>
     <PackageDescription>A C# wrapper for the matrix-rust-sdk crate.</PackageDescription>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <!-- not published until it provides helpers on top of the bindings -->
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Roslynator.Analyzers" Version="5.0.0">
