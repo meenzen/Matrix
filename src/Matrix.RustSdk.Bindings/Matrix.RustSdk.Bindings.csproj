@@ -3,7 +3,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <PackageId>Matrix.RustSdk.Bindings</PackageId>
-    <PackageDescription>UniFFI bindings for the matrix-rust-sdk crate.</PackageDescription>
+    <PackageDescription>UniFFI bindings for the matrix-rust-sdk crate. The native libraries are shipped separately in the Matrix.RustSdk.Bindings.Native.* packages.</PackageDescription>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <!-- generated code: doc comments from rust don't map cleanly to C# XML docs -->
     <NoWarn>$(NoWarn);CS1570;CS1573;CS1587</NoWarn>
@@ -11,37 +11,4 @@
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
-  <!-- debug packages include the local debug build if it exists, CI runners testing release builds don't have one -->
-  <ItemGroup Condition="'$(Configuration)'=='DEBUG'">
-    <Content
-      Include="../../external/matrix-rust-sdk/target/debug/libmatrix_sdk_ffi.so"
-      Condition="$([MSBuild]::IsOSPlatform('Linux')) And Exists('../../external/matrix-rust-sdk/target/debug/libmatrix_sdk_ffi.so')"
-    >
-      <Pack>true</Pack>
-      <PackagePath>runtimes/linux-x64/native/libmatrix_sdk_ffi.so</PackagePath>
-      <Visible>false</Visible>
-    </Content>
-    <Content
-      Include="../../external/matrix-rust-sdk/target/debug/matrix_sdk_ffi.dll"
-      Condition="$([MSBuild]::IsOSPlatform('Windows')) And Exists('../../external/matrix-rust-sdk/target/debug/matrix_sdk_ffi.dll')"
-    >
-      <Pack>true</Pack>
-      <PackagePath>runtimes/win-x64/native/matrix_sdk_ffi.dll</PackagePath>
-      <Visible>false</Visible>
-    </Content>
-  </ItemGroup>
-  <!-- release builds pack the native libraries built by CI, see .github/workflows/nuget.yml -->
-  <ItemGroup Condition="'$(Configuration)'=='RELEASE'">
-    <Content Include="../../native/runtimes/**/*">
-      <Pack>true</Pack>
-      <PackagePath>runtimes/</PackagePath>
-      <Visible>false</Visible>
-    </Content>
-  </ItemGroup>
-  <Target Name="EnsureNativeLibraries" BeforeTargets="Build" Condition="'$(Configuration)'=='RELEASE'">
-    <Error
-      Condition="!Exists('../../native/runtimes/linux-x64/native/libmatrix_sdk_ffi.so') Or !Exists('../../native/runtimes/linux-arm64/native/libmatrix_sdk_ffi.so') Or !Exists('../../native/runtimes/win-x64/native/matrix_sdk_ffi.dll') Or !Exists('../../native/runtimes/win-arm64/native/matrix_sdk_ffi.dll')"
-      Text="Native libraries are missing, release builds expect them in native/runtimes/&lt;rid&gt;/native (built by CI)."
-    />
-  </Target>
 </Project>

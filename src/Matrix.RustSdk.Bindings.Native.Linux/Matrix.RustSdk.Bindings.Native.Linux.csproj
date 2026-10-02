@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageDescription>Native matrix-rust-sdk libraries for Linux (glibc and musl, x64 and arm64).</PackageDescription>
+  </PropertyGroup>
+  <ItemGroup>
+    <NativeLibrary
+      Include="$(NativeLibrariesDirectory)linux-x64/native/libmatrix_sdk_ffi.so"
+      PackagePath="runtimes/linux-x64/native/"
+    />
+    <NativeLibrary
+      Include="$(NativeLibrariesDirectory)linux-arm64/native/libmatrix_sdk_ffi.so"
+      PackagePath="runtimes/linux-arm64/native/"
+    />
+    <NativeLibrary
+      Include="$(NativeLibrariesDirectory)linux-musl-x64/native/libmatrix_sdk_ffi.so"
+      PackagePath="runtimes/linux-musl-x64/native/"
+    />
+    <NativeLibrary
+      Include="$(NativeLibrariesDirectory)linux-musl-arm64/native/libmatrix_sdk_ffi.so"
+      PackagePath="runtimes/linux-musl-arm64/native/"
+    />
+  </ItemGroup>
+  <Import Project="../Native.targets" />
+</Project>

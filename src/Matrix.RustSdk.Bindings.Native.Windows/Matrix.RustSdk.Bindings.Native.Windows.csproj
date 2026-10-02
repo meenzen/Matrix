@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageDescription>Native matrix-rust-sdk libraries for Windows (x64 and arm64).</PackageDescription>
+  </PropertyGroup>
+  <ItemGroup>
+    <NativeLibrary
+      Include="$(NativeLibrariesDirectory)win-x64/native/matrix_sdk_ffi.dll"
+      PackagePath="runtimes/win-x64/native/"
+    />
+    <NativeLibrary
+      Include="$(NativeLibrariesDirectory)win-arm64/native/matrix_sdk_ffi.dll"
+      PackagePath="runtimes/win-arm64/native/"
+    />
+  </ItemGroup>
+  <Import Project="../Native.targets" />
+</Project>

@@ -1,5 +1,9 @@
 <Solution>
   <Project Path="src/Matrix.RustSdk.Bindings/Matrix.RustSdk.Bindings.csproj" />
+  <Project Path="src/Matrix.RustSdk.Bindings.Native.All/Matrix.RustSdk.Bindings.Native.All.csproj" />
+  <Project Path="src/Matrix.RustSdk.Bindings.Native.Linux/Matrix.RustSdk.Bindings.Native.Linux.csproj" />
+  <Project Path="src/Matrix.RustSdk.Bindings.Native.MacOS/Matrix.RustSdk.Bindings.Native.MacOS.csproj" />
+  <Project Path="src/Matrix.RustSdk.Bindings.Native.Windows/Matrix.RustSdk.Bindings.Native.Windows.csproj" />
   <Project Path="src/Matrix.RustSdk/Matrix.RustSdk.csproj" />
   <Project Path="test/Matrix.RustSdk.Tests/Matrix.RustSdk.Tests.csproj" />
 </Solution>
