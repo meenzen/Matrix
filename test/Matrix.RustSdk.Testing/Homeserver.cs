@@ -99,11 +99,16 @@ public sealed class Homeserver : IAsyncInitializer, IAsyncDisposable
 
     /// <summary>
     /// Builds a client with an in-memory store and logs <paramref name="user"/> in. The homeserver owns the client and
-    /// disposes it together with the container, so tests that depend on each other can share it.
+    /// disposes it together with the container, so tests that depend on each other can share it. The client uses
+    /// simplified sliding sync, so it can sync with <see cref="Client.SyncService"/>.
     /// </summary>
     public async Task<Client> LoginAsync(TestUser user)
     {
-        Client client = await new ClientBuilder().HomeserverUrl(Url).InMemoryStore().Build();
+        Client client = await new ClientBuilder()
+            .HomeserverUrl(Url)
+            .SlidingSyncVersionBuilder(SlidingSyncVersionBuilder.Native)
+            .InMemoryStore()
+            .Build();
         _clients.Add(client);
         await client.Login(user.Username, user.Password, initialDeviceName: null, deviceId: null);
         return client;

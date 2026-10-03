@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- TUnit runs on Microsoft.Testing.Platform, test projects are executables -->
+    <OutputType>Exe</OutputType>
+    <NoWarn>$(NoWarn);VSTHRD200</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="TUnit" Version="1.72.16" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\example\Matrix.RustSdk.Examples.TuiClient\Matrix.RustSdk.Examples.TuiClient.csproj" />
+    <ProjectReference Include="..\Matrix.RustSdk.Testing\Matrix.RustSdk.Testing.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,7 +1,11 @@
 <Solution>
   <Project Path="src/Matrix.RustSdk.Bindings/Matrix.RustSdk.Bindings.csproj" />
+  <Folder Name="/example/">
+    <Project Path="example/Matrix.RustSdk.Examples.TuiClient/Matrix.RustSdk.Examples.TuiClient.csproj" />
+  </Folder>
   <Folder Name="/src/" />
   <Folder Name="/test/">
+    <Project Path="test/Matrix.RustSdk.Examples.TuiClient.Tests/Matrix.RustSdk.Examples.TuiClient.Tests.csproj" />
     <Project Path="test/Matrix.RustSdk.Testing/Matrix.RustSdk.Testing.csproj" />
   </Folder>
   <Project Path="src/Matrix.RustSdk.Bindings.Native.All/Matrix.RustSdk.Bindings.Native.All.csproj" />
