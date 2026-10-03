@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <PackageDescription>Native matrix-rust-sdk libraries for Windows (x64 and arm64).</PackageDescription>
+    <PackageDescription>Unofficial native matrix-rust-sdk libraries for Matrix.RustSdk.Bindings on Windows (x64 and arm64). Not affiliated with The Matrix.org Foundation.</PackageDescription>
   </PropertyGroup>
   <ItemGroup>
     <NativeLibrary

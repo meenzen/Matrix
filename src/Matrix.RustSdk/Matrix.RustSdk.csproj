@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <PackageId>Matrix.RustSdk</PackageId>
-    <PackageDescription>A C# wrapper for the matrix-rust-sdk crate.</PackageDescription>
+    <PackageDescription>An unofficial C# wrapper for matrix-rust-sdk. Not affiliated with The Matrix.org Foundation.</PackageDescription>
     <!-- not published until it provides helpers on top of the bindings -->
     <IsPackable>false</IsPackable>
   </PropertyGroup>
