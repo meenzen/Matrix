@@ -3,7 +3,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <PackageId>Matrix.RustSdk.Bindings</PackageId>
-    <PackageDescription>UniFFI bindings for the matrix-rust-sdk crate. The native libraries are shipped separately in the Matrix.RustSdk.Bindings.Native.* packages.</PackageDescription>
+    <PackageDescription>Unofficial C# bindings for matrix-rust-sdk, generated with UniFFI. The native libraries are shipped separately in the Matrix.RustSdk.Bindings.Native.* packages. Not affiliated with The Matrix.org Foundation.</PackageDescription>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <!-- generated code: doc comments from rust don't map cleanly to C# XML docs -->
     <NoWarn>$(NoWarn);CS1570;CS1573;CS1587</NoWarn>

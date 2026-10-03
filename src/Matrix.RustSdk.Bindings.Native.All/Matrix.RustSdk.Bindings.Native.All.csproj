@@ -2,7 +2,7 @@
   <!-- convenience package depending on the native libraries for all platforms -->
   <PropertyGroup>
     <PackageId>Matrix.RustSdk.Bindings.Native.All</PackageId>
-    <PackageDescription>Native matrix-rust-sdk libraries for all supported platforms.</PackageDescription>
+    <PackageDescription>Unofficial native matrix-rust-sdk libraries for Matrix.RustSdk.Bindings, for all supported platforms. Not affiliated with The Matrix.org Foundation.</PackageDescription>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <GeneratePackageOnBuild Condition="'$(Configuration)'=='Release'">true</GeneratePackageOnBuild>
     <ExactProjectReferenceVersions>true</ExactProjectReferenceVersions>

@@ -5,7 +5,9 @@
 
 # Matrix.RustSdk
 
-A C# wrapper for the matrix-rust-sdk crate.
+An unofficial C# wrapper for [matrix-rust-sdk](https://github.com/matrix-org/matrix-rust-sdk), the Rust SDK for the
+[Matrix](https://matrix.org) protocol. This project is community-maintained and not affiliated with The Matrix.org
+Foundation.
 
 ## Installation
 
