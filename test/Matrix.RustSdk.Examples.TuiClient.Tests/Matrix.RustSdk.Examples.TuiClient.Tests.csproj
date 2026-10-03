@@ -12,7 +12,7 @@
     <PackageReference Include="TUnit" Version="1.72.16" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Matrix.RustSdk\Matrix.RustSdk.csproj" />
+    <ProjectReference Include="..\..\example\Matrix.RustSdk.Examples.TuiClient\Matrix.RustSdk.Examples.TuiClient.csproj" />
     <ProjectReference Include="..\Matrix.RustSdk.Testing\Matrix.RustSdk.Testing.csproj" />
   </ItemGroup>
 </Project>

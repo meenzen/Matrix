@@ -39,4 +39,39 @@
       </_ProjectReferencesWithVersions>
     </ItemGroup>
   </Target>
+
+  <!--
+    Copies the native library next to the output of projects that run the bindings from source (tests and examples),
+    they opt in with <CopyNativeLibrary>true</CopyNativeLibrary>. Defaults to the debug build of
+    ./scripts/build-debug.sh, CI passes the release build with -p:NativeLibraryPath=...
+  -->
+  <PropertyGroup Condition="'$(CopyNativeLibrary)' == 'true'">
+    <NativeLibraryName Condition="$([MSBuild]::IsOSPlatform('Windows'))">matrix_sdk_ffi.dll</NativeLibraryName>
+    <NativeLibraryName Condition="$([MSBuild]::IsOSPlatform('OSX'))">libmatrix_sdk_ffi.dylib</NativeLibraryName>
+    <NativeLibraryName Condition="'$(NativeLibraryName)' == ''">libmatrix_sdk_ffi.so</NativeLibraryName>
+    <NativeLibraryPath Condition="'$(NativeLibraryPath)' == ''"
+      >$(MSBuildThisFileDirectory)external/matrix-rust-sdk/target/debug/$(NativeLibraryName)</NativeLibraryPath>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(CopyNativeLibrary)' == 'true'">
+    <!-- always copy, otherwise switching NativeLibraryPath can leave a newer, different library in the output -->
+    <Content
+      Include="$(NativeLibraryPath)"
+      Link="$(NativeLibraryName)"
+      Condition="'$(RequireNativeLibrary)' != 'false' Or Exists('$(NativeLibraryPath)')"
+    >
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
+  </ItemGroup>
+  <!-- builds that don't run anything, like CodeQL, can skip the native library with -p:RequireNativeLibrary=false -->
+  <Target
+    Name="EnsureNativeLibrary"
+    BeforeTargets="PrepareForBuild"
+    Condition="'$(CopyNativeLibrary)' == 'true' And '$(RequireNativeLibrary)' != 'false'"
+  >
+    <Error
+      Condition="!Exists('$(NativeLibraryPath)')"
+      Text="Native library not found at $(NativeLibraryPath), run ./scripts/build-debug.sh first."
+    />
+  </Target>
 </Project>

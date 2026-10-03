@@ -1,0 +1,11 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+  <!--
+    The examples reference the bindings from source and run with the locally built native library. Applications using
+    the NuGet packages reference Matrix.RustSdk.Bindings.Native.* instead, see README.md.
+  -->
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <CopyNativeLibrary>true</CopyNativeLibrary>
+  </PropertyGroup>
+</Project>
