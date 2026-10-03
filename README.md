@@ -41,6 +41,39 @@ The bindings are generated from [matrix-rust-sdk](https://github.com/matrix-org/
 each package name the `matrix-sdk-ffi` release it was built from. The API follows the upstream SDK, which changes with
 almost every release, so minor versions of the packages contain breaking changes until 1.0.
 
+## Usage
+
+The bindings mirror the API of `matrix-sdk-ffi`. A minimal example that logs in, creates a room and lists the rooms of
+the account:
+
+```csharp
+using Matrix.RustSdk.Bindings;
+
+using Client client = await new ClientBuilder()
+    .ServerNameOrHomeserverUrl("matrix.org")
+    .InMemoryStore()
+    .Build();
+
+await client.Login("username", "password", initialDeviceName: "My App", deviceId: null);
+
+string roomId = await client.CreateRoom(
+    new CreateRoomParameters(
+        Name: "My Room",
+        IsEncrypted: true,
+        Visibility: new RoomVisibility.Private(),
+        Preset: RoomPreset.PrivateChat
+    )
+);
+
+foreach (Room room in client.Rooms())
+{
+    Console.WriteLine($"{room.Id()}: {room.DisplayName()}");
+}
+```
+
+For everything else, the [matrix-rust-sdk documentation](https://github.com/matrix-org/matrix-rust-sdk) and the
+`matrix-sdk-ffi` sources are the best reference, the C# methods are the PascalCase versions of the Rust ones.
+
 ## Development
 
 The development environment is managed with [devenv](https://devenv.sh), `devenv shell` provides Rust, .NET and
