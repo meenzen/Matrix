@@ -2,12 +2,15 @@
 [![codecov](https://codecov.io/gh/meenzen/Matrix/graph/badge.svg?token=OTzMAH3dRO)](https://codecov.io/gh/meenzen/Matrix)
 [![NuGet](https://img.shields.io/nuget/vpre/Matrix.RustSdk.Bindings)](https://www.nuget.org/packages/Matrix.RustSdk.Bindings)
 [![NuGet](https://img.shields.io/nuget/dt/Matrix.RustSdk.Bindings.svg)](https://www.nuget.org/packages/Matrix.RustSdk.Bindings)
+[![Matrix](https://img.shields.io/badge/matrix-%23dotnet%3Amnzn.dev-blue?logo=matrix)](https://matrix.to/#/#dotnet:mnzn.dev)
 
 # Matrix.RustSdk
 
 An unofficial C# wrapper for [matrix-rust-sdk](https://github.com/matrix-org/matrix-rust-sdk), the Rust SDK for the
 [Matrix](https://matrix.org) protocol. This project is community-maintained and not affiliated with The Matrix.org
 Foundation.
+
+Questions or feedback about the SDK? Join [#dotnet:mnzn.dev](https://matrix.to/#/#dotnet:mnzn.dev) on Matrix.
 
 ## Installation
 
