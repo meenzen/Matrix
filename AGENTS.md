@@ -66,7 +66,7 @@ obvious:
 - Shared test setup lives in `test/Matrix.RustSdk.Testing`: `Homeserver` is shared per test session
   (`[ClassDataSource<Homeserver>(Shared = SharedType.PerTestSession)]`), tests register their own users with
   `CreateUserAsync` because they run in parallel. Tests that build on each other's state are chained with
-  `[DependsOn]` instead of repeating the setup.
+  `[DependsOn]` instead of repeating the setup. Wait for asynchronous results with `Poll.UntilAsync`, not fixed delays.
 - Every example in `example/` has exactly one test project `test/<example>.Tests` that runs the real example app
   against the homeserver.
 - The native library under test defaults to the debug build, `-p:NativeLibraryPath=...` selects another one (CI uses

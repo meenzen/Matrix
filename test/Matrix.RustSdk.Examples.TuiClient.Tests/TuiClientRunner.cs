@@ -1,3 +1,4 @@
+using Matrix.RustSdk.Testing;
 using Terminal.Gui.App;
 using Terminal.Gui.Drivers;
 using Terminal.Gui.Input;
@@ -11,9 +12,7 @@ namespace Matrix.RustSdk.Examples.TuiClient.Tests;
 /// </summary>
 public sealed class TuiClientRunner : IAsyncDisposable
 {
-    public static readonly TimeSpan Timeout = TimeSpan.FromSeconds(30);
-
-    private static readonly TimeSpan PollInterval = TimeSpan.FromMilliseconds(100);
+    private static readonly TimeSpan Timeout = Poll.DefaultTimeout;
 
     private readonly IApplication _app;
     private readonly CancellationTokenSource _stop;
@@ -81,30 +80,34 @@ public sealed class TuiClientRunner : IAsyncDisposable
 
     /// <summary>
     /// Waits until the screen shows <paramref name="text"/>, fails with the last screen after
-    /// <see cref="Timeout"/>.
+    /// <see cref="Poll.DefaultTimeout"/>.
     /// </summary>
     public async Task WaitForTextAsync(string text)
     {
-        using CancellationTokenSource timeout = new(Timeout);
         string screen = "";
-        while (!timeout.IsCancellationRequested)
+        try
         {
-            if (Completion.IsCompleted)
-            {
-                throw new InvalidOperationException(
-                    $"The client exited while waiting for \"{text}\".",
-                    Completion.Exception
-                );
-            }
+            await Poll.UntilAsync(
+                async () =>
+                {
+                    if (Completion.IsCompleted)
+                    {
+                        throw new InvalidOperationException(
+                            $"The client exited while waiting for \"{text}\".",
+                            Completion.Exception
+                        );
+                    }
 
-            screen = await GetScreenAsync();
-            if (screen.Contains(text, StringComparison.Ordinal))
-            {
-                return;
-            }
-            await Task.Delay(PollInterval, CancellationToken.None);
+                    screen = await GetScreenAsync();
+                    return screen.Contains(text, StringComparison.Ordinal);
+                },
+                $"\"{text}\" to show up"
+            );
         }
-        throw new TimeoutException($"\"{text}\" didn't show up within {Timeout}, the screen was:\n{screen}");
+        catch (TimeoutException e)
+        {
+            throw new TimeoutException($"{e.Message} The screen was:\n{screen}", e);
+        }
     }
 
     public async ValueTask DisposeAsync()

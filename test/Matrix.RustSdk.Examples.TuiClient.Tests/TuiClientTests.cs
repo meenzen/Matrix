@@ -123,7 +123,7 @@ public class TuiClientTests(Homeserver homeserver)
         // Assert
         // tuwunel appends an emoji to the display names of new users, only the message itself is checked
         await Tui.WaitForTextAsync($"> {message}");
-        await OtherMessages.WaitForAsync(message, TuiClientRunner.Timeout);
+        await OtherMessages.WaitForAsync(message);
     }
 
     [Test]
@@ -134,7 +134,7 @@ public class TuiClientTests(Homeserver homeserver)
         await Tui.PressAsync(Key.Esc);
 
         // Assert
-        await Tui.Completion.WaitAsync(TuiClientRunner.Timeout);
+        await Tui.Completion.WaitAsync(Poll.DefaultTimeout);
         await Assert.That(Tui.Completion.IsCompletedSuccessfully).IsTrue();
     }
 
@@ -193,13 +193,7 @@ public class TuiClientTests(Homeserver homeserver)
             }
         }
 
-        public async Task WaitForAsync(string body, TimeSpan timeout)
-        {
-            using CancellationTokenSource cancellation = new(timeout);
-            while (!_bodies.ContainsKey(body))
-            {
-                await Task.Delay(TimeSpan.FromMilliseconds(100), cancellation.Token);
-            }
-        }
+        public Task WaitForAsync(string body) =>
+            Poll.UntilAsync(() => Task.FromResult(_bodies.ContainsKey(body)), $"the message \"{body}\"");
     }
 }
