@@ -71,6 +71,13 @@ foreach (Room room in client.Rooms())
 }
 ```
 
+Complete example apps are in [`example/`](example):
+
+- [Echo bot](example/Matrix.RustSdk.Examples.EchoBot): a worker service that joins rooms it's invited to and echoes
+  messages
+- [TUI client](example/Matrix.RustSdk.Examples.TuiClient): a basic terminal client with a room list, timeline and
+  composer
+
 For everything else, the [matrix-rust-sdk documentation](https://github.com/matrix-org/matrix-rust-sdk) and the
 `matrix-sdk-ffi` sources are the best reference, the C# methods are the PascalCase versions of the Rust ones.
 

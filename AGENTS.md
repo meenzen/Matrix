@@ -13,7 +13,8 @@ matrix-rust-sdk.
 - `src/Matrix.RustSdk.Bindings.Native.*`: packages containing only the native libraries, shared logic in
   `src/Native.targets`
 - `src/Matrix.RustSdk`: future helpers on top of the bindings, not published yet
-- `test/Matrix.RustSdk.Tests`: TUnit tests
+- `test/Matrix.RustSdk.Tests`: TUnit tests, `test/Matrix.RustSdk.Testing`: shared test setup (homeserver container)
+- `example/`: example apps referencing the bindings from source, each tested by `test/<example>.Tests`
 - `scripts/`: local development scripts, `.github/scripts/`: scripts used by CI
 - `.github/workflows/`: `build.yml` (PRs and main), `packages.yml` (reusable: native builds for all platforms, tests,
   packing), `nuget.yml` (manual publishing), `codeql.yml`
@@ -60,10 +61,17 @@ obvious:
 
 - TUnit on Microsoft.Testing.Platform (`global.json` switches `dotnet test` to it). Don't add `Microsoft.NET.Test.Sdk`
   or coverlet, they break TUnit. Coverage: `dotnet test --coverage --coverage-output-format cobertura`.
-- `SdkTests` run against a tuwunel homeserver started with Testcontainers, they are in the `Homeserver` category.
-  `NativeLibraryTests` are smoke tests without a homeserver, they run on every platform.
+- `SdkTests` and the example tests run against a tuwunel homeserver started with Testcontainers, they are in the
+  `Homeserver` category. `NativeLibraryTests` are smoke tests without a homeserver, they run on every platform.
+- Shared test setup lives in `test/Matrix.RustSdk.Testing`: `Homeserver` is shared per test session
+  (`[ClassDataSource<Homeserver>(Shared = SharedType.PerTestSession)]`), tests register their own users with
+  `CreateUserAsync` because they run in parallel. Tests that build on each other's state are chained with
+  `[DependsOn]` instead of repeating the setup.
+- Every example in `example/` has exactly one test project `test/<example>.Tests` that runs the real example app
+  against the homeserver.
 - The native library under test defaults to the debug build, `-p:NativeLibraryPath=...` selects another one (CI uses
-  this to test the release libraries). Filter out the homeserver tests with
+  this to test the release libraries). Projects opt into copying it with `CopyNativeLibrary` (`Directory.Build.targets`,
+  set for `example/` and `Matrix.RustSdk.Testing`). Filter out the homeserver tests with
   `--treenode-filter '/*/*/*/*[Category!=Homeserver]'`.
 
 ## CI and packaging
