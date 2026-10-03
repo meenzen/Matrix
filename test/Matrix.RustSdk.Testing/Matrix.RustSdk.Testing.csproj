@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- shared setup of the test projects: the homeserver container and the native library under test -->
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <CopyNativeLibrary>true</CopyNativeLibrary>
+    <NoWarn>$(NoWarn);VSTHRD200</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Testcontainers" Version="4.15.0" />
+    <PackageReference Include="TUnit.Core" Version="1.72.16" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Matrix.RustSdk.Bindings\Matrix.RustSdk.Bindings.csproj" />
+  </ItemGroup>
+</Project>

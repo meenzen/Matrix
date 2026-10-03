@@ -9,36 +9,10 @@
     <NoWarn>$(NoWarn);VSTHRD200</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Testcontainers" Version="4.15.0" />
     <PackageReference Include="TUnit" Version="1.72.16" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Matrix.RustSdk\Matrix.RustSdk.csproj" />
+    <ProjectReference Include="..\Matrix.RustSdk.Testing\Matrix.RustSdk.Testing.csproj" />
   </ItemGroup>
-  <!-- the native library under test, defaults to the debug build, CI passes the release build with -p:NativeLibraryPath=... -->
-  <PropertyGroup>
-    <NativeLibraryName Condition="$([MSBuild]::IsOSPlatform('Windows'))">matrix_sdk_ffi.dll</NativeLibraryName>
-    <NativeLibraryName Condition="$([MSBuild]::IsOSPlatform('OSX'))">libmatrix_sdk_ffi.dylib</NativeLibraryName>
-    <NativeLibraryName Condition="'$(NativeLibraryName)' == ''">libmatrix_sdk_ffi.so</NativeLibraryName>
-    <NativeLibraryPath Condition="'$(NativeLibraryPath)' == ''"
-      >../../external/matrix-rust-sdk/target/debug/$(NativeLibraryName)</NativeLibraryPath>
-  </PropertyGroup>
-  <ItemGroup>
-    <!-- always copy, otherwise switching NativeLibraryPath can leave a newer, different library in the output -->
-    <Content
-      Include="$(NativeLibraryPath)"
-      Link="$(NativeLibraryName)"
-      Condition="'$(RequireNativeLibrary)' != 'false' Or Exists('$(NativeLibraryPath)')"
-    >
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <Visible>false</Visible>
-    </Content>
-  </ItemGroup>
-  <!-- builds that don't run the tests, like CodeQL, can skip the native library with -p:RequireNativeLibrary=false -->
-  <Target Name="EnsureNativeLibrary" BeforeTargets="PrepareForBuild" Condition="'$(RequireNativeLibrary)' != 'false'">
-    <Error
-      Condition="!Exists('$(NativeLibraryPath)')"
-      Text="Native library not found at $(NativeLibraryPath), run ./scripts/build-debug.sh first."
-    />
-  </Target>
 </Project>

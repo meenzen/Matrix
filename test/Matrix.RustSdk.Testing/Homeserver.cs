@@ -1,0 +1,116 @@
+using System.Collections.Concurrent;
+using System.Globalization;
+using System.Net.Http.Json;
+using DotNet.Testcontainers.Builders;
+using DotNet.Testcontainers.Containers;
+using Matrix.RustSdk.Bindings;
+using TUnit.Core.Interfaces;
+
+namespace Matrix.RustSdk.Testing;
+
+/// <summary>
+/// A tuwunel homeserver started with Testcontainers, requires docker with linux containers. Share one instance per
+/// test session with <c>[ClassDataSource&lt;Homeserver&gt;(Shared = SharedType.PerTestSession)]</c> and create a
+/// separate user per test with <see cref="CreateUserAsync"/>, tests run in parallel.
+/// </summary>
+public sealed class Homeserver : IAsyncInitializer, IAsyncDisposable
+{
+    /// <summary>
+    /// The category of tests that need a homeserver, platforms without linux containers filter them out.
+    /// </summary>
+    public const string Category = "Homeserver";
+
+    /// <summary>
+    /// The server name, user ids look like <c>@user:localhost</c>.
+    /// </summary>
+    public const string ServerName = "localhost";
+
+    private const int Port = 8008;
+
+    private readonly IContainer _container = new ContainerBuilder("ghcr.io/matrix-construct/tuwunel:v1.9.3")
+        .WithEnvironment("TUWUNEL_SERVER_NAME", ServerName)
+        .WithEnvironment("TUWUNEL_ADDRESS", "0.0.0.0")
+        .WithEnvironment("TUWUNEL_PORT", Port.ToString(CultureInfo.InvariantCulture))
+        .WithEnvironment("TUWUNEL_ALLOW_REGISTRATION", "true")
+        .WithEnvironment("TUWUNEL_YES_I_AM_VERY_VERY_SURE_I_WANT_AN_OPEN_REGISTRATION_SERVER_PRONE_TO_ABUSE", "true")
+        .WithEnvironment("TUWUNEL_ALLOW_CHECK_FOR_UPDATES", "false")
+        .WithPortBinding(Port, true)
+        .WithWaitStrategy(
+            Wait.ForUnixContainer()
+                .UntilHttpRequestIsSucceeded(r => r.ForPort(Port).ForPath("/_matrix/client/versions"))
+        )
+        .WithOutputConsumer(Consume.RedirectStdoutAndStderrToConsole())
+        .Build();
+
+    private readonly ConcurrentBag<Client> _clients = [];
+    private HttpClient? _http;
+
+    /// <summary>
+    /// The URL of the client-server API reachable from the host.
+    /// </summary>
+    public string Url => $"http://{_container.Hostname}:{_container.GetMappedPublicPort(Port)}";
+
+    /// <summary>
+    /// A HTTP client for the client-server API, for requests the tests make without the SDK.
+    /// </summary>
+    public HttpClient Http => _http ?? throw new InvalidOperationException("The homeserver hasn't been started.");
+
+    public async Task InitializeAsync()
+    {
+        await _container.StartAsync();
+        _http = new HttpClient { BaseAddress = new Uri(Url) };
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        foreach (Client client in _clients)
+        {
+            client.Dispose();
+        }
+        _http?.Dispose();
+        await _container.DisposeAsync();
+    }
+
+    /// <summary>
+    /// Registers a new user with a unique name starting with <paramref name="prefix"/>.
+    /// </summary>
+    public async Task<TestUser> CreateUserAsync(string prefix = "user")
+    {
+        string username = $"{prefix}-{Guid.NewGuid().ToString("N")[..12]}".ToLowerInvariant();
+        string password = Guid.NewGuid().ToString("N");
+
+        using HttpResponseMessage response = await Http.PostAsJsonAsync(
+            "/_matrix/client/v3/register",
+            new
+            {
+                username,
+                password,
+                auth = new { type = "m.login.dummy" },
+            }
+        );
+        if (!response.IsSuccessStatusCode)
+        {
+            string body = await response.Content.ReadAsStringAsync();
+            throw new InvalidOperationException($"Registering {username} failed with {response.StatusCode}: {body}");
+        }
+
+        return new TestUser(username, password, $"@{username}:{ServerName}");
+    }
+
+    /// <summary>
+    /// Builds a client with an in-memory store and logs <paramref name="user"/> in. The homeserver owns the client and
+    /// disposes it together with the container, so tests that depend on each other can share it.
+    /// </summary>
+    public async Task<Client> LoginAsync(TestUser user)
+    {
+        Client client = await new ClientBuilder().HomeserverUrl(Url).InMemoryStore().Build();
+        _clients.Add(client);
+        await client.Login(user.Username, user.Password, initialDeviceName: null, deviceId: null);
+        return client;
+    }
+}
+
+/// <summary>
+/// A user registered on the <see cref="Homeserver"/>.
+/// </summary>
+public sealed record TestUser(string Username, string Password, string UserId);
