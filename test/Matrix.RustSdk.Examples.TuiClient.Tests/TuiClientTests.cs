@@ -43,10 +43,8 @@ public class TuiClientTests(Homeserver homeserver)
     public async Task Login_ShouldShowTheChatWindow()
     {
         // Arrange
-        // the first user of a tuwunel server is its admin and is in the admin room, registering the other user first
-        // keeps the room list of the TUI user empty until the test room shows up
-        _otherUser = await homeserver.CreateUserAsync("other");
         _tuiUser = await homeserver.CreateUserAsync("tui");
+        _otherUser = await homeserver.CreateUserAsync("other");
         // the homeserver is passed like --homeserver, username and password are typed into the login form
         _tui = await TuiClientRunner.StartAsync(new LoginOptions(homeserver.Url, Username: null, Password: null));
         await Tui.WaitForTextAsync("Username:");

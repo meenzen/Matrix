@@ -59,6 +59,8 @@ public sealed class Homeserver : IAsyncInitializer, IAsyncDisposable
     {
         await _container.StartAsync();
         _http = new HttpClient { BaseAddress = new Uri(Url) };
+        // tuwunel makes the first user its admin and joins it to the admin room, so no test user gets that role
+        await CreateUserAsync("admin");
     }
 
     public async ValueTask DisposeAsync()
