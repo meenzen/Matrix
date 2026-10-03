@@ -46,9 +46,9 @@ public sealed class Homeserver : IAsyncInitializer, IAsyncDisposable
     private HttpClient? _http;
 
     /// <summary>
-    /// The URL of the client-server API reachable from the host.
+    /// The URL of the client-server API reachable from the host. Plain http, the container only listens locally.
     /// </summary>
-    public string Url => $"http://{_container.Hostname}:{_container.GetMappedPublicPort(Port)}";
+    public string Url => $"http://{_container.Hostname}:{_container.GetMappedPublicPort(Port)}"; // NOSONAR
 
     /// <summary>
     /// A HTTP client for the client-server API, for requests the tests make without the SDK.

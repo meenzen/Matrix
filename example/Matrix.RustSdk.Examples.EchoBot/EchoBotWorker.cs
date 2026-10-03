@@ -62,7 +62,7 @@ public sealed partial class EchoBotWorker(IOptions<EchoBotOptions> options, ILog
     {
         // a classic /sync long poll, the SDK remembers the token of the previous response
         SyncSettingsV2 settings = new(TimeoutMs: 30_000);
-        while (true)
+        while (!cancellationToken.IsCancellationRequested)
         {
             SyncResponseV2 response;
             try

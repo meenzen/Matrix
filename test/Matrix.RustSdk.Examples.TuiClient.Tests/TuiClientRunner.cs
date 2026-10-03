@@ -115,7 +115,8 @@ public sealed class TuiClientRunner : IAsyncDisposable
         await _stop.CancelAsync();
         try
         {
-            await Completion.WaitAsync(Timeout);
+            // the stop token is cancelled already, only the timeout limits waiting for the client to exit
+            await Completion.WaitAsync(Timeout, CancellationToken.None);
         }
         finally
         {
@@ -137,7 +138,7 @@ public sealed class TuiClientRunner : IAsyncDisposable
                 result.SetException(e);
             }
         });
-        return await result.Task.WaitAsync(Timeout);
+        return await result.Task.WaitAsync(Timeout, _stop.Token);
     }
 
     private Task OnMainLoopAsync(Action action) =>
