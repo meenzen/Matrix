@@ -27,36 +27,44 @@ public sealed class Homeserver : IAsyncInitializer, IAsyncDisposable
 
     private const int Port = 8008;
 
-    private readonly IContainer _container = new ContainerBuilder("ghcr.io/matrix-construct/tuwunel:v1.9.3")
-        .WithEnvironment("TUWUNEL_SERVER_NAME", ServerName)
-        .WithEnvironment("TUWUNEL_ADDRESS", "0.0.0.0")
-        .WithEnvironment("TUWUNEL_PORT", Port.ToString(CultureInfo.InvariantCulture))
-        .WithEnvironment("TUWUNEL_ALLOW_REGISTRATION", "true")
-        .WithEnvironment("TUWUNEL_YES_I_AM_VERY_VERY_SURE_I_WANT_AN_OPEN_REGISTRATION_SERVER_PRONE_TO_ABUSE", "true")
-        .WithEnvironment("TUWUNEL_ALLOW_CHECK_FOR_UPDATES", "false")
-        .WithPortBinding(Port, true)
-        .WithWaitStrategy(
-            Wait.ForUnixContainer()
-                .UntilHttpRequestIsSucceeded(r => r.ForPort(Port).ForPath("/_matrix/client/versions"))
-        )
-        .WithOutputConsumer(Consume.RedirectStdoutAndStderrToConsole())
-        .Build();
-
     private readonly ConcurrentBag<Client> _clients = [];
+
+    // created on start: building the container already connects to docker, and TUnit creates the data sources of
+    // tests the filter excludes as well, which would break the runs without docker that skip the homeserver tests
+    private IContainer? _container;
     private HttpClient? _http;
 
     /// <summary>
     /// The URL of the client-server API reachable from the host. Plain http, the container only listens locally.
     /// </summary>
-    public string Url => $"http://{_container.Hostname}:{_container.GetMappedPublicPort(Port)}"; // NOSONAR
+    public string Url => $"http://{Container.Hostname}:{Container.GetMappedPublicPort(Port)}"; // NOSONAR
 
     /// <summary>
     /// A HTTP client for the client-server API, for requests the tests make without the SDK.
     /// </summary>
-    public HttpClient Http => _http ?? throw new InvalidOperationException("The homeserver hasn't been started.");
+    public HttpClient Http => _http ?? throw NotStarted();
+
+    private IContainer Container => _container ?? throw NotStarted();
 
     public async Task InitializeAsync()
     {
+        _container = new ContainerBuilder("ghcr.io/matrix-construct/tuwunel:v1.9.3")
+            .WithEnvironment("TUWUNEL_SERVER_NAME", ServerName)
+            .WithEnvironment("TUWUNEL_ADDRESS", "0.0.0.0")
+            .WithEnvironment("TUWUNEL_PORT", Port.ToString(CultureInfo.InvariantCulture))
+            .WithEnvironment("TUWUNEL_ALLOW_REGISTRATION", "true")
+            .WithEnvironment(
+                "TUWUNEL_YES_I_AM_VERY_VERY_SURE_I_WANT_AN_OPEN_REGISTRATION_SERVER_PRONE_TO_ABUSE",
+                "true"
+            )
+            .WithEnvironment("TUWUNEL_ALLOW_CHECK_FOR_UPDATES", "false")
+            .WithPortBinding(Port, true)
+            .WithWaitStrategy(
+                Wait.ForUnixContainer()
+                    .UntilHttpRequestIsSucceeded(r => r.ForPort(Port).ForPath("/_matrix/client/versions"))
+            )
+            .WithOutputConsumer(Consume.RedirectStdoutAndStderrToConsole())
+            .Build();
         await _container.StartAsync();
         _http = new HttpClient { BaseAddress = new Uri(Url) };
         // tuwunel makes the first user its admin and joins it to the admin room, so no test user gets that role
@@ -70,8 +78,13 @@ public sealed class Homeserver : IAsyncInitializer, IAsyncDisposable
             client.Dispose();
         }
         _http?.Dispose();
-        await _container.DisposeAsync();
+        if (_container is not null)
+        {
+            await _container.DisposeAsync();
+        }
     }
+
+    private static InvalidOperationException NotStarted() => new("The homeserver hasn't been started.");
 
     /// <summary>
     /// Registers a new user with a unique name starting with <paramref name="prefix"/>.
