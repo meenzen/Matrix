@@ -110,7 +110,7 @@ jobs:
           mkdir -p native/runtimes/${{ matrix.rid }}/native
           cp external/matrix-rust-sdk/target/${{ matrix.target }}/"$CARGO_PROFILE"/${{ matrix.library }} native/runtimes/${{ matrix.rid }}/native/
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: native-${{ matrix.rid }}
           path: native/
@@ -174,7 +174,7 @@ jobs:
           mkdir -p native/runtimes/${{ matrix.rid }}/native
           cp external/matrix-rust-sdk/target/${{ matrix.target }}/"$CARGO_PROFILE"/libmatrix_sdk_ffi.so native/runtimes/${{ matrix.rid }}/native/
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: native-${{ matrix.rid }}
           path: native/
@@ -229,7 +229,7 @@ jobs:
       - name: Show packages
         run: ls -la src/*/bin/Release/*.nupkg
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: nuget-packages
           path: src/*/bin/Release/*.nupkg
