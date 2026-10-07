@@ -9,7 +9,7 @@
     <NoWarn>$(NoWarn);VSTHRD200</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="TUnit" Version="1.72.16" />
+    <PackageReference Include="TUnit" Version="1.73.5" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\example\Matrix.RustSdk.Examples.EchoBot\Matrix.RustSdk.Examples.EchoBot.csproj" />
