@@ -111,7 +111,7 @@ if newer "$LATEST_SDK" "$CURRENT_SDK"; then
   elif [[ "$(minor "$LATEST_SDK_UNIFFI")" == "$(minor "$LATEST_BINDGEN_UNIFFI")" ]]; then
     COMPATIBILITY="⚠️ Needs the latest uniffi-bindgen-cs release \`$LATEST_BINDGEN_TAG\` for uniffi $(minor "$LATEST_SDK_UNIFFI"), update it in \`devenv.nix\`."
   else
-    COMPATIBILITY="❌ No uniffi-bindgen-cs release supports uniffi $(minor "$LATEST_SDK_UNIFFI") yet (latest: \`$LATEST_BINDGEN_TAG\`). Check its [pull requests](https://github.com/$BINDGEN_REPO/pulls) for an upgrade that can be built from a commit."
+    COMPATIBILITY="❌ The latest uniffi-bindgen-cs release does not support uniffi $(minor "$LATEST_SDK_UNIFFI") yet (latest: \`$LATEST_BINDGEN_TAG\`). Check its [pull requests](https://github.com/$BINDGEN_REPO/pulls) for an upgrade that can be built from a commit."
   fi
 
   TAG_NOTE=""
@@ -143,8 +143,9 @@ else
   close_issue "$SDK_MARKER" "matrix-rust-sdk is up to date ($CURRENT_SDK)."
 fi
 
-# a newer release, or a release of the version that is currently built from a commit
-if newer "$LATEST_BINDGEN" "$BINDGEN_VERSION" || [[ -n "$BINDGEN_REV" && "$LATEST_BINDGEN" == "$BINDGEN_VERSION" ]]; then
+# a newer release (or one for a newer uniffi), or a release of the version that is currently built from a commit
+if newer "$LATEST_BINDGEN" "$BINDGEN_VERSION" || newer "$LATEST_BINDGEN_UNIFFI" "$BINDGEN_UNIFFI" ||
+  [[ -n "$BINDGEN_REV" && "$LATEST_BINDGEN" == "$BINDGEN_VERSION" ]]; then
   if [[ -n "$BINDGEN_REV" ]]; then
     CONFIGURED="\`$BINDGEN_VERSION\`, built from [\`${BINDGEN_REV:0:9}\`](https://github.com/$BINDGEN_REPO/commit/$BINDGEN_REV) with the patches in \`patches/uniffi-bindgen-cs\`"
   else
