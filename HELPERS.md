@@ -59,9 +59,7 @@ await foreach (string[] userIds in room.TypingUsers(cancellationToken)) { }
   the enumeration ends.
 - A `Subscription : IDisposable` for callback style use, `IObservable<T>` can be added later without depending on
   System.Reactive.
-- Write the most used ones (sync state, timeline, room list, room info, typing) by hand. Once the pattern is settled,
-  generate the remaining ones with a Roslyn source generator: every method `TaskHandle M(..., TListener listener)` (or
-  `Task<TaskHandle>`) where `TListener` has a single `void` method.
+- The listeners and implementations are written by a source generator, see [Source generation](#source-generation).
 
 ### 2. `VectorDiff<T>` and `LiveList<T>`
 
@@ -103,6 +101,85 @@ await foreach (string[] userIds in room.TypingUsers(cancellationToken)) { }
 A separate package (`Matrix.RustSdk.Hosting`) with `services.AddMatrixClient(...)` and a hosted `SyncService`, so the
 core package stays free of dependencies.
 
+## Source generation
+
+A spike on the branch `spike/generated-subscriptions` implements helper 1 with an incremental source generator
+(`src/Matrix.RustSdk.Generators`, 7 subscriptions, end to end tests in `SubscriptionTests`). Declarations pick the name,
+the buffer policy and the docs, the generator writes the rest:
+
+```csharp
+/// <summary>The ids of the users currently typing in the room. Only the latest list is buffered.</summary>
+[Subscription(nameof(Room.SubscribeToTypingNotifications), Buffer = SubscriptionBuffer.Latest)]
+public static partial IAsyncEnumerable<string[]> TypingUsersAsync(
+    this Room room,
+    CancellationToken cancellationToken = default
+);
+```
+
+The generator emits a private listener class implementing `TypingNotificationsListener` that writes to a channel, and
+an implementation calling `SubscriptionStream.CreateAsync` (hand written runtime core: channel, buffer policy,
+`TaskHandle` disposal, disposing unread values).
+
+### What fits
+
+| Pattern                                                               | Count | Generated helper              |
+| --------------------------------------------------------------------- | ----- | ----------------------------- |
+| `TaskHandle` subscription with a single method listener               | 37    | `IAsyncEnumerable<T>`         |
+| Progress listener of an async method (recovery, QR login, ...)        | 7     | overload with `IProgress<T>`  |
+| `VectorDiff`-shaped enum                                              | 8     | conversion to `VectorDiff<T>` |
+| Single method listener without a `TaskHandle` (`SetUtdDelegate`, ...) | 4     | none, hand written            |
+| Several methods or a return value (`ClientSessionDelegate`, ...)      | 4     | none, hand written            |
+| Async methods without `CancellationToken`                             | 315   | none, see below               |
+
+- All 37 listener interfaces of the subscriptions have exactly one `void` method. 34 pass one value, 3 pass two
+  (`ObserveRoomAccountDataEvent`, `SubscribeToSendQueueStatus`, `Client.SubscribeToSendQueueUpdates`), they map to a
+  named tuple (`IAsyncEnumerable<(string RoomId, RoomSendQueueUpdate Update)>`). 13 subscribe asynchronously
+  (`Task<TaskHandle>`), 6 take extra parameters, the generator passes them by name.
+- The room list is the exception: the listener is passed to `RoomList.EntriesWithDynamicAdapters` and
+  `EntriesStream()` returns the `TaskHandle`, it needs a hand written helper anyway because of the filter controller.
+- The progress listeners (`EnableRecoveryProgressListener`, `BackupSteadyStateListener`, the four QR login listeners,
+  `ProgressWatcher` of `UploadMedia`) have the same shape, the same technique generates `IProgress<T>` overloads.
+- `CancellationToken` overloads for all async methods could be generated too, but they would only call `WaitAsync`,
+  pretend to cancel and double the API. Fix it upstream instead.
+
+### Options
+
+1. **Hand written**: ~15 lines per subscription with a shared runtime core, no tooling. Nothing notices when the SDK
+   adds subscriptions.
+2. **Generator, driven by declarations** (the spike): ~7 lines per subscription, the generator is ~280 lines.
+3. **Generator, fully automatic** for every subscription in the referenced bindings: no declarations, but names and
+   buffer policies can't be derived. The SDK names are inconsistent (`State`, `AddListener`, `Results`,
+   `BackupStateListener`, `SubscribeToX`), and states (latest value wins) can't be told apart from events that must
+   never be dropped (`SyncV2` responses, dehydrated device events, send queue errors). It also has to scan the
+   referenced assembly through `CompilationProvider`, which reruns on every edit.
+4. **Generated, committed files** from `scripts/generate-bindings.sh`: visible in diffs like the bindings, but needs a
+   second code generator outside the build and has the naming problem of option 3.
+
+**Recommendation: option 2.** The decisions that need judgment (name, buffer policy, docs) stay in reviewable C#, the
+boilerplate is generated, and the generator checks every declaration against the bindings: when an SDK update renames
+or changes a subscription the build fails (`MRSG002` method not found, `MRSG003` value type mismatch) instead of the
+helper silently breaking. The generator is only a build time dependency of `Matrix.RustSdk` and isn't shipped. Pair it
+with a test that reflects over the bindings and fails for subscription methods that have neither a declaration nor an
+entry in an explicit ignore list, so new SDK subscriptions get noticed.
+
+### Spike findings
+
+- The generator sees the bindings' symbols through the normal project reference, nothing special is needed:
+  `ProjectReference` with `OutputItemType="Analyzer"` and `ReferenceOutputAssembly="false"`.
+- Generated code (`// <auto-generated/>`) builds warning free with `TreatWarningsAsErrors`, Sonar, Roslynator and the
+  VS threading analyzers. Two adjustments were needed: `RS2008` (analyzer release tracking) is suppressed because the
+  generator isn't published, and VSTHRD200 requires the `Async` suffix for methods returning `IAsyncEnumerable`, which
+  matches the BCL (`ChannelReader.ReadAllAsync`).
+- netstandard2.0 has no `IsExternalInit`, the pipeline model is a class with value equality instead of a record. Without
+  the equality the incremental pipeline regenerates on every edit.
+- The bindings use keywords as parameter names (`@event`), the generator prefixes every identifier with `@`.
+- `new ValueTask<TaskHandle>(...)` accepts both `TaskHandle` and `Task<TaskHandle>`, one template covers sync and async
+  subscriptions.
+- `[EnumeratorCancellation]` lives on the hand written `SubscriptionStream.CreateAsync`, so both the parameter and
+  `WithCancellation` cancel. Cancellation surfaces as `OperationCanceledException`, `break` ends the subscription.
+- Left for a real implementation: snapshot tests for the generator (Microsoft.CodeAnalysis.Testing or Verify), unique
+  hint names for overloads, nested or generic containing classes (rejected with `MRSG001` for now), the coverage test.
+
 ## Out of reach for helpers
 
 - Real cancellation needs uniffi-bindgen-cs to generate `CancellationToken` overloads that call
@@ -113,6 +190,6 @@ core package stays free of dependencies.
 
 ## First step
 
-Build helpers 1 to 3 for sync state, timeline, room list, room info and typing, then rewrite the echo bot and the TUI
-client with them. Their tests run the real apps against the homeserver and cover the helpers end to end, the
-`VectorDiff` application gets unit tests in `test/Matrix.RustSdk.Tests`.
+Build helpers 1 to 3 for sync state, timeline, room list, room info and typing, helper 1 with the generator from the
+spike, then rewrite the echo bot and the TUI client with them. Their tests run the real apps against the homeserver and
+cover the helpers end to end, the `VectorDiff` application gets unit tests in `test/Matrix.RustSdk.Tests`.
