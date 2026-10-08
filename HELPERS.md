@@ -1,0 +1,195 @@
+# Helpers
+
+Design notes for `src/Matrix.RustSdk`, the helpers on top of the generated bindings. They should build on
+matrix-rust-sdk, not reimplement it, and make common tasks idiomatic in C#: `IAsyncEnumerable`, `await using`,
+cancellation, managed collections. Nothing here is implemented yet, the findings are from `matrix-sdk-ffi/20260909` and
+uniffi 0.31 and should be rechecked against the bindings before building on them.
+
+## Pain points of the bindings
+
+| Pain point                                                           | Scope                         |
+| -------------------------------------------------------------------- | ----------------------------- |
+| Reactive APIs take a listener interface and return a `TaskHandle`    | 38 methods                    |
+| The same diff enum, once per collection                              | 8 types                       |
+| Async methods have no `CancellationToken`                            | every async method            |
+| A `TaskHandle` that isn't referenced ends the subscription on GC     | every subscription            |
+| Listeners are called on SDK threads, exceptions must not escape      | every listener                |
+| Bot logic (new remote messages only, each once) is easy to get wrong | every bot                     |
+| Unix millisecond timestamps, verbose message content constructors    | everywhere                    |
+
+Details:
+
+- Subscriptions: `Timeline.AddListener`, `SyncService.State`, `Room.SubscribeToRoomInfoUpdates`,
+  `Room.SubscribeToTypingNotifications`, `Encryption.VerificationStateListener`, `RoomListService.State`, ... Find them
+  with `grep -nE 'public (async )?(Task<)?TaskHandle>? \w+\(' src/Matrix.RustSdk.Bindings/matrix_sdk_ffi.cs`. The
+  listener interfaces have a single `void` method (`OnUpdate` or `Call`).
+- Diffs: `TimelineDiff`, `RoomListEntriesUpdate`, `ThreadListUpdate`, `SpaceListUpdate`, `SpaceFilterUpdate`,
+  `SearchServiceResultsUpdate`, `RoomDirectorySearchEntryUpdate` and `LiveLocationShareUpdate` are all eyeball's
+  `VectorDiff` with the same variants (`Append`, `Clear`, `PushFront`, `PushBack`, `PopFront`, `PopBack`, `Insert`,
+  `Set`, `Remove`, `Truncate`, `Reset`). The TUI client applies them with the same switch twice (`MatrixSession`,
+  `RoomTimeline`).
+- Cancellation: the generated `_UniFFIAsync.PollFuture` never calls the `rust_future_cancel_*` functions, `WaitAsync`
+  only stops waiting while the Rust future keeps running.
+- Lifetimes: generated objects have finalizers and Rust cancels the task when a `TaskHandle` is dropped
+  (`bindings/matrix-sdk-ffi/src/task_handle.rs`). Forgetting the handle silently ends the subscription, and
+  `Dispose()` alone is enough to cancel, `Cancel()` before it is redundant.
+- Bots: the echo bot needs a set of seen event ids, has to skip the initial `Reset` (history), own events and events
+  that weren't received by sync (`Origin != Sync`), and matches
+  `TimelineItemContent.MsgLike { Content.Kind: MsgLikeKind.Message { Content.MsgType: MessageType.Text text } }`.
+
+## Proposed helpers
+
+In order of value.
+
+### 1. Subscriptions as `IAsyncEnumerable<T>`
+
+```csharp
+await foreach (SyncServiceState state in syncService.StateChanges(cancellationToken)) { }
+await foreach (TimelineDiff[] diffs in timeline.Updates(cancellationToken)) { }
+await foreach (string[] userIds in room.TypingUsers(cancellationToken)) { }
+```
+
+- An internal listener writes the callback values to a `Channel<T>`, the enumerator subscribes on the first
+  `MoveNextAsync` and disposes the `TaskHandle` in `finally`, so `break` or cancellation ends the subscription and the
+  enumerator keeps the handle alive.
+- Two backpressure policies: state streams (sync state, room info, verification and recovery state, typing) use
+  `BoundedChannel(1, DropOldest)` because only the latest value matters, diff streams are unbounded because dropping a
+  diff corrupts the list.
+- The listener catches all exceptions, nothing escapes into the SDK. Undelivered `IDisposable` values are disposed when
+  the enumeration ends.
+- A `Subscription : IDisposable` for callback style use, `IObservable<T>` can be added later without depending on
+  System.Reactive.
+- The listeners and implementations are written by a source generator, see [Source generation](#source-generation).
+
+### 2. `VectorDiff<T>` and `LiveList<T>`
+
+- A generic `VectorDiff<T>` with a conversion from each of the 8 diff enums and one `ApplyTo(IList<T>)`.
+- `LiveList<TNative, TView>` keeps a managed list up to date from a diff stream with a projection
+  (`Func<TimelineItem, TView>`), exposes snapshots and `INotifyCollectionChanged` with an optional
+  `SynchronizationContext` (Avalonia, WPF, MAUI).
+- Open question, ownership: either project to managed values and dispose the native items right away (what the TUI
+  client does), or let the list own the native items and dispose them on `Remove`, `Set`, `Truncate`, `Clear` and
+  `Reset`.
+
+### 3. Messages and timeline items
+
+- `MessageContent.Text(body)`, `MessageContent.Markdown(markdown)`, `timeline.SendTextAsync(text)` instead of
+  `MatrixSdkFfiMethods.MessageEventContentNew(new MessageType.Text(new TextMessageContent(body, Formatted: null)))`.
+- On `EventTimelineItem`: `TryGetText(out string body)`, `EventId` (unwraps `EventOrTransactionId.EventId`),
+  `SenderDisplayName` (falls back to `Sender`), timestamps as `DateTimeOffset`.
+- `timeline.IncomingMessages(cancellationToken)`: only new events of other users received by sync, each once. This
+  replaces most of the echo bot's `RoomTimeline`.
+
+### 4. Pagination
+
+- `room.MembersAsync()` as `IAsyncEnumerable<RoomMember>` over `RoomMembersIterator.NextChunk`.
+- `timeline.PaginateBackwardsUntilAsync(...)` with a count or predicate, `PaginateBackwards` only returns whether the
+  start was reached.
+- Room directory search (`NextPage` and the `Results` listener) as an async enumerable.
+
+### 5. Client setup and sessions
+
+- `LoginOrRestoreAsync`: `SqliteStore`/`SessionPaths`, `RestoreSession` if a session is stored, otherwise a password
+  login.
+- `ISessionStore` on top of `ClientSessionDelegate` with a JSON file implementation. Check that `Session` round-trips
+  with System.Text.Json.
+- `MatrixSdk.Initialize(...)`: `InitPlatform` may only be called once per process, map Microsoft.Extensions.Logging
+  levels to `TracingConfiguration`.
+
+### 6. Hosting
+
+A separate package (`Matrix.RustSdk.Hosting`) with `services.AddMatrixClient(...)` and a hosted `SyncService`, so the
+core package stays free of dependencies.
+
+## Source generation
+
+A spike on the branch `spike/generated-subscriptions` implements helper 1 with an incremental source generator
+(`src/Matrix.RustSdk.Generators`, 7 subscriptions, end to end tests in `SubscriptionTests`). Declarations pick the name,
+the buffer policy and the docs, the generator writes the rest:
+
+```csharp
+/// <summary>The ids of the users currently typing in the room. Only the latest list is buffered.</summary>
+[Subscription(nameof(Room.SubscribeToTypingNotifications), Buffer = SubscriptionBuffer.Latest)]
+public static partial IAsyncEnumerable<string[]> TypingUsersAsync(
+    this Room room,
+    CancellationToken cancellationToken = default
+);
+```
+
+The generator emits a private listener class implementing `TypingNotificationsListener` that writes to a channel, and
+an implementation calling `SubscriptionStream.CreateAsync` (hand written runtime core: channel, buffer policy,
+`TaskHandle` disposal, disposing unread values).
+
+### What fits
+
+| Pattern                                                               | Count | Generated helper              |
+| --------------------------------------------------------------------- | ----- | ----------------------------- |
+| `TaskHandle` subscription with a single method listener               | 37    | `IAsyncEnumerable<T>`         |
+| Progress listener of an async method (recovery, QR login, ...)        | 7     | overload with `IProgress<T>`  |
+| `VectorDiff`-shaped enum                                              | 8     | conversion to `VectorDiff<T>` |
+| Single method listener without a `TaskHandle` (`SetUtdDelegate`, ...) | 4     | none, hand written            |
+| Several methods or a return value (`ClientSessionDelegate`, ...)      | 4     | none, hand written            |
+| Async methods without `CancellationToken`                             | 315   | none, see below               |
+
+- All 37 listener interfaces of the subscriptions have exactly one `void` method. 34 pass one value, 3 pass two
+  (`ObserveRoomAccountDataEvent`, `SubscribeToSendQueueStatus`, `Client.SubscribeToSendQueueUpdates`), they map to a
+  named tuple (`IAsyncEnumerable<(string RoomId, RoomSendQueueUpdate Update)>`). 13 subscribe asynchronously
+  (`Task<TaskHandle>`), 6 take extra parameters, the generator passes them by name.
+- The room list is the exception: the listener is passed to `RoomList.EntriesWithDynamicAdapters` and
+  `EntriesStream()` returns the `TaskHandle`, it needs a hand written helper anyway because of the filter controller.
+- The progress listeners (`EnableRecoveryProgressListener`, `BackupSteadyStateListener`, the four QR login listeners,
+  `ProgressWatcher` of `UploadMedia`) have the same shape, the same technique generates `IProgress<T>` overloads.
+- `CancellationToken` overloads for all async methods could be generated too, but they would only call `WaitAsync`,
+  pretend to cancel and double the API. Fix it upstream instead.
+
+### Options
+
+1. **Hand written**: ~15 lines per subscription with a shared runtime core, no tooling. Nothing notices when the SDK
+   adds subscriptions.
+2. **Generator, driven by declarations** (the spike): ~7 lines per subscription, the generator is ~280 lines.
+3. **Generator, fully automatic** for every subscription in the referenced bindings: no declarations, but names and
+   buffer policies can't be derived. The SDK names are inconsistent (`State`, `AddListener`, `Results`,
+   `BackupStateListener`, `SubscribeToX`), and states (latest value wins) can't be told apart from events that must
+   never be dropped (`SyncV2` responses, dehydrated device events, send queue errors). It also has to scan the
+   referenced assembly through `CompilationProvider`, which reruns on every edit.
+4. **Generated, committed files** from `scripts/generate-bindings.sh`: visible in diffs like the bindings, but needs a
+   second code generator outside the build and has the naming problem of option 3.
+
+**Recommendation: option 2.** The decisions that need judgment (name, buffer policy, docs) stay in reviewable C#, the
+boilerplate is generated, and the generator checks every declaration against the bindings: when an SDK update renames
+or changes a subscription the build fails (`MRSG002` method not found, `MRSG003` value type mismatch) instead of the
+helper silently breaking. The generator is only a build time dependency of `Matrix.RustSdk` and isn't shipped. Pair it
+with a test that reflects over the bindings and fails for subscription methods that have neither a declaration nor an
+entry in an explicit ignore list, so new SDK subscriptions get noticed.
+
+### Spike findings
+
+- The generator sees the bindings' symbols through the normal project reference, nothing special is needed:
+  `ProjectReference` with `OutputItemType="Analyzer"` and `ReferenceOutputAssembly="false"`.
+- Generated code (`// <auto-generated/>`) builds warning free with `TreatWarningsAsErrors`, Sonar, Roslynator and the
+  VS threading analyzers. Two adjustments were needed: `RS2008` (analyzer release tracking) is suppressed because the
+  generator isn't published, and VSTHRD200 requires the `Async` suffix for methods returning `IAsyncEnumerable`, which
+  matches the BCL (`ChannelReader.ReadAllAsync`).
+- netstandard2.0 has no `IsExternalInit`, the pipeline model is a class with value equality instead of a record. Without
+  the equality the incremental pipeline regenerates on every edit.
+- The bindings use keywords as parameter names (`@event`), the generator prefixes every identifier with `@`.
+- `new ValueTask<TaskHandle>(...)` accepts both `TaskHandle` and `Task<TaskHandle>`, one template covers sync and async
+  subscriptions.
+- `[EnumeratorCancellation]` lives on the hand written `SubscriptionStream.CreateAsync`, so both the parameter and
+  `WithCancellation` cancel. Cancellation surfaces as `OperationCanceledException`, `break` ends the subscription.
+- Left for a real implementation: snapshot tests for the generator (Microsoft.CodeAnalysis.Testing or Verify), unique
+  hint names for overloads, nested or generic containing classes (rejected with `MRSG001` for now), the coverage test.
+
+## Out of reach for helpers
+
+- Real cancellation needs uniffi-bindgen-cs to generate `CancellationToken` overloads that call
+  `rust_future_cancel_*`, like the Kotlin and Swift bindings do. Worth an issue or PR upstream, until then helpers can
+  only offer `WaitAsync`.
+- matrix-sdk-ffi only logs to stdout and files (`TracingConfiguration`), `LogEvent` goes from C# into the Rust logs.
+  Forwarding Rust logs to `ILogger` needs a callback in matrix-sdk-ffi.
+
+## First step
+
+Build helpers 1 to 3 for sync state, timeline, room list, room info and typing, helper 1 with the generator from the
+spike, then rewrite the echo bot and the TUI client with them. Their tests run the real apps against the homeserver and
+cover the helpers end to end, the `VectorDiff` application gets unit tests in `test/Matrix.RustSdk.Tests`.

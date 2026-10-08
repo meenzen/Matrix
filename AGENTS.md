@@ -12,7 +12,8 @@ matrix-rust-sdk.
 - `src/Matrix.RustSdk.Bindings`: the generated bindings (`*.cs`, committed) and `uniffi.toml`
 - `src/Matrix.RustSdk.Bindings.Native.*`: packages containing only the native libraries, shared logic in
   `src/Native.targets`
-- `src/Matrix.RustSdk`: future helpers on top of the bindings, not published yet
+- `src/Matrix.RustSdk`: future helpers on top of the bindings, not published yet, see [HELPERS.md](HELPERS.md) for the
+  design notes
 - `test/Matrix.RustSdk.Tests`: TUnit tests, `test/Matrix.RustSdk.Testing`: shared test setup (homeserver container)
 - `example/`: example apps referencing the bindings from source, each tested by `test/<example>.Tests`
 - `scripts/`: local development scripts, `.github/scripts/`: scripts used by CI
