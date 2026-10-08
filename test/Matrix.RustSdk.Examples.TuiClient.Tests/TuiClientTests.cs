@@ -21,7 +21,6 @@ public class TuiClientTests(Homeserver homeserver)
 
     // the other user chats with the TUI client, it uses the SDK directly
     private static TestUser? _otherUser;
-    private static string? _roomId;
     private static Timeline? _otherTimeline;
     private static TaskHandle? _otherTimelineHandle;
     private static SyncService? _otherSyncService;
@@ -68,7 +67,7 @@ public class TuiClientTests(Homeserver homeserver)
         Client otherClient = await homeserver.LoginAsync(OtherUser);
 
         // Act
-        _roomId = await otherClient.CreateRoom(
+        string roomId = await otherClient.CreateRoom(
             new CreateRoomParameters(
                 Name: RoomName,
                 IsEncrypted: false,
@@ -84,7 +83,7 @@ public class TuiClientTests(Homeserver homeserver)
         // the other user syncs and watches the room from now on, the last test checks what it receives
         _otherSyncService = await otherClient.SyncService().Finish();
         await _otherSyncService.Start();
-        Room room = otherClient.GetRoom(_roomId) ?? throw new InvalidOperationException("The room is unknown.");
+        Room room = otherClient.GetRoom(roomId) ?? throw new InvalidOperationException("The room is unknown.");
         _otherTimeline = await room.Timeline();
         _otherTimelineHandle = await _otherTimeline.AddListener(OtherMessages);
     }
