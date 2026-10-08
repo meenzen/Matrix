@@ -36,7 +36,7 @@ newer() {
 
 # uniffi version of a matrix-rust-sdk ref
 sdk_uniffi() {
-  curl -fsSL "https://raw.githubusercontent.com/$SDK_REPO/$1/Cargo.toml" |
+  curl -fsSL --proto '=https' --tlsv1.2 "https://raw.githubusercontent.com/$SDK_REPO/$1/Cargo.toml" |
     sed -nE 's/^uniffi = .*version = "([0-9.]+)".*/\1/p'
 }
 
