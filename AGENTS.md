@@ -17,7 +17,8 @@ matrix-rust-sdk.
 - `example/`: example apps referencing the bindings from source, each tested by `test/<example>.Tests`
 - `scripts/`: local development scripts, `.github/scripts/`: scripts used by CI
 - `.github/workflows/`: `build.yml` (PRs and main), `packages.yml` (reusable: native builds for all platforms, tests,
-  packing), `nuget.yml` (manual publishing), `codeql.yml`
+  packing), `nuget.yml` (manual publishing), `check-updates.yml` (daily issue for new matrix-rust-sdk snapshots and
+  uniffi-bindgen-cs releases), `codeql.yml`
 
 ## Development
 

@@ -1,0 +1,29 @@
+name: Check for Updates
+
+# Opens an issue for new matrix-rust-sdk FFI snapshots and uniffi-bindgen-cs releases, see .github/scripts/check-updates.sh
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Check for updates
+        run: .github/scripts/check-updates.sh
+        env:
+          GH_TOKEN: ${{ github.token }}
