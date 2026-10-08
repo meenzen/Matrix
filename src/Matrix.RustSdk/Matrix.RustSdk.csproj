@@ -20,5 +20,10 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Matrix.RustSdk.Bindings\Matrix.RustSdk.Bindings.csproj" />
+    <ProjectReference
+      Include="..\Matrix.RustSdk.Generators\Matrix.RustSdk.Generators.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false"
+    />
   </ItemGroup>
 </Project>
