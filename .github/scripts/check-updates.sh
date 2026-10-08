@@ -17,6 +17,7 @@ BINDGEN_REPO=NordSecurity/uniffi-bindgen-cs
 SDK_MARKER="<!-- check-updates: matrix-rust-sdk -->"
 BINDGEN_MARKER="<!-- check-updates: uniffi-bindgen-cs -->"
 REPO=${GITHUB_REPOSITORY:-$(gh repo view --json nameWithOwner --jq .nameWithOwner)}
+ASSIGNEE=${GITHUB_REPOSITORY_OWNER:-${REPO%%/*}}
 
 CURRENT_SDK=$(sed -nE 's#.*<MatrixSdkFfiTag>(.+)</MatrixSdkFfiTag>.*#\1#p' Directory.Build.props)
 BINDGEN_VERSION=$(sed -nE 's/.*UNIFFI_BINDGEN_CS_VERSION = "(.+)";/\1/p' devenv.nix)
@@ -39,13 +40,15 @@ sdk_uniffi() {
     sed -nE 's/^uniffi = .*version = "([0-9.]+)".*/\1/p'
 }
 
-# creates or updates the open issue with the marker $1, does nothing if title and body are unchanged
+# creates or updates the open issue with the marker $1, does nothing if title and body are unchanged. New issues are
+# assigned to the repository owner and changes are announced with the comment $4, editing an issue doesn't notify anyone.
 upsert_issue() {
   local marker=$1 title=$2 body="$3
 
-$1"
+$1" comment=$4
   if [[ -n "${DRY_RUN:-}" ]]; then
-    printf '=> Would create or update issue "%s":\n\n%s\n\n' "$title" "$body"
+    printf '=> Would create or update issue "%s" (assigned to %s, comment on update: "%s"):\n\n%s\n\n' \
+      "$title" "$ASSIGNEE" "$comment" "$body"
     return
   fi
   local issue
@@ -53,10 +56,11 @@ $1"
     jq -c --arg marker "$marker" 'map(select(.body | contains($marker))) | first // empty')
   if [[ -z "$issue" ]]; then
     echo "=> Creating issue \"$title\""
-    gh issue create --title "$title" --body "$body"
+    gh issue create --title "$title" --body "$body" --assignee "$ASSIGNEE"
   elif [[ "$(jq -r .title <<<"$issue")" != "$title" || "$(jq -r .body <<<"$issue")" != "$body" ]]; then
     echo "=> Updating issue #$(jq -r .number <<<"$issue") \"$title\""
     gh issue edit "$(jq -r .number <<<"$issue")" --title "$title" --body "$body"
+    gh issue comment "$(jq -r .number <<<"$issue")" --body "$comment"
   else
     echo "=> Issue #$(jq -r .number <<<"$issue") \"$title\" is up to date"
   fi
@@ -134,7 +138,7 @@ $COMPATIBILITY$TAG_NOTE
 
 This issue is updated by the [update check workflow](https://github.com/$REPO/actions/workflows/check-updates.yml).
 BODY
-  )"
+  )" "Updated for \`$LATEST_SDK\` ($LATEST_SDK_KIND, uniffi $LATEST_SDK_UNIFFI): $COMPATIBILITY"
 else
   close_issue "$SDK_MARKER" "matrix-rust-sdk is up to date ($CURRENT_SDK)."
 fi
@@ -159,7 +163,7 @@ It has to match the uniffi version of matrix-rust-sdk (\`$CURRENT_SDK\`, latest 
 
 This issue is updated by the [update check workflow](https://github.com/$REPO/actions/workflows/check-updates.yml).
 BODY
-  )"
+  )" "Updated for \`$LATEST_BINDGEN_TAG\`."
 else
   close_issue "$BINDGEN_MARKER" "uniffi-bindgen-cs is up to date ($BINDGEN_VERSION)."
 fi
