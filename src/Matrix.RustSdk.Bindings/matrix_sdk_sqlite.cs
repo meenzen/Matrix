@@ -12,7 +12,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace Matrix.RustSdk.Bindings.Base;
+namespace Matrix.RustSdk.Bindings.Sqlite;
 
 // This is a helper for safely working with byte buffers returned from the Rust code.
 // A rust-owned buffer is represented by its capacity, its current length, and a
@@ -30,7 +30,7 @@ internal struct RustBuffer
         return _UniffiHelpers.RustCall(
             (ref UniffiRustCallStatus status) =>
             {
-                var buffer = _UniFFILib.ffi_matrix_sdk_base_rustbuffer_alloc(Convert.ToUInt64(size), ref status);
+                var buffer = _UniFFILib.ffi_matrix_sdk_sqlite_rustbuffer_alloc(Convert.ToUInt64(size), ref status);
                 if (buffer.data == IntPtr.Zero)
                 {
                     throw new AllocationException($"RustBuffer.Alloc() returned null data pointer (size={size})");
@@ -45,7 +45,7 @@ internal struct RustBuffer
         _UniffiHelpers.RustCall(
             (ref UniffiRustCallStatus status) =>
             {
-                _UniFFILib.ffi_matrix_sdk_base_rustbuffer_free(buffer, ref status);
+                _UniFFILib.ffi_matrix_sdk_sqlite_rustbuffer_free(buffer, ref status);
             }
         );
     }
@@ -865,7 +865,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    RustBuffer ffi_matrix_sdk_base_rustbuffer_alloc(ulong @size, ref UniffiRustCallStatus _uniffi_out_err);
+    RustBuffer ffi_matrix_sdk_sqlite_rustbuffer_alloc(ulong @size, ref UniffiRustCallStatus _uniffi_out_err);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -875,7 +875,10 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    RustBuffer ffi_matrix_sdk_base_rustbuffer_from_bytes(ForeignBytes @bytes, ref UniffiRustCallStatus _uniffi_out_err);
+    RustBuffer ffi_matrix_sdk_sqlite_rustbuffer_from_bytes(
+        ForeignBytes @bytes,
+        ref UniffiRustCallStatus _uniffi_out_err
+    );
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -885,7 +888,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rustbuffer_free(RustBuffer @buf, ref UniffiRustCallStatus _uniffi_out_err);
+    void ffi_matrix_sdk_sqlite_rustbuffer_free(RustBuffer @buf, ref UniffiRustCallStatus _uniffi_out_err);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -895,7 +898,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    RustBuffer ffi_matrix_sdk_base_rustbuffer_reserve(
+    RustBuffer ffi_matrix_sdk_sqlite_rustbuffer_reserve(
         RustBuffer @buf,
         ulong @additional,
         ref UniffiRustCallStatus _uniffi_out_err
@@ -909,7 +912,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_poll_u8(ulong @handle, IntPtr @callback, ulong @callbackData);
+    void ffi_matrix_sdk_sqlite_rust_future_poll_u8(ulong @handle, IntPtr @callback, ulong @callbackData);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -919,7 +922,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_cancel_u8(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_cancel_u8(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -929,7 +932,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_free_u8(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_free_u8(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -939,7 +942,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    byte ffi_matrix_sdk_base_rust_future_complete_u8(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
+    byte ffi_matrix_sdk_sqlite_rust_future_complete_u8(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -949,7 +952,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_poll_i8(ulong @handle, IntPtr @callback, ulong @callbackData);
+    void ffi_matrix_sdk_sqlite_rust_future_poll_i8(ulong @handle, IntPtr @callback, ulong @callbackData);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -959,7 +962,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_cancel_i8(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_cancel_i8(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -969,7 +972,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_free_i8(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_free_i8(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -979,7 +982,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    sbyte ffi_matrix_sdk_base_rust_future_complete_i8(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
+    sbyte ffi_matrix_sdk_sqlite_rust_future_complete_i8(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -989,7 +992,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_poll_u16(ulong @handle, IntPtr @callback, ulong @callbackData);
+    void ffi_matrix_sdk_sqlite_rust_future_poll_u16(ulong @handle, IntPtr @callback, ulong @callbackData);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -999,7 +1002,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_cancel_u16(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_cancel_u16(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1009,7 +1012,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_free_u16(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_free_u16(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1019,7 +1022,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    ushort ffi_matrix_sdk_base_rust_future_complete_u16(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
+    ushort ffi_matrix_sdk_sqlite_rust_future_complete_u16(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1029,7 +1032,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_poll_i16(ulong @handle, IntPtr @callback, ulong @callbackData);
+    void ffi_matrix_sdk_sqlite_rust_future_poll_i16(ulong @handle, IntPtr @callback, ulong @callbackData);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1039,7 +1042,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_cancel_i16(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_cancel_i16(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1049,7 +1052,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_free_i16(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_free_i16(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1059,7 +1062,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    short ffi_matrix_sdk_base_rust_future_complete_i16(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
+    short ffi_matrix_sdk_sqlite_rust_future_complete_i16(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1069,7 +1072,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_poll_u32(ulong @handle, IntPtr @callback, ulong @callbackData);
+    void ffi_matrix_sdk_sqlite_rust_future_poll_u32(ulong @handle, IntPtr @callback, ulong @callbackData);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1079,7 +1082,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_cancel_u32(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_cancel_u32(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1089,7 +1092,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_free_u32(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_free_u32(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1099,7 +1102,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    uint ffi_matrix_sdk_base_rust_future_complete_u32(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
+    uint ffi_matrix_sdk_sqlite_rust_future_complete_u32(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1109,7 +1112,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_poll_i32(ulong @handle, IntPtr @callback, ulong @callbackData);
+    void ffi_matrix_sdk_sqlite_rust_future_poll_i32(ulong @handle, IntPtr @callback, ulong @callbackData);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1119,7 +1122,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_cancel_i32(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_cancel_i32(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1129,7 +1132,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_free_i32(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_free_i32(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1139,7 +1142,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    int ffi_matrix_sdk_base_rust_future_complete_i32(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
+    int ffi_matrix_sdk_sqlite_rust_future_complete_i32(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1149,7 +1152,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_poll_u64(ulong @handle, IntPtr @callback, ulong @callbackData);
+    void ffi_matrix_sdk_sqlite_rust_future_poll_u64(ulong @handle, IntPtr @callback, ulong @callbackData);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1159,7 +1162,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_cancel_u64(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_cancel_u64(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1169,7 +1172,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_free_u64(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_free_u64(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1179,7 +1182,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    ulong ffi_matrix_sdk_base_rust_future_complete_u64(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
+    ulong ffi_matrix_sdk_sqlite_rust_future_complete_u64(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1189,7 +1192,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_poll_i64(ulong @handle, IntPtr @callback, ulong @callbackData);
+    void ffi_matrix_sdk_sqlite_rust_future_poll_i64(ulong @handle, IntPtr @callback, ulong @callbackData);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1199,7 +1202,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_cancel_i64(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_cancel_i64(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1209,7 +1212,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_free_i64(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_free_i64(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1219,7 +1222,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    long ffi_matrix_sdk_base_rust_future_complete_i64(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
+    long ffi_matrix_sdk_sqlite_rust_future_complete_i64(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1229,7 +1232,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_poll_f32(ulong @handle, IntPtr @callback, ulong @callbackData);
+    void ffi_matrix_sdk_sqlite_rust_future_poll_f32(ulong @handle, IntPtr @callback, ulong @callbackData);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1239,7 +1242,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_cancel_f32(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_cancel_f32(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1249,7 +1252,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_free_f32(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_free_f32(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1259,7 +1262,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    float ffi_matrix_sdk_base_rust_future_complete_f32(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
+    float ffi_matrix_sdk_sqlite_rust_future_complete_f32(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1269,7 +1272,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_poll_f64(ulong @handle, IntPtr @callback, ulong @callbackData);
+    void ffi_matrix_sdk_sqlite_rust_future_poll_f64(ulong @handle, IntPtr @callback, ulong @callbackData);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1279,7 +1282,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_cancel_f64(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_cancel_f64(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1289,7 +1292,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_free_f64(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_free_f64(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1299,7 +1302,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    double ffi_matrix_sdk_base_rust_future_complete_f64(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
+    double ffi_matrix_sdk_sqlite_rust_future_complete_f64(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1309,7 +1312,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_poll_rust_buffer(ulong @handle, IntPtr @callback, ulong @callbackData);
+    void ffi_matrix_sdk_sqlite_rust_future_poll_rust_buffer(ulong @handle, IntPtr @callback, ulong @callbackData);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1319,7 +1322,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_cancel_rust_buffer(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_cancel_rust_buffer(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1329,7 +1332,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_free_rust_buffer(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_free_rust_buffer(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1339,7 +1342,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    RustBuffer ffi_matrix_sdk_base_rust_future_complete_rust_buffer(
+    RustBuffer ffi_matrix_sdk_sqlite_rust_future_complete_rust_buffer(
         ulong @handle,
         ref UniffiRustCallStatus _uniffi_out_err
     );
@@ -1352,7 +1355,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_poll_void(ulong @handle, IntPtr @callback, ulong @callbackData);
+    void ffi_matrix_sdk_sqlite_rust_future_poll_void(ulong @handle, IntPtr @callback, ulong @callbackData);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1362,7 +1365,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_cancel_void(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_cancel_void(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1372,7 +1375,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_free_void(ulong @handle);
+    void ffi_matrix_sdk_sqlite_rust_future_free_void(ulong @handle);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1382,7 +1385,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    void ffi_matrix_sdk_base_rust_future_complete_void(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
+    void ffi_matrix_sdk_sqlite_rust_future_complete_void(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -1392,15 +1395,15 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    uint ffi_matrix_sdk_base_uniffi_contract_version();
+    uint ffi_matrix_sdk_sqlite_uniffi_contract_version();
 
     static void uniffiCheckContractApiVersion()
     {
-        var scaffolding_contract_version = _UniFFILib.ffi_matrix_sdk_base_uniffi_contract_version();
+        var scaffolding_contract_version = _UniFFILib.ffi_matrix_sdk_sqlite_uniffi_contract_version();
         if (30 != scaffolding_contract_version)
         {
             throw new UniffiContractVersionException(
-                $"Matrix.RustSdk.Bindings.Base: uniffi bindings expected version `30`, library returned `{scaffolding_contract_version}`"
+                $"Matrix.RustSdk.Bindings.Sqlite: uniffi bindings expected version `30`, library returned `{scaffolding_contract_version}`"
             );
         }
     }
@@ -1411,36 +1414,6 @@ static class _UniFFILib
 // Public interface members begin here.
 
 #pragma warning disable 8625
-
-class FfiConverterUInt64 : FfiConverter<ulong, ulong>
-{
-    public static FfiConverterUInt64 INSTANCE = new FfiConverterUInt64();
-
-    public override ulong Lift(ulong value)
-    {
-        return value;
-    }
-
-    public override ulong Read(BigEndianStream stream)
-    {
-        return stream.ReadULong();
-    }
-
-    public override ulong Lower(ulong value)
-    {
-        return value;
-    }
-
-    public override int AllocationSize(ulong value)
-    {
-        return 8;
-    }
-
-    public override void Write(ulong value, BigEndianStream stream)
-    {
-        stream.WriteULong(value);
-    }
-}
 
 class FfiConverterString : FfiConverter<string, RustBuffer>
 {
@@ -1496,390 +1469,68 @@ class FfiConverterString : FfiConverter<string, RustBuffer>
     }
 }
 
-class FfiConverterDuration : FfiConverterRustBuffer<TimeSpan>
-{
-    public static FfiConverterDuration INSTANCE = new FfiConverterDuration();
-
-    // https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/TimeSpan.cs
-    private const uint NanosecondsPerTick = 100;
-
-    public override TimeSpan Read(BigEndianStream stream)
-    {
-        var seconds = stream.ReadULong();
-        var nanoseconds = stream.ReadUInt();
-        var ticks = seconds * TimeSpan.TicksPerSecond;
-        ticks += nanoseconds / NanosecondsPerTick;
-        return new TimeSpan(Convert.ToInt64(ticks));
-    }
-
-    public override int AllocationSize(TimeSpan value)
-    {
-        // 8 bytes for seconds, 4 bytes for nanoseconds
-        return 12;
-    }
-
-    public override void Write(TimeSpan value, BigEndianStream stream)
-    {
-        stream.WriteULong(Convert.ToUInt64(value.Ticks / TimeSpan.TicksPerSecond));
-        stream.WriteUInt(Convert.ToUInt32(value.Ticks % TimeSpan.TicksPerSecond * NanosecondsPerTick));
-    }
-}
-
 /// <summary>
-/// The retention policy for media content used by the [`MediaStore`].
+/// Enum controlling how the high-entropy passphrase used to be created on the
+/// client side.
 ///
-/// [`EventCacheStore`]: crate::event_cache::store::EventCacheStore
+/// This allows us to replicate how a random key was converted into a passphrase
+/// to migrate from said passphrase to the plain key.
 /// </summary>
-/// <param name="MaxCacheSize">
-/// The maximum authorized size of the overall media cache, in bytes.
-///
-/// The cache size is defined as the sum of the sizes of all the (possibly
-/// encrypted) media contents in the cache, excluding any metadata
-/// associated with them.
-///
-/// If this is set and the cache size is bigger than this value, the oldest
-/// media contents in the cache will be removed during a cleanup until the
-/// cache size is below this threshold.
-///
-/// Note that it is possible for the cache size to temporarily exceed this
-/// value between two cleanups.
-///
-/// Defaults to 400 MiB.
-/// </param>
-/// <param name="MaxFileSize">
-/// The maximum authorized size of a single media content, in bytes.
-///
-/// The size of a media content is the size taken by the content in the
-/// database, after it was possibly encrypted, so it might differ from the
-/// initial size of the content.
-///
-/// The maximum authorized size of a single media content is actually the
-/// lowest value between `max_cache_size` and `max_file_size`.
-///
-/// If it is set, media content bigger than the maximum size will not be
-/// cached. If the maximum size changed after media content that exceeds the
-/// new value was cached, the corresponding content will be removed
-/// during a cleanup.
-///
-/// Defaults to 20 MiB.
-/// </param>
-/// <param name="LastAccessExpiry">
-/// The duration after which unaccessed media content is considered
-/// expired.
-///
-/// If this is set, media content whose last access is older than this
-/// duration will be removed from the media cache during a cleanup.
-///
-/// Defaults to 60 days.
-/// </param>
-/// <param name="CleanupFrequency">
-/// The duration between two automatic media cache cleanups.
-///
-/// If this is set, a cleanup will be triggered after the given duration
-/// is elapsed, at the next call to the media cache API. If this is set to
-/// zero, each call to the media cache API will trigger a cleanup. If this
-/// is `None`, cleanups will only occur if they are triggered manually.
-///
-/// Defaults to running cleanups daily.
-/// </param>
-public record MediaRetentionPolicy(
-    /// <summary>
-    /// The maximum authorized size of the overall media cache, in bytes.
-    ///
-    /// The cache size is defined as the sum of the sizes of all the (possibly
-    /// encrypted) media contents in the cache, excluding any metadata
-    /// associated with them.
-    ///
-    /// If this is set and the cache size is bigger than this value, the oldest
-    /// media contents in the cache will be removed during a cleanup until the
-    /// cache size is below this threshold.
-    ///
-    /// Note that it is possible for the cache size to temporarily exceed this
-    /// value between two cleanups.
-    ///
-    /// Defaults to 400 MiB.
-    /// </summary>
-    ulong? MaxCacheSize,
-    /// <summary>
-    /// The maximum authorized size of a single media content, in bytes.
-    ///
-    /// The size of a media content is the size taken by the content in the
-    /// database, after it was possibly encrypted, so it might differ from the
-    /// initial size of the content.
-    ///
-    /// The maximum authorized size of a single media content is actually the
-    /// lowest value between `max_cache_size` and `max_file_size`.
-    ///
-    /// If it is set, media content bigger than the maximum size will not be
-    /// cached. If the maximum size changed after media content that exceeds the
-    /// new value was cached, the corresponding content will be removed
-    /// during a cleanup.
-    ///
-    /// Defaults to 20 MiB.
-    /// </summary>
-    ulong? MaxFileSize,
-    /// <summary>
-    /// The duration after which unaccessed media content is considered
-    /// expired.
-    ///
-    /// If this is set, media content whose last access is older than this
-    /// duration will be removed from the media cache during a cleanup.
-    ///
-    /// Defaults to 60 days.
-    /// </summary>
-    TimeSpan? LastAccessExpiry,
-    /// <summary>
-    /// The duration between two automatic media cache cleanups.
-    ///
-    /// If this is set, a cleanup will be triggered after the given duration
-    /// is elapsed, at the next call to the media cache API. If this is set to
-    /// zero, each call to the media cache API will trigger a cleanup. If this
-    /// is `None`, cleanups will only occur if they are triggered manually.
-    ///
-    /// Defaults to running cleanups daily.
-    /// </summary>
-    TimeSpan? CleanupFrequency
-) { }
-
-class FfiConverterTypeMediaRetentionPolicy : FfiConverterRustBuffer<MediaRetentionPolicy>
+public enum Base64Variant : int
 {
-    public static FfiConverterTypeMediaRetentionPolicy INSTANCE = new FfiConverterTypeMediaRetentionPolicy();
+    /// <summary>
+    /// Unpadded base64 was used to create the high-entropy passphrase.
+    /// </summary>
+    Unpadded,
 
-    public override MediaRetentionPolicy Read(BigEndianStream stream)
-    {
-        return new MediaRetentionPolicy(
-            MaxCacheSize: FfiConverterOptionalUInt64.INSTANCE.Read(stream),
-            MaxFileSize: FfiConverterOptionalUInt64.INSTANCE.Read(stream),
-            LastAccessExpiry: FfiConverterOptionalDuration.INSTANCE.Read(stream),
-            CleanupFrequency: FfiConverterOptionalDuration.INSTANCE.Read(stream)
-        );
-    }
-
-    public override int AllocationSize(MediaRetentionPolicy value)
-    {
-        return 0
-            + FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.MaxCacheSize)
-            + FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.MaxFileSize)
-            + FfiConverterOptionalDuration.INSTANCE.AllocationSize(value.LastAccessExpiry)
-            + FfiConverterOptionalDuration.INSTANCE.AllocationSize(value.CleanupFrequency);
-    }
-
-    public override void Write(MediaRetentionPolicy value, BigEndianStream stream)
-    {
-        FfiConverterOptionalUInt64.INSTANCE.Write(value.MaxCacheSize, stream);
-        FfiConverterOptionalUInt64.INSTANCE.Write(value.MaxFileSize, stream);
-        FfiConverterOptionalDuration.INSTANCE.Write(value.LastAccessExpiry, stream);
-        FfiConverterOptionalDuration.INSTANCE.Write(value.CleanupFrequency, stream);
-    }
+    /// <summary>
+    /// Standard padded base64 was used to create the high-entropy passphrase.
+    /// </summary>
+    Padded,
 }
 
-/// <summary>
-/// An enum that defines what the [`BaseClient`] should consider a DM room.
-/// </summary>
-public enum DmRoomDefinition : int
+class FfiConverterTypeBase64Variant : FfiConverterRustBuffer<Base64Variant>
 {
-    /// <summary>
-    /// Standard Matrix spec definition: a room linked to a user in an
-    /// `m.direct` event.
-    /// </summary>
-    MatrixSpec,
+    public static FfiConverterTypeBase64Variant INSTANCE = new FfiConverterTypeBase64Variant();
 
-    /// <summary>
-    /// A room that is direct, as per the spec but also contains at most 2
-    /// active members.
-    /// </summary>
-    TwoMembers,
-}
-
-class FfiConverterTypeDmRoomDefinition : FfiConverterRustBuffer<DmRoomDefinition>
-{
-    public static FfiConverterTypeDmRoomDefinition INSTANCE = new FfiConverterTypeDmRoomDefinition();
-
-    public override DmRoomDefinition Read(BigEndianStream stream)
+    public override Base64Variant Read(BigEndianStream stream)
     {
         var value = stream.ReadInt();
         switch (value)
         {
             case 1:
-                return DmRoomDefinition.MatrixSpec;
+                return Base64Variant.Unpadded;
             case 2:
-                return DmRoomDefinition.TwoMembers;
+                return Base64Variant.Padded;
             default:
                 throw new InternalException(
-                    String.Format("invalid enum value '{0}' in FfiConverterTypeDmRoomDefinition.Read()", value)
+                    String.Format("invalid enum value '{0}' in FfiConverterTypeBase64Variant.Read()", value)
                 );
         }
     }
 
-    public override int AllocationSize(DmRoomDefinition value)
+    public override int AllocationSize(Base64Variant value)
     {
         return 4;
     }
 
-    public override void Write(DmRoomDefinition value, BigEndianStream stream)
+    public override void Write(Base64Variant value, BigEndianStream stream)
     {
         switch (value)
         {
-            case DmRoomDefinition.MatrixSpec:
+            case Base64Variant.Unpadded:
                 stream.WriteInt(1);
                 break;
-            case DmRoomDefinition.TwoMembers:
+            case Base64Variant.Padded:
                 stream.WriteInt(2);
                 break;
             default:
                 throw new InternalException(
-                    String.Format("invalid enum value '{0}' in FfiConverterTypeDmRoomDefinition.Write()", value)
+                    String.Format("invalid enum value '{0}' in FfiConverterTypeBase64Variant.Write()", value)
                 );
         }
     }
 }
 
-/// <summary>
-/// Represents the state of a room encryption.
-/// </summary>
-public enum EncryptionState : int
-{
-    /// <summary>
-    /// The room is encrypted.
-    /// </summary>
-    Encrypted,
-
-    /// <summary>
-    /// The room is not encrypted.
-    /// </summary>
-    NotEncrypted,
-
-    /// <summary>
-    /// The state of the room encryption is unknown, probably because the
-    /// `/sync` did not provide all data needed to decide.
-    /// </summary>
-    Unknown,
-}
-
-class FfiConverterTypeEncryptionState : FfiConverterRustBuffer<EncryptionState>
-{
-    public static FfiConverterTypeEncryptionState INSTANCE = new FfiConverterTypeEncryptionState();
-
-    public override EncryptionState Read(BigEndianStream stream)
-    {
-        var value = stream.ReadInt();
-        switch (value)
-        {
-            case 1:
-                return EncryptionState.Encrypted;
-            case 2:
-                return EncryptionState.NotEncrypted;
-            case 3:
-                return EncryptionState.Unknown;
-            default:
-                throw new InternalException(
-                    String.Format("invalid enum value '{0}' in FfiConverterTypeEncryptionState.Read()", value)
-                );
-        }
-    }
-
-    public override int AllocationSize(EncryptionState value)
-    {
-        return 4;
-    }
-
-    public override void Write(EncryptionState value, BigEndianStream stream)
-    {
-        switch (value)
-        {
-            case EncryptionState.Encrypted:
-                stream.WriteInt(1);
-                break;
-            case EncryptionState.NotEncrypted:
-                stream.WriteInt(2);
-                break;
-            case EncryptionState.Unknown:
-                stream.WriteInt(3);
-                break;
-            default:
-                throw new InternalException(
-                    String.Format("invalid enum value '{0}' in FfiConverterTypeEncryptionState.Write()", value)
-                );
-        }
-    }
-}
-
-class FfiConverterOptionalUInt64 : FfiConverterRustBuffer<ulong?>
-{
-    public static FfiConverterOptionalUInt64 INSTANCE = new FfiConverterOptionalUInt64();
-
-    public override ulong? Read(BigEndianStream stream)
-    {
-        if (stream.ReadByte() == 0)
-        {
-            return null;
-        }
-        return FfiConverterUInt64.INSTANCE.Read(stream);
-    }
-
-    public override int AllocationSize(ulong? value)
-    {
-        if (value == null)
-        {
-            return 1;
-        }
-        else
-        {
-            return 1 + FfiConverterUInt64.INSTANCE.AllocationSize((ulong)value);
-        }
-    }
-
-    public override void Write(ulong? value, BigEndianStream stream)
-    {
-        if (value == null)
-        {
-            stream.WriteByte(0);
-        }
-        else
-        {
-            stream.WriteByte(1);
-            FfiConverterUInt64.INSTANCE.Write((ulong)value, stream);
-        }
-    }
-}
-
-class FfiConverterOptionalDuration : FfiConverterRustBuffer<TimeSpan?>
-{
-    public static FfiConverterOptionalDuration INSTANCE = new FfiConverterOptionalDuration();
-
-    public override TimeSpan? Read(BigEndianStream stream)
-    {
-        if (stream.ReadByte() == 0)
-        {
-            return null;
-        }
-        return FfiConverterDuration.INSTANCE.Read(stream);
-    }
-
-    public override int AllocationSize(TimeSpan? value)
-    {
-        if (value == null)
-        {
-            return 1;
-        }
-        else
-        {
-            return 1 + FfiConverterDuration.INSTANCE.AllocationSize((TimeSpan)value);
-        }
-    }
-
-    public override void Write(TimeSpan? value, BigEndianStream stream)
-    {
-        if (value == null)
-        {
-            stream.WriteByte(0);
-        }
-        else
-        {
-            stream.WriteByte(1);
-            FfiConverterDuration.INSTANCE.Write((TimeSpan)value, stream);
-        }
-    }
-}
 #pragma warning restore 8625
-public static class MatrixSdkBaseMethods { }
+public static class MatrixSdkSqliteMethods { }
