@@ -10,22 +10,26 @@ static partial class ClientExtensions
         this global::Matrix.RustSdk.Bindings.Client @client,
         global::Matrix.RustSdk.Bindings.SyncSettingsV2 @settings,
         global::System.Threading.CancellationToken @cancellationToken
-    ) =>
-        global::Matrix.RustSdk.Subscriptions.SubscriptionStream.CreateAsync<global::Matrix.RustSdk.Bindings.SyncResponseV2, global::Matrix.RustSdk.Bindings.TaskHandle>(
-            writer => new global::System.Threading.Tasks.ValueTask<global::Matrix.RustSdk.Bindings.TaskHandle>(
-                @client.SyncV2(@settings, new SyncV2AsyncListener(writer))
+    )
+    {
+        global::System.ArgumentNullException.ThrowIfNull(@client, nameof(@client));
+        global::System.ArgumentNullException.ThrowIfNull(@settings, nameof(@settings));
+        return global::Matrix.RustSdk.Subscriptions.SubscriptionStream.CreateAsync<global::Matrix.RustSdk.Bindings.SyncResponseV2, global::Matrix.RustSdk.Bindings.TaskHandle>(
+            __writer => new global::System.Threading.Tasks.ValueTask<global::Matrix.RustSdk.Bindings.TaskHandle>(
+                @client.SyncV2(@settings, new SyncV2AsyncListener(__writer))
             ),
             global::Matrix.RustSdk.Subscriptions.SubscriptionBuffer.All,
             throwWhenFinished: true,
             cancellationToken: @cancellationToken
         );
+    }
 
     private sealed class SyncV2AsyncListener(
-        global::Matrix.RustSdk.Subscriptions.SubscriptionWriter<global::Matrix.RustSdk.Bindings.SyncResponseV2> writer
+        global::Matrix.RustSdk.Subscriptions.SubscriptionWriter<global::Matrix.RustSdk.Bindings.SyncResponseV2> __writer
     ) : global::Matrix.RustSdk.Bindings.SyncListenerV2
     {
         public void OnUpdate(global::Matrix.RustSdk.Bindings.SyncResponseV2 @response) =>
-            writer.Write(@response);
+            __writer.Write(@response);
     }
 }
 

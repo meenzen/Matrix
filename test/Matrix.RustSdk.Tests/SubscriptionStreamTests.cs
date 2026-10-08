@@ -1,5 +1,6 @@
 using Matrix.RustSdk.Bindings;
 using Matrix.RustSdk.Subscriptions;
+using TUnit.Assertions.Enums;
 
 namespace Matrix.RustSdk.Tests;
 
@@ -56,7 +57,7 @@ public class SubscriptionStreamTests
         List<int> received = await ToListAsync(values);
 
         // Assert
-        await Assert.That(received).IsEquivalentTo([1, 2, 3, 4, 5]);
+        await Assert.That(received).IsEquivalentTo([1, 2, 3, 4, 5], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -165,7 +166,7 @@ public class SubscriptionStreamTests
         }
 
         // Assert
-        await Assert.That(received).IsEquivalentTo([0, 1, 2]);
+        await Assert.That(received).IsEquivalentTo([0, 1, 2], CollectionOrdering.Matching);
         await Assert.That(handle()!.IsDisposed).IsTrue();
     }
 
@@ -249,7 +250,7 @@ public class SubscriptionStreamTests
         }
 
         // Assert
-        await Assert.That(received).IsEquivalentTo([1, 2]);
+        await Assert.That(received).IsEquivalentTo([1, 2], CollectionOrdering.Matching);
     }
 
     [Test]
@@ -301,6 +302,216 @@ public class SubscriptionStreamTests
         await Assert.That(handle()!.IsDisposed).IsTrue();
     }
 
+    [Test]
+    public async Task CurrentReplacedByANewerValue_ShouldBeDisposed()
+    {
+        // Arrange
+        SubscriptionWriter<Value>? listener = null;
+        FakeHandle? subscription = null;
+        Value current = new(1);
+        Value newer = new(2);
+        IAsyncEnumerable<Value> values = Create<Value>(
+            SubscriptionBuffer.Latest,
+            (writer, handle) =>
+            {
+                listener = writer;
+                subscription = handle;
+            },
+            out _,
+            current: () =>
+            {
+                // the SDK delivers a newer value after the current one is written, before the consumer reads it
+                _ = Task.Run(async () =>
+                {
+                    await Task.Delay(10);
+                    listener!.Write(newer);
+                    subscription!.Finish();
+                });
+                return ValueTask.FromResult(current);
+            }
+        );
+
+        // Act
+        List<Value> received = [];
+        await foreach (Value value in values)
+        {
+            received.Add(value);
+        }
+
+        // Assert
+        await Assert.That(received).Contains(newer);
+        await Assert.That(current.IsDisposed).IsEqualTo(!received.Contains(current));
+        await Assert.That(newer.IsDisposed).IsFalse();
+    }
+
+    [Test]
+    public async Task FailingSubscribe_ShouldDisposeTheValuesWrittenBefore()
+    {
+        // Arrange
+        Value written = new(1);
+        IAsyncEnumerable<Value> values = SubscriptionStream.CreateAsync<Value, FakeHandle>(
+            writer =>
+            {
+                // the SDK called the listener synchronously, then subscribing failed
+                writer.Write(written);
+                throw new InvalidOperationException("subscribing failed");
+            },
+            SubscriptionBuffer.All,
+            finishedCheckInterval: CheckInterval
+        );
+
+        // Act
+        async Task EnumerateAsync()
+        {
+            await foreach (Value _ in values) { }
+        }
+
+        // Assert
+        await Assert.That(EnumerateAsync).Throws<InvalidOperationException>().WithMessage("subscribing failed");
+        await Assert.That(written.IsDisposed).IsTrue();
+    }
+
+    [Test]
+    public async Task UnreadTuples_ShouldDisposeTheirElements()
+    {
+        // Arrange
+        Value first = new(1);
+        Value second = new(2);
+        IAsyncEnumerable<(string RoomId, Value Update)> values = Create<(string, Value)>(
+            SubscriptionBuffer.All,
+            (writer, _) =>
+            {
+                writer.Write(("!a:localhost", first));
+                writer.Write(("!b:localhost", second));
+            },
+            out _
+        );
+
+        // Act
+        await foreach ((string RoomId, Value Update) _ in values)
+        {
+            break;
+        }
+
+        // Assert
+        await Assert.That(first.IsDisposed).IsFalse();
+        await Assert.That(second.IsDisposed).IsTrue();
+    }
+
+    [Test]
+    public async Task CancelledTokenParameter_ShouldEndTheEnumerationBeforeBufferedValues()
+    {
+        // Arrange
+        using CancellationTokenSource cancellation = new();
+        Value[] written = [new(1), new(2), new(3)];
+        IAsyncEnumerable<Value> values = Create<Value>(
+            SubscriptionBuffer.All,
+            (writer, _) =>
+            {
+                foreach (Value value in written)
+                {
+                    writer.Write(value);
+                }
+            },
+            out Func<FakeHandle?> handle,
+            cancellationToken: cancellation.Token
+        );
+        List<Value> received = [];
+
+        // Act
+        async Task EnumerateAsync()
+        {
+            await foreach (Value value in values)
+            {
+                received.Add(value);
+                await cancellation.CancelAsync();
+            }
+        }
+
+        // Assert
+        await Assert.That(EnumerateAsync).Throws<OperationCanceledException>();
+        await Assert.That(received.Select(value => value.Number)).IsEquivalentTo([1]);
+        await Assert.That(written[1].IsDisposed).IsTrue();
+        await Assert.That(written[2].IsDisposed).IsTrue();
+        await Assert.That(handle()!.IsDisposed).IsTrue();
+    }
+
+    [Test]
+    public async Task CancelledToken_ShouldNotSubscribe()
+    {
+        // Arrange
+        using CancellationTokenSource cancellation = new();
+        await cancellation.CancelAsync();
+        int subscriptions = 0;
+        IAsyncEnumerable<int> values = Create<int>(
+            SubscriptionBuffer.All,
+            (_, _) => subscriptions++,
+            out _,
+            cancellationToken: cancellation.Token
+        );
+
+        // Act
+        async Task EnumerateAsync()
+        {
+            await foreach (int _ in values) { }
+        }
+
+        // Assert
+        await Assert.That(EnumerateAsync).Throws<OperationCanceledException>();
+        await Assert.That(subscriptions).IsEqualTo(0);
+    }
+
+    [Test]
+    [Arguments(false)]
+    [Arguments(true)]
+    public async Task ConcurrentWriter_ShouldYieldOrDisposeEveryValueOnce(bool latest)
+    {
+        for (int iteration = 0; iteration < 50; iteration++)
+        {
+            // Arrange
+            List<Value> written = [];
+            Task? sdk = null;
+            IAsyncEnumerable<Value> values = Create<Value>(
+                latest ? SubscriptionBuffer.Latest : SubscriptionBuffer.All,
+                (writer, handle) =>
+                    sdk = Task.Run(() =>
+                    {
+                        // like the SDK, the listener keeps being called while the subscription ends
+                        for (int i = 0; i < 200; i++)
+                        {
+                            Value value = new(i);
+                            lock (written)
+                            {
+                                written.Add(value);
+                            }
+                            writer.Write(value);
+                        }
+                        handle.Finish();
+                    }),
+                out _
+            );
+            List<Value> received = [];
+
+            // Act
+            await foreach (Value value in values)
+            {
+                received.Add(value);
+                if (received.Count == 10)
+                {
+                    break;
+                }
+            }
+            await sdk!;
+
+            // Assert
+            Value[] lost = [.. written.Where(value => !value.IsDisposed && !received.Contains(value))];
+            Value[] disposedTwice = [.. written.Where(value => value.DisposeCount > 1)];
+            await Assert.That(lost).IsEmpty();
+            await Assert.That(disposedTwice).IsEmpty();
+            await Assert.That(received.Where(value => value.IsDisposed)).IsEmpty();
+        }
+    }
+
     private static async Task<List<T>> ToListAsync<T>(IAsyncEnumerable<T> values)
     {
         List<T> list = [];
@@ -320,7 +531,8 @@ public class SubscriptionStreamTests
         Action<SubscriptionWriter<T>, FakeHandle> onSubscribe,
         out Func<FakeHandle?> handle,
         Func<ValueTask<T>>? current = null,
-        bool throwWhenFinished = false
+        bool throwWhenFinished = false,
+        CancellationToken cancellationToken = default
     )
     {
         FakeHandle? latest = null;
@@ -335,7 +547,8 @@ public class SubscriptionStreamTests
             buffer,
             current,
             throwWhenFinished,
-            CheckInterval
+            CheckInterval,
+            cancellationToken
         );
     }
 
@@ -362,8 +575,12 @@ public class SubscriptionStreamTests
     {
         public int Number { get; } = number;
 
-        public bool IsDisposed { get; private set; }
+        private int _disposeCount;
 
-        public void Dispose() => IsDisposed = true;
+        public int DisposeCount => _disposeCount;
+
+        public bool IsDisposed => _disposeCount > 0;
+
+        public void Dispose() => Interlocked.Increment(ref _disposeCount);
     }
 }

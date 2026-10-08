@@ -9,10 +9,12 @@ static partial class RoomExtensions
     public static partial global::System.Collections.Generic.IAsyncEnumerable<global::Matrix.RustSdk.Bindings.RoomInfo> WatchRoomInfoAsync(
         this global::Matrix.RustSdk.Bindings.Room @room,
         global::System.Threading.CancellationToken @cancellationToken
-    ) =>
-        global::Matrix.RustSdk.Subscriptions.SubscriptionStream.CreateAsync<global::Matrix.RustSdk.Bindings.RoomInfo, global::Matrix.RustSdk.Bindings.TaskHandle>(
-            writer => new global::System.Threading.Tasks.ValueTask<global::Matrix.RustSdk.Bindings.TaskHandle>(
-                @room.SubscribeToRoomInfoUpdates(new WatchRoomInfoAsyncListener(writer))
+    )
+    {
+        global::System.ArgumentNullException.ThrowIfNull(@room, nameof(@room));
+        return global::Matrix.RustSdk.Subscriptions.SubscriptionStream.CreateAsync<global::Matrix.RustSdk.Bindings.RoomInfo, global::Matrix.RustSdk.Bindings.TaskHandle>(
+            __writer => new global::System.Threading.Tasks.ValueTask<global::Matrix.RustSdk.Bindings.TaskHandle>(
+                @room.SubscribeToRoomInfoUpdates(new WatchRoomInfoAsyncListener(__writer))
             ),
             global::Matrix.RustSdk.Subscriptions.SubscriptionBuffer.Latest,
             current: () => new global::System.Threading.Tasks.ValueTask<global::Matrix.RustSdk.Bindings.RoomInfo>(
@@ -20,13 +22,14 @@ static partial class RoomExtensions
             ),
             cancellationToken: @cancellationToken
         );
+    }
 
     private sealed class WatchRoomInfoAsyncListener(
-        global::Matrix.RustSdk.Subscriptions.SubscriptionWriter<global::Matrix.RustSdk.Bindings.RoomInfo> writer
+        global::Matrix.RustSdk.Subscriptions.SubscriptionWriter<global::Matrix.RustSdk.Bindings.RoomInfo> __writer
     ) : global::Matrix.RustSdk.Bindings.RoomInfoListener
     {
         public void Call(global::Matrix.RustSdk.Bindings.RoomInfo @roomInfo) =>
-            writer.Write(@roomInfo);
+            __writer.Write(@roomInfo);
     }
 }
 

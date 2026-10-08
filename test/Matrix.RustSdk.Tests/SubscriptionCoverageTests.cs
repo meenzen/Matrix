@@ -148,7 +148,7 @@ public class SubscriptionCoverageTests
     private static IEnumerable<string> Subscriptions() =>
         BindingClasses()
             .SelectMany(type =>
-                type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                type.GetMethods(Members)
                     .Where(method =>
                         method.ReturnType == typeof(TaskHandle) || method.ReturnType == typeof(Task<TaskHandle>)
                     )
@@ -160,8 +160,9 @@ public class SubscriptionCoverageTests
             .Order(StringComparer.Ordinal);
 
     /// <summary>
-    /// The methods of the bindings that take a callback interface (an interface no class of the bindings implements)
-    /// and don't return a <see cref="TaskHandle"/>, as <c>Type.Method</c>.
+    /// The methods and constructors of the bindings that take a callback interface (an interface no class of the
+    /// bindings implements), also in arrays and collections, and don't return a <see cref="TaskHandle"/>, as
+    /// <c>Type.Method</c>.
     /// </summary>
     private static IEnumerable<string> MethodsTakingListeners()
     {
@@ -172,19 +173,29 @@ public class SubscriptionCoverageTests
                 .Assembly.GetExportedTypes()
                 .Where(type => type.IsInterface && !classes.Any(type.IsAssignableFrom)),
         ];
+        bool IsListener(Type type) =>
+            callbacks.Contains(type)
+            || type.HasElementType && IsListener(type.GetElementType()!)
+            || type.IsGenericType && type.GetGenericArguments().Any(IsListener);
+
         return classes
             .SelectMany(type =>
-                type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                type.GetMethods(Members)
                     .Where(method =>
-                        method.ReturnType != typeof(TaskHandle)
-                        && method.ReturnType != typeof(Task<TaskHandle>)
-                        && method.GetParameters().Any(parameter => callbacks.Contains(parameter.ParameterType))
+                        method.ReturnType != typeof(TaskHandle) && method.ReturnType != typeof(Task<TaskHandle>)
                     )
+                    .Cast<MethodBase>()
+                    .Concat(type.GetConstructors())
+                    .Where(method => method.GetParameters().Any(parameter => IsListener(parameter.ParameterType)))
                     .Select(method => $"{type.Name}.{method.Name}")
             )
             .Distinct()
             .Order(StringComparer.Ordinal);
     }
+
+    // instance methods and functions (static methods like those of MatrixSdkFfiMethods)
+    private const BindingFlags Members =
+        BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
 
     /// <summary>
     /// The <see cref="SubscriptionAttribute"/> declarations in Matrix.RustSdk, including internal ones, with the

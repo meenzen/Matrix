@@ -9,21 +9,24 @@ static partial class TimelineExtensions
     public static partial global::System.Collections.Generic.IAsyncEnumerable<global::Matrix.RustSdk.Bindings.TimelineDiff[]> UpdatesAsync(
         this global::Matrix.RustSdk.Bindings.Timeline @timeline,
         global::System.Threading.CancellationToken @cancellationToken
-    ) =>
-        global::Matrix.RustSdk.Subscriptions.SubscriptionStream.CreateAsync<global::Matrix.RustSdk.Bindings.TimelineDiff[], global::Matrix.RustSdk.Bindings.TaskHandle>(
-            writer => new global::System.Threading.Tasks.ValueTask<global::Matrix.RustSdk.Bindings.TaskHandle>(
-                @timeline.AddListener(new UpdatesAsyncListener(writer))
+    )
+    {
+        global::System.ArgumentNullException.ThrowIfNull(@timeline, nameof(@timeline));
+        return global::Matrix.RustSdk.Subscriptions.SubscriptionStream.CreateAsync<global::Matrix.RustSdk.Bindings.TimelineDiff[], global::Matrix.RustSdk.Bindings.TaskHandle>(
+            __writer => new global::System.Threading.Tasks.ValueTask<global::Matrix.RustSdk.Bindings.TaskHandle>(
+                @timeline.AddListener(new UpdatesAsyncListener(__writer))
             ),
             global::Matrix.RustSdk.Subscriptions.SubscriptionBuffer.All,
             cancellationToken: @cancellationToken
         );
+    }
 
     private sealed class UpdatesAsyncListener(
-        global::Matrix.RustSdk.Subscriptions.SubscriptionWriter<global::Matrix.RustSdk.Bindings.TimelineDiff[]> writer
+        global::Matrix.RustSdk.Subscriptions.SubscriptionWriter<global::Matrix.RustSdk.Bindings.TimelineDiff[]> __writer
     ) : global::Matrix.RustSdk.Bindings.TimelineListener
     {
         public void OnUpdate(global::Matrix.RustSdk.Bindings.TimelineDiff[] @diff) =>
-            writer.Write(@diff);
+            __writer.Write(@diff);
     }
 }
 

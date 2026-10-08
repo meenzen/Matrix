@@ -9,21 +9,24 @@ static partial class ClientExtensions
     public static partial global::System.Collections.Generic.IAsyncEnumerable<global::Matrix.RustSdk.Bindings.MediaPreviewConfig?> MediaPreviewConfigAsync(
         this global::Matrix.RustSdk.Bindings.Client @client,
         global::System.Threading.CancellationToken @cancellationToken
-    ) =>
-        global::Matrix.RustSdk.Subscriptions.SubscriptionStream.CreateAsync<global::Matrix.RustSdk.Bindings.MediaPreviewConfig?, global::Matrix.RustSdk.Bindings.TaskHandle>(
-            writer => new global::System.Threading.Tasks.ValueTask<global::Matrix.RustSdk.Bindings.TaskHandle>(
-                @client.SubscribeToMediaPreviewConfig(new MediaPreviewConfigAsyncListener(writer))
+    )
+    {
+        global::System.ArgumentNullException.ThrowIfNull(@client, nameof(@client));
+        return global::Matrix.RustSdk.Subscriptions.SubscriptionStream.CreateAsync<global::Matrix.RustSdk.Bindings.MediaPreviewConfig?, global::Matrix.RustSdk.Bindings.TaskHandle>(
+            __writer => new global::System.Threading.Tasks.ValueTask<global::Matrix.RustSdk.Bindings.TaskHandle>(
+                @client.SubscribeToMediaPreviewConfig(new MediaPreviewConfigAsyncListener(__writer))
             ),
             global::Matrix.RustSdk.Subscriptions.SubscriptionBuffer.Latest,
             cancellationToken: @cancellationToken
         );
+    }
 
     private sealed class MediaPreviewConfigAsyncListener(
-        global::Matrix.RustSdk.Subscriptions.SubscriptionWriter<global::Matrix.RustSdk.Bindings.MediaPreviewConfig?> writer
+        global::Matrix.RustSdk.Subscriptions.SubscriptionWriter<global::Matrix.RustSdk.Bindings.MediaPreviewConfig?> __writer
     ) : global::Matrix.RustSdk.Bindings.MediaPreviewConfigListener
     {
         public void OnChange(global::Matrix.RustSdk.Bindings.MediaPreviewConfig? @mediaPreviewConfig) =>
-            writer.Write(@mediaPreviewConfig);
+            __writer.Write(@mediaPreviewConfig);
     }
 }
 

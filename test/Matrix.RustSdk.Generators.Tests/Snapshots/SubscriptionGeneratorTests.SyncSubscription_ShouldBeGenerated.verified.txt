@@ -9,21 +9,24 @@ static partial class RoomExtensions
     public static partial global::System.Collections.Generic.IAsyncEnumerable<string[]> TypingUsersAsync(
         this global::Matrix.RustSdk.Bindings.Room @room,
         global::System.Threading.CancellationToken @cancellationToken
-    ) =>
-        global::Matrix.RustSdk.Subscriptions.SubscriptionStream.CreateAsync<string[], global::Matrix.RustSdk.Bindings.TaskHandle>(
-            writer => new global::System.Threading.Tasks.ValueTask<global::Matrix.RustSdk.Bindings.TaskHandle>(
-                @room.SubscribeToTypingNotifications(new TypingUsersAsyncListener(writer))
+    )
+    {
+        global::System.ArgumentNullException.ThrowIfNull(@room, nameof(@room));
+        return global::Matrix.RustSdk.Subscriptions.SubscriptionStream.CreateAsync<string[], global::Matrix.RustSdk.Bindings.TaskHandle>(
+            __writer => new global::System.Threading.Tasks.ValueTask<global::Matrix.RustSdk.Bindings.TaskHandle>(
+                @room.SubscribeToTypingNotifications(new TypingUsersAsyncListener(__writer))
             ),
             global::Matrix.RustSdk.Subscriptions.SubscriptionBuffer.Latest,
             cancellationToken: @cancellationToken
         );
+    }
 
     private sealed class TypingUsersAsyncListener(
-        global::Matrix.RustSdk.Subscriptions.SubscriptionWriter<string[]> writer
+        global::Matrix.RustSdk.Subscriptions.SubscriptionWriter<string[]> __writer
     ) : global::Matrix.RustSdk.Bindings.TypingNotificationsListener
     {
         public void Call(string[] @typingUserIds) =>
-            writer.Write(@typingUserIds);
+            __writer.Write(@typingUserIds);
     }
 }
 

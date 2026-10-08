@@ -18,6 +18,9 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
     private const string Stream = "global::Matrix.RustSdk.Subscriptions.SubscriptionStream";
     private const string TaskHandle = "Matrix.RustSdk.Bindings.TaskHandle";
 
+    // the name of the writer in the generated code, reserved so it can't hide or be hidden by a parameter
+    private const string Writer = "__writer";
+
     private static readonly SymbolDisplayFormat TypeFormat =
         SymbolDisplayFormat.FullyQualifiedFormat.AddMiscellaneousOptions(
             SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier
@@ -78,7 +81,7 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
             || declaration.ContainingType.IsGenericType
             || declaration.Parameters.Length < 2
             || declaration.Parameters.Last().Type.ToDisplayString() != "System.Threading.CancellationToken"
-            || declaration.Parameters.Any(p => p.RefKind != RefKind.None || p.IsParams)
+            || declaration.Parameters.Any(p => p.RefKind != RefKind.None || p.IsParams || p.Name == Writer)
             || declaration.ReturnType is not INamedTypeSymbol { Arity: 1 } returnType
             || returnType.ConstructedFrom.ToDisplayString() != "System.Collections.Generic.IAsyncEnumerable<T>"
         )
@@ -87,7 +90,8 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
                 Diagnostics.InvalidDeclaration,
                 location,
                 "a subscription has to be a static partial extension method of a top level, non generic class "
-                    + "returning IAsyncEnumerable<T>, with a CancellationToken as last parameter"
+                    + "returning IAsyncEnumerable<T>, with a CancellationToken as last parameter and no parameter named "
+                    + Writer
             );
         }
 
@@ -194,7 +198,7 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
             ", ",
             subscription.Target.Parameters.Select(p =>
                 SymbolEqualityComparer.Default.Equals(p, subscription.Listener)
-                    ? $"new {listenerClass}(writer)"
+                    ? $"new {listenerClass}({Writer})"
                     : Identifier(p)
             )
         );
@@ -221,11 +225,18 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
                 + $"{declaration.Name}("
         );
         code.Indented(parameters.Select((p, i) => i < parameters.Length - 1 ? p + "," : p));
-        code.Line(") =>");
+        code.Line(")");
+        code.Open();
+        // the enumeration is deferred, null arguments are reported right away like in a hand written method
+        foreach (IParameterSymbol parameter in new[] { self }.Concat(subscription.Extra).Where(IsNonNullableReference))
+        {
+            code.Line(
+                $"global::System.ArgumentNullException.ThrowIfNull({Identifier(parameter)}, nameof({Identifier(parameter)}));"
+            );
+        }
+        code.Line($"return {Stream}.CreateAsync<{value}, global::{TaskHandle}>(");
         code.Indent();
-        code.Line($"{Stream}.CreateAsync<{value}, global::{TaskHandle}>(");
-        code.Indent();
-        code.Line($"writer => new global::System.Threading.Tasks.ValueTask<global::{TaskHandle}>(");
+        code.Line($"{Writer} => new global::System.Threading.Tasks.ValueTask<global::{TaskHandle}>(");
         code.Indented(new[] { $"{Identifier(self)}.{subscription.Target.Name}({arguments})" });
         code.Line("),");
         code.Line($"{subscription.Buffer},");
@@ -243,17 +254,17 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
         code.Line($"cancellationToken: {Identifier(cancellationToken)}");
         code.Outdent();
         code.Line(");");
-        code.Outdent();
+        code.Close();
         code.Line();
 
         code.Line($"private sealed class {listenerClass}(");
-        code.Indented(new[] { $"global::Matrix.RustSdk.Subscriptions.SubscriptionWriter<{value}> writer" });
+        code.Indented(new[] { $"global::Matrix.RustSdk.Subscriptions.SubscriptionWriter<{value}> {Writer}" });
         code.Line($") : {subscription.Listener.Type.ToDisplayString(TypeFormat)}");
         code.Open();
         code.Line(
             $"public void {listenerMethod.Name}({string.Join(", ", listenerMethod.Parameters.Select(Parameter))}) =>"
         );
-        code.Indented(new[] { $"writer.Write({written});" });
+        code.Indented(new[] { $"{Writer}.Write({written});" });
         code.Close();
 
         code.Close();
@@ -346,6 +357,9 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
         int index = overloads.TakeWhile(m => !SymbolEqualityComparer.Default.Equals(m, declaration)).Count();
         return (index + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
     }
+
+    private static bool IsNonNullableReference(IParameterSymbol parameter) =>
+        parameter.Type.IsReferenceType && parameter.NullableAnnotation != NullableAnnotation.Annotated;
 
     // the bindings use keywords as parameter names (@event), escaping every identifier is always valid
     private static string Identifier(IParameterSymbol parameter) => "@" + parameter.Name;

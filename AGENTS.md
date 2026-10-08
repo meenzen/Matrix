@@ -81,8 +81,8 @@ obvious:
   ```
 
   Parameters between the extended type and the token are passed to the subscription by name and need the type of the
-  binding. Wrap parameters that need a conversion (e.g. milliseconds to `TimeSpan`) with a public overload and make the
-  declaration internal.
+  binding. When parameters or values need a conversion (milliseconds to `TimeSpan`, dropping the room id the caller
+  passed in anyway), make the declaration internal and wrap it with a public method.
 - Read the Rust implementation (`bindings/matrix-sdk-ffi`) before declaring a subscription. `SubscriptionBuffer.Latest`
   is only for complete snapshots (states), diffs and events need `All`. Document whether it yields the current value
   first, otherwise set `Current = nameof(Getter)` if the type has a getter. Document when the SDK ends it on its own,

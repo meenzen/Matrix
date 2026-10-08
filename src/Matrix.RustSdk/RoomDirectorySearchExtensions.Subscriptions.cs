@@ -11,10 +11,12 @@ public static partial class RoomDirectorySearchExtensions
     /// Watches the results of the search. Yields the changes in batches, starting with a
     /// <see cref="RoomDirectorySearchEntryUpdate.Reset"/>.
     /// </summary>
+    /// <param name="roomDirectorySearch">The room directory search.</param>
+    /// <include file="Subscriptions/Subscriptions.xml" path="docs/cancellationToken/*"/>
     /// <remarks><include file="Subscriptions/Subscriptions.xml" path="docs/stream/*"/></remarks>
     [Subscription(nameof(RoomDirectorySearch.Results), SubscriptionBuffer.All)]
     public static partial IAsyncEnumerable<RoomDirectorySearchEntryUpdate[]> WatchResultDiffsAsync(
-        this RoomDirectorySearch search,
+        this RoomDirectorySearch roomDirectorySearch,
         CancellationToken cancellationToken = default
     );
 }

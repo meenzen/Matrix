@@ -33,7 +33,7 @@ internal static class SubscriptionStream
     /// finishes, for subscriptions that only end because of an error.
     /// </param>
     /// <param name="finishedCheckInterval">How often an idle enumeration checks whether the task finished.</param>
-    /// <param name="cancellationToken">Cancels the enumeration.</param>
+    /// <param name="cancellationToken">Cancels the enumeration, checked before subscribing and every value.</param>
     public static async IAsyncEnumerable<T> CreateAsync<T, THandle>(
         Func<SubscriptionWriter<T>, ValueTask<THandle>> subscribe,
         SubscriptionBuffer buffer,
@@ -44,19 +44,25 @@ internal static class SubscriptionStream
     )
         where THandle : ITaskHandle, IDisposable
     {
-        Channel<T> channel = buffer switch
-        {
-            SubscriptionBuffer.Latest => Channel.CreateBounded<T>(
-                new BoundedChannelOptions(1) { FullMode = BoundedChannelFullMode.DropOldest, SingleReader = true },
-                dropped => Dispose(dropped)
-            ),
-            _ => Channel.CreateUnbounded<T>(new UnboundedChannelOptions { SingleReader = true }),
-        };
+        // subscribing has side effects (a sync v2 loop sends a request), don't subscribe when cancelled already
+        cancellationToken.ThrowIfCancellationRequested();
+
         // the SDK calls some listeners with the current value before the subscription method returns
-        SubscriptionWriter<T> writer = new(channel.Writer);
+        SubscriptionWriter<T> writer = new(buffer);
         TimeSpan interval = finishedCheckInterval ?? FinishedCheckInterval;
 
-        THandle handle = await subscribe(writer).ConfigureAwait(false);
+        THandle handle;
+        try
+        {
+            handle = await subscribe(writer).ConfigureAwait(false);
+        }
+        catch
+        {
+            // values the listener received before subscribing failed
+            Drain(writer);
+            throw;
+        }
+
         try
         {
             if (current is not null)
@@ -64,10 +70,16 @@ internal static class SubscriptionStream
                 writer.WriteCurrent(await current().ConfigureAwait(false));
             }
 
-            while (await WaitToReadAsync(channel, handle, interval, cancellationToken).ConfigureAwait(false))
+            while (await WaitToReadAsync(writer, handle, interval, cancellationToken).ConfigureAwait(false))
             {
-                while (channel.Reader.TryRead(out T? value))
+                while (writer.Reader.TryRead(out T? value))
                 {
+                    // a slow consumer can have many values buffered, cancellation must not wait for all of them
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        Dispose(value);
+                        cancellationToken.ThrowIfCancellationRequested();
+                    }
                     yield return value;
                 }
             }
@@ -82,12 +94,9 @@ internal static class SubscriptionStream
         finally
         {
             // complete first, values the SDK delivers while the task is cancelled are disposed by the writer
-            channel.Writer.TryComplete();
+            writer.Complete();
             handle.Dispose();
-            while (channel.Reader.TryRead(out T? value))
-            {
-                Dispose(value);
-            }
+            Drain(writer);
         }
     }
 
@@ -117,40 +126,61 @@ internal static class SubscriptionStream
     }
 
     /// <summary>
+    /// Completes the channel and disposes the values nobody will read.
+    /// </summary>
+    private static void Drain<T>(SubscriptionWriter<T> writer)
+    {
+        writer.Complete();
+        while (writer.Reader.TryRead(out T? value))
+        {
+            Dispose(value);
+        }
+    }
+
+    /// <summary>
     /// Waits until a value can be read, false once the channel is completed. Checks every
     /// <paramref name="finishedCheckInterval"/> whether the task finished and completes the channel if it did, values
     /// written before can still be read.
     /// </summary>
     private static async ValueTask<bool> WaitToReadAsync<T>(
-        Channel<T> channel,
+        SubscriptionWriter<T> writer,
         ITaskHandle handle,
         TimeSpan finishedCheckInterval,
         CancellationToken cancellationToken
     )
     {
-        ValueTask<bool> wait = channel.Reader.WaitToReadAsync(cancellationToken);
+        ValueTask<bool> wait = writer.Reader.WaitToReadAsync(cancellationToken);
         if (wait.IsCompleted)
         {
             return await wait.ConfigureAwait(false);
         }
 
-        // a single pending wait, channels with a single reader don't support several
+        // a single pending wait, channels with a single reader don't support several. The delays are cancelled when
+        // the wait ends, otherwise every wait would leave a timer behind.
         Task<bool> waiting = wait.AsTask();
-        while (true)
+        using CancellationTokenSource delays = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        try
         {
-            Task completed = await Task.WhenAny(waiting, Task.Delay(finishedCheckInterval, cancellationToken))
-                .ConfigureAwait(false);
-            if (completed == waiting)
+            while (true)
             {
-                return await waiting.ConfigureAwait(false);
-            }
+                Task completed = await Task.WhenAny(waiting, Task.Delay(finishedCheckInterval, delays.Token))
+                    .ConfigureAwait(false);
+                if (completed == waiting)
+                {
+                    return await waiting.ConfigureAwait(false);
+                }
 
-            cancellationToken.ThrowIfCancellationRequested();
-            if (handle.IsFinished())
-            {
-                channel.Writer.TryComplete();
-                return await waiting.ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
+                if (handle.IsFinished())
+                {
+                    writer.Complete();
+                    return await waiting.ConfigureAwait(false);
+                }
             }
+        }
+        finally
+        {
+            await delays.CancelAsync().ConfigureAwait(false);
         }
     }
 }

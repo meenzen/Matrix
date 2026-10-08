@@ -223,6 +223,22 @@ public class SubscriptionGeneratorTests
         );
 
     [Test]
+    public Task ReservedParameterName_ShouldReportInvalidDeclaration() =>
+        VerifyErrorAsync(
+            "MRSG001",
+            """
+            public static partial class RoomExtensions
+            {
+                [Subscription(nameof(Room.SubscribeToTypingNotifications), SubscriptionBuffer.Latest)]
+                public static partial IAsyncEnumerable<string[]> WatchTypingUsersAsync(
+                    this Room __writer,
+                    CancellationToken cancellationToken = default
+                );
+            }
+            """
+        );
+
+    [Test]
     public Task NotPartial_ShouldReportInvalidDeclaration() =>
         VerifyErrorAsync(
             "MRSG001",

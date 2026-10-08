@@ -10,6 +10,8 @@ public static partial class SyncServiceExtensions
     /// <summary>
     /// Watches the state of the sync service. Yields it, starting with the current one.
     /// </summary>
+    /// <param name="syncService">The sync service.</param>
+    /// <include file="Subscriptions/Subscriptions.xml" path="docs/cancellationToken/*"/>
     /// <remarks><include file="Subscriptions/Subscriptions.xml" path="docs/state/*"/></remarks>
     [Subscription(nameof(SyncService.State), SubscriptionBuffer.Latest)]
     public static partial IAsyncEnumerable<SyncServiceState> WatchStateAsync(

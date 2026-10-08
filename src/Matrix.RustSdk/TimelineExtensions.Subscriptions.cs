@@ -13,9 +13,12 @@ public static partial class TimelineExtensions
     /// <see cref="TimelineDiff.Reset"/> containing the current items. Applying them to a list in order keeps a copy of
     /// the timeline.
     /// </summary>
+    /// <param name="timeline">The timeline.</param>
+    /// <include file="Subscriptions/Subscriptions.xml" path="docs/cancellationToken/*"/>
     /// <remarks>
     /// <include file="Subscriptions/Subscriptions.xml" path="docs/stream/*"/>
     /// <include file="Subscriptions/Subscriptions.xml" path="docs/disposable/*"/>
+    /// <para>Disposing a diff disposes the items it contains, don't dispose diffs whose items you keep.</para>
     /// </remarks>
     [Subscription(nameof(Timeline.AddListener), SubscriptionBuffer.All)]
     public static partial IAsyncEnumerable<TimelineDiff[]> WatchItemDiffsAsync(
@@ -26,6 +29,8 @@ public static partial class TimelineExtensions
     /// <summary>
     /// Watches the back pagination of the live timeline. Yields its status, starting with the current one.
     /// </summary>
+    /// <param name="timeline">The timeline.</param>
+    /// <include file="Subscriptions/Subscriptions.xml" path="docs/cancellationToken/*"/>
     /// <remarks><include file="Subscriptions/Subscriptions.xml" path="docs/state/*"/></remarks>
     /// <exception cref="ClientException">
     /// The timeline isn't a live timeline, thrown when the enumeration starts.

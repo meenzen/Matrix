@@ -11,6 +11,8 @@ public static partial class SpaceServiceExtensions
     /// Watches the space filters. Yields the changes in batches, starting with a
     /// <see cref="SpaceFilterUpdate.Reset"/>.
     /// </summary>
+    /// <param name="spaceService">The space service.</param>
+    /// <include file="Subscriptions/Subscriptions.xml" path="docs/cancellationToken/*"/>
     /// <remarks><include file="Subscriptions/Subscriptions.xml" path="docs/stream/*"/></remarks>
     [Subscription(nameof(SpaceService.SubscribeToSpaceFilters), SubscriptionBuffer.All)]
     public static partial IAsyncEnumerable<SpaceFilterUpdate[]> WatchSpaceFilterDiffsAsync(
@@ -22,6 +24,8 @@ public static partial class SpaceServiceExtensions
     /// Watches the joined spaces that aren't a child of another joined space. Yields the changes in batches, starting
     /// with a <see cref="SpaceListUpdate.Reset"/>.
     /// </summary>
+    /// <param name="spaceService">The space service.</param>
+    /// <include file="Subscriptions/Subscriptions.xml" path="docs/cancellationToken/*"/>
     /// <remarks><include file="Subscriptions/Subscriptions.xml" path="docs/stream/*"/></remarks>
     [Subscription(nameof(SpaceService.SubscribeToTopLevelJoinedSpaces), SubscriptionBuffer.All)]
     public static partial IAsyncEnumerable<SpaceListUpdate[]> WatchTopLevelJoinedSpaceDiffsAsync(
