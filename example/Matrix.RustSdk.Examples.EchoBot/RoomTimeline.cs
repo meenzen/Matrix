@@ -49,17 +49,17 @@ public sealed partial class RoomTimeline : TimelineListener, IDisposable
     /// <summary>
     /// Called by the SDK on one of its threads whenever the timeline changes.
     /// </summary>
-    public void OnUpdate(TimelineDiff[] diffs)
+    public void OnUpdate(TimelineDiff[] diff)
     {
         try
         {
             lock (_lock)
             {
-                foreach (TimelineDiff diff in diffs)
+                foreach (TimelineDiff change in diff)
                 {
-                    using (diff)
+                    using (change)
                     {
-                        Handle(diff);
+                        Handle(change);
                     }
                 }
             }

@@ -12,7 +12,6 @@ public sealed class LoginWindow : Window
     private readonly TextField _homeserver;
     private readonly TextField _username;
     private readonly TextField _password;
-    private readonly Button _login;
     private readonly Label _status;
     private bool _loggingIn;
 
@@ -25,14 +24,14 @@ public sealed class LoginWindow : Window
         _password = AddField("Password:", 5, options.Password ?? "");
         _password.Secret = true;
 
-        _login = new Button
+        Button login = new()
         {
             Text = "_Log in",
             X = 14,
             Y = 7,
             IsDefault = true,
         };
-        _login.Accepting += OnAccepting;
+        login.Accepting += OnAccepting;
 
         _status = new Label
         {
@@ -40,7 +39,7 @@ public sealed class LoginWindow : Window
             Y = 9,
             Width = Dim.Fill(2),
         };
-        Add(_login, _status);
+        Add(login, _status);
 
         // start with the first empty field
         (new[] { _homeserver, _username, _password }.FirstOrDefault(f => f.Text.Length == 0) ?? _password).SetFocus();

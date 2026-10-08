@@ -132,6 +132,10 @@ The uniffi version of matrix-rust-sdk has to match the one [uniffi-bindgen-cs](h
 is built for, otherwise the generated bindings don't work. uniffi-bindgen-cs usually lags behind, so the newest
 `matrix-sdk-ffi` release is often not usable yet.
 
+The `check-updates.yml` workflow checks daily for new `matrix-sdk-ffi/*` snapshots and uniffi-bindgen-cs releases and
+keeps an issue for each open with the uniffi versions and whether they are compatible
+(`.github/scripts/check-updates.sh`, `DRY_RUN=1` prints the issues locally instead).
+
 1. Find the latest uniffi-bindgen-cs release, its tag names the uniffi version (`vX.Y.Z+vA.B.C` targets uniffi `A.B.C`):
 
    ```bash

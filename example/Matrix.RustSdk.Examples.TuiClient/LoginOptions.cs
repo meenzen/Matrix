@@ -24,13 +24,14 @@ public sealed record LoginOptions(string? Homeserver, string? Username, string? 
 
         for (int i = 0; i < args.Length - 1; i++)
         {
+            string value = args[i + 1];
             switch (args[i])
             {
                 case "--homeserver":
-                    homeserver = args[++i];
+                    homeserver = value;
                     break;
                 case "--username":
-                    username = args[++i];
+                    username = value;
                     break;
             }
         }
