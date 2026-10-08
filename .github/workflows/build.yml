@@ -45,7 +45,7 @@ jobs:
             external/matrix-rust-sdk
 
       - name: Build matrix-rust-sdk
-        run: cargo build -p matrix-sdk-ffi
+        run: cargo build --locked -p matrix-sdk-ffi
         working-directory: external/matrix-rust-sdk
 
       - name: Restore dependencies

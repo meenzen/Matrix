@@ -18,7 +18,7 @@ TARGET_ENV=$(echo "$TARGET" | tr 'a-z-' 'A-Z_')
 export "CARGO_TARGET_${TARGET_ENV}_RUSTFLAGS=-C target-feature=-crt-static"
 
 cd external/matrix-rust-sdk
-cargo build -p matrix-sdk-ffi --profile "$CARGO_PROFILE" --target "$TARGET"
+cargo build --locked -p matrix-sdk-ffi --profile "$CARGO_PROFILE" --target "$TARGET"
 
 # hand the build output back to the host user, the container runs as root
 chown -R "$HOST_UID:$HOST_GID" target "${CARGO_HOME:-/usr/local/cargo}"

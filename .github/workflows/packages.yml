@@ -86,7 +86,7 @@ jobs:
 
       - name: Build matrix-sdk-ffi
         shell: bash
-        run: cargo build -p matrix-sdk-ffi --profile "$CARGO_PROFILE" --target ${{ matrix.target }}
+        run: cargo build --locked -p matrix-sdk-ffi --profile "$CARGO_PROFILE" --target ${{ matrix.target }}
         working-directory: external/matrix-rust-sdk
 
       - name: Setup .NET
