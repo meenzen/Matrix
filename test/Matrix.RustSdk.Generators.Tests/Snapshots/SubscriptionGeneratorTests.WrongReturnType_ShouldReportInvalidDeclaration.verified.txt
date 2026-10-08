@@ -1,0 +1,2 @@
+// ----- MRSG001 Error at 8:42 -----
+Invalid subscription declaration: a subscription has to be a static partial extension method of a top level, non generic class returning IAsyncEnumerable<T>, with a CancellationToken as last parameter

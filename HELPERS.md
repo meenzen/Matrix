@@ -41,25 +41,30 @@ Details:
 
 In order of value.
 
-### 1. Subscriptions as `IAsyncEnumerable<T>`
+### 1. Subscriptions as `IAsyncEnumerable<T>` (implemented)
 
 ```csharp
-await foreach (SyncServiceState state in syncService.StateChanges(cancellationToken)) { }
-await foreach (TimelineDiff[] diffs in timeline.Updates(cancellationToken)) { }
-await foreach (string[] userIds in room.TypingUsers(cancellationToken)) { }
+await syncService.WatchStateAsync(cancellationToken).FirstAsync(state => state == SyncServiceState.Running);
+await foreach (TimelineDiff[] diffs in timeline.WatchItemDiffsAsync(cancellationToken)) { }
+await foreach (string[] userIds in room.WatchTypingUsersAsync(cancellationToken)) { }
 ```
 
-- An internal listener writes the callback values to a `Channel<T>`, the enumerator subscribes on the first
-  `MoveNextAsync` and disposes the `TaskHandle` in `finally`, so `break` or cancellation ends the subscription and the
-  enumerator keeps the handle alive.
-- Two backpressure policies: state streams (sync state, room info, verification and recovery state, typing) use
-  `BoundedChannel(1, DropOldest)` because only the latest value matters, diff streams are unbounded because dropping a
-  diff corrupts the list.
-- The listener catches all exceptions, nothing escapes into the SDK. Undelivered `IDisposable` values are disposed when
-  the enumeration ends.
-- A `Subscription : IDisposable` for callback style use, `IObservable<T>` can be added later without depending on
-  System.Reactive.
-- The listeners and implementations are written by a source generator, see [Source generation](#source-generation).
+- All 37 subscriptions are wrapped, declared in `src/Matrix.RustSdk/*Extensions.Subscriptions.cs`, see AGENTS.md for
+  the conventions. The room list (`RoomList.EntriesWithDynamicAdapters`, `RoomList.LoadingState`) passes its listener
+  differently and gets a hand written helper together with `LiveList<T>`.
+- The enumeration subscribes when it starts and disposes the `TaskHandle` when it ends (`break`, exception,
+  cancellation). The SDK doesn't notify listeners when it ends a subscription on its own (owner disposed, lagging
+  behind, sync errors), the runtime checks `TaskHandle.IsFinished()` once per second while idle and ends the
+  enumeration, `SyncV2Async` throws instead.
+- Two buffer policies, chosen per subscription from the Rust implementation: states keep only the latest unread value
+  (`BoundedChannel(1, DropOldest)`), diffs and events keep everything.
+- Values that weren't yielded are disposed, including the elements of arrays and tuples.
+- `Room.WatchRoomInfoAsync` fetches the current info after subscribing, the SDK only delivers changes. It is skipped
+  when the SDK delivered a value in the meantime.
+- Follow-ups: one shared timer for the finished checks instead of one per idle enumeration, a callback form
+  (`Subscription : IDisposable`) or `IObservable<T>` if needed. Upstream issues worth reporting: the duplicate key and
+  send queue subscriptions spin when the client is dropped while they run, `SubscribeToSendQueueStatus` doesn't send
+  the initial status it documents, and cancelling `SubscribeToKnockRequests` leaks a cleanup task.
 
 ### 2. `VectorDiff<T>` and `LiveList<T>`
 
@@ -103,22 +108,11 @@ core package stays free of dependencies.
 
 ## Source generation
 
-A spike on the branch `spike/generated-subscriptions` implements helper 1 with an incremental source generator
-(`src/Matrix.RustSdk.Generators`, 7 subscriptions, end to end tests in `SubscriptionTests`). Declarations pick the name,
-the buffer policy and the docs, the generator writes the rest:
-
-```csharp
-/// <summary>The ids of the users currently typing in the room. Only the latest list is buffered.</summary>
-[Subscription(nameof(Room.SubscribeToTypingNotifications), Buffer = SubscriptionBuffer.Latest)]
-public static partial IAsyncEnumerable<string[]> TypingUsersAsync(
-    this Room room,
-    CancellationToken cancellationToken = default
-);
-```
-
-The generator emits a private listener class implementing `TypingNotificationsListener` that writes to a channel, and
-an implementation calling `SubscriptionStream.CreateAsync` (hand written runtime core: channel, buffer policy,
-`TaskHandle` disposal, disposing unread values).
+Helper 1 is implemented with an incremental source generator (`src/Matrix.RustSdk.Generators`), the evaluation below
+was done with a spike first. Declarations pick the name, the buffer policy and the docs, the generator writes a
+private listener class writing to the channel and an implementation calling `SubscriptionStream.CreateAsync`, the hand
+written runtime (channel, buffer policy, `TaskHandle` disposal, disposing unread values). AGENTS.md shows a
+declaration.
 
 ### What fits
 
@@ -177,8 +171,9 @@ entry in an explicit ignore list, so new SDK subscriptions get noticed.
   subscriptions.
 - `[EnumeratorCancellation]` lives on the hand written `SubscriptionStream.CreateAsync`, so both the parameter and
   `WithCancellation` cancel. Cancellation surfaces as `OperationCanceledException`, `break` ends the subscription.
-- Left for a real implementation: snapshot tests for the generator (Microsoft.CodeAnalysis.Testing or Verify), unique
-  hint names for overloads, nested or generic containing classes (rejected with `MRSG001` for now), the coverage test.
+- The implementation added snapshot tests (a small helper in the test project, Verify requires a license declaration
+  since September 2026), unique names for overloads, the coverage test, `Current` and `ThrowWhenFinished`. Nested or
+  generic containing classes are still rejected with `MRSG001`.
 
 ## Out of reach for helpers
 

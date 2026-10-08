@@ -12,9 +12,11 @@ matrix-rust-sdk.
 - `src/Matrix.RustSdk.Bindings`: the generated bindings (`*.cs`, committed) and `uniffi.toml`
 - `src/Matrix.RustSdk.Bindings.Native.*`: packages containing only the native libraries, shared logic in
   `src/Native.targets`
-- `src/Matrix.RustSdk`: future helpers on top of the bindings, not published yet, see [HELPERS.md](HELPERS.md) for the
-  design notes
-- `test/Matrix.RustSdk.Tests`: TUnit tests, `test/Matrix.RustSdk.Testing`: shared test setup (homeserver container)
+- `src/Matrix.RustSdk`: idiomatic helpers on top of the bindings, not published yet, see [Helpers](#helpers) and
+  [HELPERS.md](HELPERS.md) for the design notes
+- `src/Matrix.RustSdk.Generators`: source generator for the helpers, a build time dependency of `Matrix.RustSdk` only
+- `test/Matrix.RustSdk.Tests`: TUnit tests, `test/Matrix.RustSdk.Testing`: shared test setup (homeserver container),
+  `test/Matrix.RustSdk.Generators.Tests`: snapshot tests of the generator
 - `example/`: example apps referencing the bindings from source, each tested by `test/<example>.Tests`
 - `scripts/`: local development scripts, `.github/scripts/`: scripts used by CI
 - `.github/workflows/`: `build.yml` (PRs and main), `packages.yml` (reusable: native builds for all platforms, tests,
@@ -58,6 +60,40 @@ obvious:
   uniffi-bindgen-cs docs show an outdated format.
 - uniffi-bindgen-cs generates `internal` types by default, `uniffi.toml` sets `access_modifier = "public"`.
 - uniffi-bindgen-cs formats the output by calling `csharpier format`, devenv provides a `csharpier` wrapper script.
+
+## Helpers
+
+- Helpers extending a type of the bindings are in `<ExtendedType>Extensions` classes in the `Matrix.RustSdk.Bindings`
+  namespace, so they show up without another `using`. New types go into `Matrix.RustSdk`. One partial file per concern
+  (`ClientExtensions.Subscriptions.cs`).
+- Subscriptions (methods taking a listener and returning a `TaskHandle`) become `Watch…Async` methods returning
+  `IAsyncEnumerable<T>`, `Watch…DiffsAsync` for `VectorDiff` streams. They are declared, `Matrix.RustSdk.Generators`
+  writes the listener and the implementation (runtime in `src/Matrix.RustSdk/Subscriptions`):
+
+  ```csharp
+  /// <summary>Watches who is typing in the room. Yields …, starting with ….</summary>
+  /// <remarks><include file="Subscriptions/Subscriptions.xml" path="docs/state/*"/></remarks>
+  [Subscription(nameof(Room.SubscribeToTypingNotifications), SubscriptionBuffer.Latest)]
+  public static partial IAsyncEnumerable<string[]> WatchTypingUsersAsync(
+      this Room room,
+      CancellationToken cancellationToken = default
+  );
+  ```
+
+  Parameters between the extended type and the token are passed to the subscription by name and need the type of the
+  binding. Wrap parameters that need a conversion (e.g. milliseconds to `TimeSpan`) with a public overload and make the
+  declaration internal.
+- Read the Rust implementation (`bindings/matrix-sdk-ffi`) before declaring a subscription. `SubscriptionBuffer.Latest`
+  is only for complete snapshots (states), diffs and events need `All`. Document whether it yields the current value
+  first, otherwise set `Current = nameof(Getter)` if the type has a getter. Document when the SDK ends it on its own,
+  set `ThrowWhenFinished` if that only happens because of an error. Include `docs/disposable` if the values contain
+  `IDisposable`s.
+- After a matrix-rust-sdk update `SubscriptionCoverageTests` fails for new subscriptions and listeners: declare them or
+  list them with a reason. Changed subscriptions break the build (`MRSG002` not found, `MRSG003` value type).
+- The generator targets netstandard2.0 and Microsoft.CodeAnalysis 4.14 (the oldest compiler it has to run in). Its
+  tests compile declarations against the real bindings and compare the output with `Snapshots/*.verified.txt`: review
+  the `.received.txt` of a failing test and rename it, or run the tests with `UPDATE_SNAPSHOTS=1`. Verify isn't used,
+  its license requires a sponsorship or exemption declaration.
 
 ## Tests
 

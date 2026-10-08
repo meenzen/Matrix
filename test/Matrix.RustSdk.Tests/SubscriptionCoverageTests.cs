@@ -1,0 +1,205 @@
+using System.Reflection;
+using Matrix.RustSdk.Bindings;
+using Matrix.RustSdk.Subscriptions;
+
+namespace Matrix.RustSdk.Tests;
+
+/// <summary>
+/// Makes sure every subscription of the bindings has an <see cref="IAsyncEnumerable{T}"/> helper. When an update of
+/// matrix-rust-sdk adds a subscription or a listener these tests fail until it is declared with
+/// <see cref="SubscriptionAttribute"/> or listed with a reason, see AGENTS.md.
+/// </summary>
+public class SubscriptionCoverageTests
+{
+    /// <summary>
+    /// Methods of the bindings returning a <see cref="TaskHandle"/> without a declaration, keyed by <c>Type.Method</c>.
+    /// </summary>
+    private static readonly Dictionary<string, string> NotDeclared = new()
+    {
+        ["RoomListEntriesWithDynamicAdaptersResult.EntriesStream"] =
+            "the listener is passed to RoomList.EntriesWithDynamicAdapters, the room list needs a hand written helper",
+        ["RoomListLoadingStateResult.StateStream"] =
+            "the listener is passed to RoomList.LoadingState, the room list needs a hand written helper",
+        ["Client.SetDelegate"] = "ClientDelegate has two methods, it isn't a stream",
+    };
+
+    /// <summary>
+    /// Methods of the bindings taking a listener that don't return a <see cref="TaskHandle"/>, keyed by
+    /// <c>Type.Method</c>. They aren't subscriptions, but some deserve a helper of their own.
+    /// </summary>
+    private static readonly Dictionary<string, string> OtherListeners = new()
+    {
+        ["RoomList.EntriesWithDynamicAdapters"] = "room list, needs a hand written helper",
+        ["RoomList.LoadingState"] = "room list, needs a hand written helper",
+        ["Client.UploadMedia"] = "progress listener, candidate for an IProgress<T> overload",
+        ["Encryption.EnableRecovery"] = "progress listener, candidate for an IProgress<T> overload",
+        ["Encryption.WaitForBackupUploadSteadyState"] = "progress listener, candidate for an IProgress<T> overload",
+        ["GrantLoginWithQrCodeHandler.Generate"] = "progress listener, candidate for an IProgress<T> overload",
+        ["GrantLoginWithQrCodeHandler.Scan"] = "progress listener, candidate for an IProgress<T> overload",
+        ["LoginWithQrCodeHandler.Generate"] = "progress listener, candidate for an IProgress<T> overload",
+        ["LoginWithQrCodeHandler.Scan"] = "progress listener, candidate for an IProgress<T> overload",
+        ["ClientBuilder.SetSessionDelegate"] = "delegate storing sessions, not a stream",
+        ["Client.SetUtdDelegate"] = "delegate reporting decryption failures, registered for the lifetime of the client",
+        ["NotificationSettings.SetDelegate"] = "delegate, not a stream",
+        ["SessionVerificationController.SetDelegate"] = "delegate with several methods, not a stream",
+        ["Client.RegisterNotificationHandler"] = "handler registered for the lifetime of the client",
+        ["WidgetDriver.Run"] = "provider returning capabilities, not a stream",
+    };
+
+    [Test]
+    public async Task EverySubscription_ShouldBeDeclared()
+    {
+        // Arrange
+        HashSet<string> declared = [.. Declarations().Select(declaration => declaration.Subscription)];
+
+        // Act
+        string[] missing =
+        [
+            .. Subscriptions().Where(name => !declared.Contains(name) && !NotDeclared.ContainsKey(name)),
+        ];
+
+        // Assert
+        await Assert
+            .That(missing)
+            .IsEmpty()
+            .Because(
+                "every subscription of the bindings needs a [Subscription] declaration in src/Matrix.RustSdk or an "
+                    + "entry with a reason in NotDeclared"
+            );
+    }
+
+    [Test]
+    public async Task EveryOtherListener_ShouldBeListed()
+    {
+        // Act
+        string[] missing = [.. MethodsTakingListeners().Where(name => !OtherListeners.ContainsKey(name))];
+
+        // Assert
+        await Assert
+            .That(missing)
+            .IsEmpty()
+            .Because(
+                "methods taking a listener aren't subscriptions if they don't return a TaskHandle, decide whether "
+                    + "they need a helper and list them in OtherListeners"
+            );
+    }
+
+    [Test]
+    public async Task Lists_ShouldOnlyContainExistingMethods()
+    {
+        // Arrange
+        HashSet<string> subscriptions = [.. Subscriptions()];
+        HashSet<string> declared = [.. Declarations().Select(declaration => declaration.Subscription)];
+        HashSet<string> listeners = [.. MethodsTakingListeners()];
+
+        // Act
+        string[] stale =
+        [
+            .. NotDeclared.Keys.Where(name => !subscriptions.Contains(name) || declared.Contains(name)),
+            .. OtherListeners.Keys.Where(name => !listeners.Contains(name)),
+        ];
+
+        // Assert
+        await Assert
+            .That(stale)
+            .IsEmpty()
+            .Because("entries have to be removed when the method is gone or got a declaration");
+    }
+
+    [Test]
+    public async Task Declarations_ShouldFollowTheConventions()
+    {
+        // Act
+        string[] misnamed =
+        [
+            .. Declarations()
+                .Where(declaration =>
+                    !declaration.Method.Name.EndsWith("Async", StringComparison.Ordinal)
+                    || declaration.Method.DeclaringType!.Name
+                        != $"{declaration.Method.GetParameters()[0].ParameterType.Name}Extensions"
+                    || declaration.Method.DeclaringType.Namespace
+                        != declaration
+                            .Method.GetParameters()[0]
+                            .ParameterType.Namespace?.Split('.')
+                            .Take(3)
+                            .Aggregate((a, b) => $"{a}.{b}")
+                )
+                .Select(declaration => $"{declaration.Method.DeclaringType!.Name}.{declaration.Method.Name}"),
+        ];
+
+        // Assert
+        await Assert
+            .That(misnamed)
+            .IsEmpty()
+            .Because(
+                "subscriptions end with Async and are declared in the <ExtendedType>Extensions class in the "
+                    + "Matrix.RustSdk.Bindings namespace"
+            );
+    }
+
+    private static IEnumerable<Type> BindingClasses() =>
+        // the generated interfaces (IClient, ...) repeat the methods of the classes
+        typeof(TaskHandle).Assembly.GetExportedTypes().Where(type => type.IsClass);
+
+    /// <summary>
+    /// The methods of the bindings that return a <see cref="TaskHandle"/>, synchronously or as a task, as
+    /// <c>Type.Method</c>. Properties like <c>RoomListLoadingStateResult.StateStream</c> by their name.
+    /// </summary>
+    private static IEnumerable<string> Subscriptions() =>
+        BindingClasses()
+            .SelectMany(type =>
+                type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                    .Where(method =>
+                        method.ReturnType == typeof(TaskHandle) || method.ReturnType == typeof(Task<TaskHandle>)
+                    )
+                    .Select(method =>
+                        $"{type.Name}.{(method.IsSpecialName ? method.Name["get_".Length..] : method.Name)}"
+                    )
+            )
+            .Distinct()
+            .Order(StringComparer.Ordinal);
+
+    /// <summary>
+    /// The methods of the bindings that take a callback interface (an interface no class of the bindings implements)
+    /// and don't return a <see cref="TaskHandle"/>, as <c>Type.Method</c>.
+    /// </summary>
+    private static IEnumerable<string> MethodsTakingListeners()
+    {
+        Type[] classes = [.. BindingClasses()];
+        HashSet<Type> callbacks =
+        [
+            .. typeof(TaskHandle)
+                .Assembly.GetExportedTypes()
+                .Where(type => type.IsInterface && !classes.Any(type.IsAssignableFrom)),
+        ];
+        return classes
+            .SelectMany(type =>
+                type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                    .Where(method =>
+                        method.ReturnType != typeof(TaskHandle)
+                        && method.ReturnType != typeof(Task<TaskHandle>)
+                        && method.GetParameters().Any(parameter => callbacks.Contains(parameter.ParameterType))
+                    )
+                    .Select(method => $"{type.Name}.{method.Name}")
+            )
+            .Distinct()
+            .Order(StringComparer.Ordinal);
+    }
+
+    /// <summary>
+    /// The <see cref="SubscriptionAttribute"/> declarations in Matrix.RustSdk, including internal ones, with the
+    /// subscription they wrap as <c>Type.Method</c>.
+    /// </summary>
+    private static IEnumerable<(MethodInfo Method, string Subscription)> Declarations() =>
+        typeof(ClientExtensions)
+            .Assembly.GetTypes()
+            .SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static))
+            .Select(method => (Method: method, Attribute: method.GetCustomAttribute<SubscriptionAttribute>()))
+            .Where(declaration => declaration.Attribute is not null)
+            .Select(declaration =>
+                (
+                    declaration.Method,
+                    $"{declaration.Method.GetParameters()[0].ParameterType.Name}.{declaration.Attribute!.Method}"
+                )
+            );
+}
