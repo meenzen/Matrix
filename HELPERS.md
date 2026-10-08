@@ -183,8 +183,32 @@ entry in an explicit ignore list, so new SDK subscriptions get noticed.
 - matrix-sdk-ffi only logs to stdout and files (`TracingConfiguration`), `LogEvent` goes from C# into the Rust logs.
   Forwarding Rust logs to `ILogger` needs a callback in matrix-sdk-ffi.
 
-## First step
+## Next steps
 
-Build helpers 1 to 3 for sync state, timeline, room list, room info and typing, helper 1 with the generator from the
-spike, then rewrite the echo bot and the TUI client with them. Their tests run the real apps against the homeserver and
-cover the helpers end to end, the `VectorDiff` application gets unit tests in `test/Matrix.RustSdk.Tests`.
+One pull request per step, each usable on its own. Public APIs get a design review by a fresh agent before they are
+merged, like the subscriptions did.
+
+1. ~~Generator and all subscriptions (helper 1)~~: done in #143.
+2. **`VectorDiff<T>`, `LiveList<T>` and the room list (helper 2).** Generate the conversions of the 8 diff enums with
+   the same technique as the subscriptions (a declaration per enum, snapshot tests). Settle the open ownership question
+   first: `LiveList` projects to managed values and disposes the native items, or owns and disposes them on `Remove`,
+   `Set`, `Truncate`, `Clear` and `Reset` (disposing a diff disposes its items). Add the hand written room list
+   helper (`RoomList.EntriesWithDynamicAdapters` with its filter controller, `RoomList.LoadingState`), both are listed
+   in `SubscriptionCoverageTests`. Unit tests for applying diffs need no homeserver.
+3. **Message and timeline helpers, then the examples (helper 3).** `MessageContent.Text`/`Markdown`, `TryGetText`,
+   `EventId`, `SenderDisplayName`, timestamps as `DateTimeOffset`, and `IncomingMessagesAsync` for bots (new events of
+   other users from sync, each once). Rewrite the echo bot and the TUI client with the helpers, their tests then cover
+   everything end to end and the duplicated diff switch disappears.
+4. **Remaining helpers (4 and 5).** `IProgress<T>` overloads for the 7 progress listeners (generated, they are listed
+   in `SubscriptionCoverageTests`), pagination as async enumerables, `LoginOrRestoreAsync` with a session store, and a
+   run-once `MatrixSdk.Initialize`.
+5. **First release of `Matrix.RustSdk`.** Set `IsPackable`, check the packaged XML docs, see RELEASING.md.
+
+Smaller follow-ups, whenever convenient:
+
+- One shared timer for the finished checks of idle subscriptions instead of one per enumeration.
+- Upstream: an issue on uniffi-bindgen-cs for real cancellation (`rust_future_cancel_*`). Reports for matrix-rust-sdk:
+  the duplicate key and send queue subscriptions spin when the client is dropped while they run,
+  `SubscribeToSendQueueStatus` doesn't send the initial status it documents, and cancelling `SubscribeToKnockRequests`
+  leaks a cleanup task.
+- The hosting package (helper 6) once the rest is published.
