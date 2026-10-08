@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-# uniffi-bindgen-cs is installed by devenv, see UNIFFI_BINDGEN_CS_VERSION in devenv.nix
+# uniffi-bindgen-cs is installed by devenv, see UNIFFI_BINDGEN_CS_REV in devenv.nix
 
 echo "=> Generating bindings..."
 

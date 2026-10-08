@@ -18,7 +18,7 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <!-- the matrix-rust-sdk release the bindings are generated from, has to match the external/matrix-rust-sdk submodule -->
-    <MatrixSdkFfiTag>matrix-sdk-ffi/20260909</MatrixSdkFfiTag>
+    <MatrixSdkFfiTag>matrix-sdk-ffi/20260925</MatrixSdkFfiTag>
     <PackageReleaseNotes>Built from matrix-rust-sdk $(MatrixSdkFfiTag): https://github.com/matrix-org/matrix-rust-sdk/tree/$(MatrixSdkFfiTag)</PackageReleaseNotes>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
