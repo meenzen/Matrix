@@ -6,7 +6,7 @@
     <NoWarn>$(NoWarn);VSTHRD200</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Testcontainers" Version="4.15.0" />
+    <PackageReference Include="Testcontainers" Version="4.16.0" />
     <PackageReference Include="TUnit.Core" Version="1.73.5" />
   </ItemGroup>
   <ItemGroup>
