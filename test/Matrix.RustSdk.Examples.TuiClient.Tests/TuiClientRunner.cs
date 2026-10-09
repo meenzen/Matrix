@@ -29,7 +29,7 @@ public sealed class TuiClientRunner : IAsyncDisposable
     /// </summary>
     public Task Completion { get; }
 
-    public static async Task<TuiClientRunner> StartAsync(LoginOptions options)
+    public static async Task<TuiClientRunner> StartAsync(LoginOptions options, ClientSettings? settings = null)
     {
         // otherwise the driver would take over the terminal the tests run in, if there is one
         Environment.SetEnvironmentVariable("DisableRealDriverIO", "1");
@@ -44,7 +44,7 @@ public sealed class TuiClientRunner : IAsyncDisposable
                 app.Driver!.SetScreenSize(120, 30);
                 started.SetResult(app);
                 // runs the main loop on this thread until the client exits, like Program.cs does
-                await TuiClient.RunAsync(app, options, stop.Token);
+                await TuiClient.RunAsync(app, options, settings, stop.Token);
             }
             catch (Exception e)
             {
@@ -71,6 +71,16 @@ public sealed class TuiClientRunner : IAsyncDisposable
         {
             await PressAsync(new Key(c));
         }
+    }
+
+    /// <summary>
+    /// Types a <c>:</c> command and presses Enter, from normal mode.
+    /// </summary>
+    public async Task CommandAsync(string command)
+    {
+        await PressAsync(new Key(':'));
+        await TypeAsync(command);
+        await PressAsync(Key.Enter);
     }
 
     /// <summary>

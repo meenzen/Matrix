@@ -59,7 +59,7 @@ public class TuiClientTests(Homeserver homeserver)
 
         // Assert
         await Tui.WaitForTextAsync($"Matrix TUI client - {TuiUser.UserId}");
-        await Tui.WaitForTextAsync("Sync: running");
+        await Tui.WaitForTextAsync("sync: running");
     }
 
     [Test]
@@ -81,7 +81,7 @@ public class TuiClientTests(Homeserver homeserver)
         );
 
         // Assert
-        await Tui.WaitForTextAsync($"{RoomName} (invite)");
+        await Tui.WaitForTextAsync($"+ {RoomName}");
 
         // the other user syncs and watches the room from now on, the last test checks what it receives
         _otherSyncService = await otherClient.SyncService().Finish();
@@ -103,11 +103,13 @@ public class TuiClientTests(Homeserver homeserver)
         using SendHandle sendHandle = await OtherTimeline.Send(content);
 
         // Act
-        // the room list has the focus and the invite is the only room, Enter joins and opens it
+        // the room list has the focus and the invite is the only room, Enter opens it and y accepts the invite
         await Tui.PressAsync(Key.Enter);
+        await Tui.WaitForTextAsync("Accept the invite");
+        await Tui.PressAsync(new Key('y'));
 
         // Assert
-        await Tui.WaitForTextAsync($"> {message}");
+        await Tui.WaitForTextAsync(message);
     }
 
     [Test]
@@ -118,22 +120,23 @@ public class TuiClientTests(Homeserver homeserver)
         const string message = "Hello from the terminal";
 
         // Act
-        // the composer has the focus after opening a room
+        // joining the room starts insert mode
+        await Tui.WaitForTextAsync("-- INSERT --");
         await Tui.TypeAsync(message);
         await Tui.PressAsync(Key.Enter);
 
         // Assert
-        // tuwunel appends an emoji to the display names of new users, only the message itself is checked
-        await Tui.WaitForTextAsync($"> {message}");
+        await Tui.WaitForTextAsync(message);
         await OtherMessages.WaitForAsync(message);
     }
 
     [Test]
     [DependsOn(nameof(SendMessage_ShouldBeReceivedByOtherUsers))]
-    public async Task Esc_ShouldQuit()
+    public async Task Quit_ShouldExit()
     {
-        // Act
+        // Act: Esc only leaves insert mode
         await Tui.PressAsync(Key.Esc);
+        await Tui.CommandAsync("q");
 
         // Assert
         await Tui.Completion.WaitAsync(Poll.DefaultTimeout);
@@ -141,7 +144,7 @@ public class TuiClientTests(Homeserver homeserver)
     }
 
     [Test]
-    [DependsOn(nameof(Esc_ShouldQuit))]
+    [DependsOn(nameof(Quit_ShouldExit))]
     public async Task Restart_ShouldRestoreTheSession()
     {
         // Arrange
@@ -159,10 +162,12 @@ public class TuiClientTests(Homeserver homeserver)
 
     [Test]
     [DependsOn(nameof(Restart_ShouldRestoreTheSession))]
-    public async Task CtrlL_ShouldLogOut()
+    public async Task Logout_ShouldDeleteTheSession()
     {
         // Act
-        await Tui.PressAsync(Key.L.WithCtrl);
+        await Tui.CommandAsync("logout");
+        await Tui.WaitForTextAsync("Log out?");
+        await Tui.PressAsync(new Key('y'));
 
         // Assert: back to the login form, the session is gone
         await Tui.WaitForTextAsync("Username:");
