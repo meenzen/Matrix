@@ -154,12 +154,14 @@ jobs:
           workspaces: |
             external/matrix-rust-sdk
 
+      # the official image from the mirror on ECR Public: Docker Hub rate limits anonymous pulls per IP, which the
+      # shared runners exceed
       - name: Build matrix-sdk-ffi
         run: >-
           docker run --rm -v "$PWD:/work" -w /work -v "$HOME/.cargo:/cargo" -e CARGO_HOME=/cargo
           -e CARGO_TERM_COLOR -e CARGO_PROFILE -e CARGO_PROFILE_SMALL_RELEASE_STRIPPED_STRIP
           -e TARGET=${{ matrix.target }} -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)"
-          rust:1-alpine .github/scripts/build-musl.sh
+          public.ecr.aws/docker/library/rust:1-alpine .github/scripts/build-musl.sh
 
       # test the exact library that ends up in the package, docker is available so all tests run
       - name: Test native library
