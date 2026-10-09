@@ -120,6 +120,20 @@ namespace Matrix.RustSdk.Bindings
 }
 namespace Matrix.RustSdk
 {
+    public sealed class ClientStoreOptions
+    {
+        public ClientStoreOptions() { }
+        public Matrix.RustSdk.Bindings.ClientDelegate? ClientDelegate { get; set; }
+        public System.Func<Matrix.RustSdk.Bindings.ClientBuilder, Matrix.RustSdk.Bindings.ClientBuilder>? ConfigureClient { get; set; }
+        public string DataDirectory { get; set; }
+        public string? StorePassphrase { get; set; }
+    }
+    public sealed class DataDirectoryLockedException : System.IO.IOException
+    {
+        public DataDirectoryLockedException() { }
+        public DataDirectoryLockedException(string message) { }
+        public DataDirectoryLockedException(string message, System.Exception innerException) { }
+    }
     public static class LiveListExtensions
     {
         public static Matrix.RustSdk.LiveList<T> ToLiveList<T>(this System.Collections.Generic.IAsyncEnumerable<System.Collections.Generic.IReadOnlyList<Matrix.RustSdk.VectorDiff<T>>> diffs, System.Threading.SynchronizationContext? synchronizationContext = null) { }
@@ -156,6 +170,14 @@ namespace Matrix.RustSdk
         public bool LogToConsole { get; init; }
         public bool UseLightweightRuntime { get; init; }
     }
+    public sealed class PasswordCredentials
+    {
+        public PasswordCredentials() { }
+        public string? DeviceName { get; set; }
+        public string Homeserver { get; set; }
+        public string? Password { get; set; }
+        public string Username { get; set; }
+    }
     public sealed class RoomListQuery
     {
         public RoomListQuery(int pageSize) { }
@@ -164,6 +186,18 @@ namespace Matrix.RustSdk
         public int PageSize { get; }
         public void AddOnePage() { }
         public void ResetToOnePage() { }
+    }
+    public sealed class StoredClient : System.IAsyncDisposable, System.IDisposable
+    {
+        public Matrix.RustSdk.Bindings.Client Client { get; }
+        public bool IsRestored { get; }
+        public System.Threading.CancellationToken SessionEnded { get; }
+        public void Dispose() { }
+        public System.Threading.Tasks.ValueTask DisposeAsync() { }
+        public System.Threading.Tasks.Task LogoutAsync() { }
+        public static System.Threading.Tasks.Task<Matrix.RustSdk.StoredClient> LoginAsync(Matrix.RustSdk.ClientStoreOptions options, Matrix.RustSdk.PasswordCredentials credentials, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Threading.Tasks.Task<Matrix.RustSdk.StoredClient> LoginOrRestoreAsync(Matrix.RustSdk.ClientStoreOptions options, Matrix.RustSdk.PasswordCredentials credentials, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Threading.Tasks.Task<Matrix.RustSdk.StoredClient?> TryRestoreAsync(Matrix.RustSdk.ClientStoreOptions options, System.Threading.CancellationToken cancellationToken = default) { }
     }
     public abstract class VectorDiff<T> : System.IDisposable
     {

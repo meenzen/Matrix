@@ -108,6 +108,9 @@ obvious:
 - Async methods taking a progress listener get a `…Async` helper with an optional `IProgress<T>` (hand written, the
   listener calls `ProgressReporter<T>.Report`). Listeners must never throw into the SDK, an exception becomes a Rust
   panic.
+- `StoredClient` owns its `Client` and a lock on the data directory, it sets the client's only `ClientDelegate`
+  (apps pass theirs in `ClientStoreOptions.ClientDelegate`). Dispose everything created from the client before it, it
+  closes the stores (`Client.Pause`) before releasing the lock. The format of `session.json` is in `StoredSession.cs`.
 - After a matrix-rust-sdk update `SubscriptionCoverageTests` fails for new subscriptions, listeners and diff enums:
   declare them or list them with a reason. Changed subscriptions break the build (`MRSG002` not found, `MRSG003` value
   type).
@@ -130,6 +133,7 @@ obvious:
   (`[ClassDataSource<Homeserver>(Shared = SharedType.PerTestSession)]`), tests register their own users with
   `CreateUserAsync` because they run in parallel. Tests that build on each other's state are chained with
   `[DependsOn]` instead of repeating the setup. Wait for asynchronous results with `Poll.UntilAsync`, not fixed delays.
+  Tests that store sessions use a `TemporaryDirectory` each.
 - Snapshot tests use `Snapshot.VerifyAsync` (`Matrix.RustSdk.Testing`), the snapshots are in
   `<test project>/Snapshots/*.verified.txt`. Review the `.received.txt` of a failing test and rename it, or run the
   tests with `UPDATE_SNAPSHOTS=1`. Verify isn't used, its license requires a sponsorship or exemption declaration.

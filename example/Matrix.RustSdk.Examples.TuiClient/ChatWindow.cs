@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using Terminal.Gui.App;
+using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 
@@ -83,6 +84,16 @@ public sealed class ChatWindow : Window, IAsyncDisposable
         Add(roomsFrame, _timelineFrame, composerFrame, _status);
         _roomList.SetFocus();
 
+        KeyDown += (_, key) =>
+        {
+            if (key == Key.L.WithCtrl)
+            {
+                key.Handled = true;
+                IsLogoutRequested = true;
+                RequestStop();
+            }
+        };
+
         IsRunningChanged += (sender, e) =>
         {
             if (e.Value)
@@ -91,6 +102,11 @@ public sealed class ChatWindow : Window, IAsyncDisposable
             }
         };
     }
+
+    /// <summary>
+    /// Whether the user closed the window with Ctrl+L to log out.
+    /// </summary>
+    public bool IsLogoutRequested { get; private set; }
 
     private async Task StartSyncAsync()
     {
@@ -215,7 +231,8 @@ public sealed class ChatWindow : Window, IAsyncDisposable
     }
 
     private void UpdateStatus(string? message = null) =>
-        _status.Text = message ?? $"Sync: {_syncState} | Enter: open room / send | Tab: next pane | Esc: quit";
+        _status.Text =
+            message ?? $"Sync: {_syncState} | Enter: open room / send | Tab: next pane | Ctrl+L: log out | Esc: quit";
 
     /// <summary>
     /// Closes the opened timeline and disposes the window.
