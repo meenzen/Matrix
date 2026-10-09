@@ -13,6 +13,9 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
+  # Testcontainers would pull its cleanup container (ryuk) from Docker Hub, which rate limits the shared runners. The
+  # tests dispose their containers, the runner is thrown away afterwards anyway.
+  TESTCONTAINERS_RYUK_DISABLED: "true"
 
 jobs:
   build:

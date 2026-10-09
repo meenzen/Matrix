@@ -11,6 +11,9 @@ env:
   # upstream's size optimized profile (opt-level "s" + LTO), additionally strip the symbol table to keep the package small
   CARGO_PROFILE: small-release-stripped
   CARGO_PROFILE_SMALL_RELEASE_STRIPPED_STRIP: symbols
+  # Testcontainers would pull its cleanup container (ryuk) from Docker Hub, which rate limits the shared runners. The
+  # tests dispose their containers, the runner is thrown away afterwards anyway.
+  TESTCONTAINERS_RYUK_DISABLED: "true"
 
 jobs:
   native:
@@ -168,7 +171,7 @@ jobs:
         run: >-
           docker run --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -v "$PWD:/work" -w /work
           -e NATIVE_LIBRARY_PATH="../../external/matrix-rust-sdk/target/${{ matrix.target }}/$CARGO_PROFILE/libmatrix_sdk_ffi.so"
-          -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)"
+          -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" -e TESTCONTAINERS_RYUK_DISABLED
           mcr.microsoft.com/dotnet/sdk:10.0-alpine .github/scripts/test-musl.sh
 
       - name: Collect native library
