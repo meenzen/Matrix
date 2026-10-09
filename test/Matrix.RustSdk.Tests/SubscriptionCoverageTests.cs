@@ -17,9 +17,9 @@ public class SubscriptionCoverageTests
     private static readonly Dictionary<string, string> NotDeclared = new()
     {
         ["RoomListEntriesWithDynamicAdaptersResult.EntriesStream"] =
-            "the listener is passed to RoomList.EntriesWithDynamicAdapters, the room list needs a hand written helper",
+            "the listener is passed to RoomList.EntriesWithDynamicAdapters, hand written: RoomList.WatchEntryDiffsAsync",
         ["RoomListLoadingStateResult.StateStream"] =
-            "the listener is passed to RoomList.LoadingState, the room list needs a hand written helper",
+            "the listener is passed to RoomList.LoadingState, hand written: RoomList.WatchLoadingStateAsync",
         ["Client.SetDelegate"] = "ClientDelegate has two methods, it isn't a stream",
     };
 
@@ -31,8 +31,8 @@ public class SubscriptionCoverageTests
     /// </summary>
     private static readonly Dictionary<string, string> OtherListeners = new()
     {
-        ["RoomList.EntriesWithDynamicAdapters"] = "room list, needs a hand written helper",
-        ["RoomList.LoadingState"] = "room list, needs a hand written helper",
+        ["RoomList.EntriesWithDynamicAdapters"] = "hand written: RoomList.WatchEntryDiffsAsync",
+        ["RoomList.LoadingState"] = "hand written: RoomList.WatchLoadingStateAsync",
         ["Client.UploadMedia"] = ProgressListener,
         ["Encryption.EnableRecovery"] = ProgressListener,
         ["Encryption.WaitForBackupUploadSteadyState"] = ProgressListener,

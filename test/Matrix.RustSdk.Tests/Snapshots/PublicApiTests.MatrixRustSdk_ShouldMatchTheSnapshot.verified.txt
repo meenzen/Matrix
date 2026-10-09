@@ -31,11 +31,11 @@ namespace Matrix.RustSdk.Bindings
     }
     public static class LiveLocationsObserverExtensions
     {
-        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.LiveLocationShareUpdate[]> WatchLiveLocationShareDiffsAsync(this Matrix.RustSdk.Bindings.LiveLocationsObserver liveLocationsObserver, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.VectorDiff<Matrix.RustSdk.Bindings.LiveLocationShare>[]> WatchLiveLocationShareDiffsAsync(this Matrix.RustSdk.Bindings.LiveLocationsObserver liveLocationsObserver, System.Threading.CancellationToken cancellationToken = default) { }
     }
     public static class RoomDirectorySearchExtensions
     {
-        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.RoomDirectorySearchEntryUpdate[]> WatchResultDiffsAsync(this Matrix.RustSdk.Bindings.RoomDirectorySearch roomDirectorySearch, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.VectorDiff<Matrix.RustSdk.Bindings.RoomDescription>[]> WatchResultDiffsAsync(this Matrix.RustSdk.Bindings.RoomDirectorySearch roomDirectorySearch, System.Threading.CancellationToken cancellationToken = default) { }
     }
     public static class RoomExtensions
     {
@@ -46,6 +46,11 @@ namespace Matrix.RustSdk.Bindings
         public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.RoomSendQueueUpdate> WatchSendQueueUpdatesAsync(this Matrix.RustSdk.Bindings.Room room, System.Threading.CancellationToken cancellationToken = default) { }
         public static System.Collections.Generic.IAsyncEnumerable<string[]> WatchTypingUsersAsync(this Matrix.RustSdk.Bindings.Room room, System.Threading.CancellationToken cancellationToken = default) { }
     }
+    public static class RoomListExtensions
+    {
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.VectorDiff<Matrix.RustSdk.Bindings.Room>[]> WatchEntryDiffsAsync(this Matrix.RustSdk.Bindings.RoomList roomList, Matrix.RustSdk.RoomListQuery query, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.RoomListLoadingState> WatchLoadingStateAsync(this Matrix.RustSdk.Bindings.RoomList roomList, System.Threading.CancellationToken cancellationToken = default) { }
+    }
     public static class RoomListServiceExtensions
     {
         public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.RoomListServiceState> WatchStateAsync(this Matrix.RustSdk.Bindings.RoomListService roomListService, System.Threading.CancellationToken cancellationToken = default) { }
@@ -54,18 +59,18 @@ namespace Matrix.RustSdk.Bindings
     public static class SearchServiceExtensions
     {
         public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.Ui.SearchServicePaginationState> WatchPaginationStateAsync(this Matrix.RustSdk.Bindings.SearchService searchService, System.Threading.CancellationToken cancellationToken = default) { }
-        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.SearchServiceResultsUpdate[]> WatchResultDiffsAsync(this Matrix.RustSdk.Bindings.SearchService searchService, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.VectorDiff<Matrix.RustSdk.Bindings.SearchServiceResult>[]> WatchResultDiffsAsync(this Matrix.RustSdk.Bindings.SearchService searchService, System.Threading.CancellationToken cancellationToken = default) { }
     }
     public static class SpaceRoomListExtensions
     {
         public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.Ui.SpaceRoomListPaginationState> WatchPaginationStateAsync(this Matrix.RustSdk.Bindings.SpaceRoomList spaceRoomList, System.Threading.CancellationToken cancellationToken = default) { }
-        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.SpaceListUpdate[]> WatchRoomDiffsAsync(this Matrix.RustSdk.Bindings.SpaceRoomList spaceRoomList, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.VectorDiff<Matrix.RustSdk.Bindings.SpaceRoom>[]> WatchRoomDiffsAsync(this Matrix.RustSdk.Bindings.SpaceRoomList spaceRoomList, System.Threading.CancellationToken cancellationToken = default) { }
         public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.SpaceRoom?> WatchSpaceAsync(this Matrix.RustSdk.Bindings.SpaceRoomList spaceRoomList, System.Threading.CancellationToken cancellationToken = default) { }
     }
     public static class SpaceServiceExtensions
     {
-        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.SpaceFilterUpdate[]> WatchSpaceFilterDiffsAsync(this Matrix.RustSdk.Bindings.SpaceService spaceService, System.Threading.CancellationToken cancellationToken = default) { }
-        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.SpaceListUpdate[]> WatchTopLevelJoinedSpaceDiffsAsync(this Matrix.RustSdk.Bindings.SpaceService spaceService, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.VectorDiff<Matrix.RustSdk.Bindings.SpaceFilter>[]> WatchSpaceFilterDiffsAsync(this Matrix.RustSdk.Bindings.SpaceService spaceService, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.VectorDiff<Matrix.RustSdk.Bindings.SpaceRoom>[]> WatchTopLevelJoinedSpaceDiffsAsync(this Matrix.RustSdk.Bindings.SpaceService spaceService, System.Threading.CancellationToken cancellationToken = default) { }
     }
     public static class SyncServiceExtensions
     {
@@ -73,12 +78,104 @@ namespace Matrix.RustSdk.Bindings
     }
     public static class ThreadListServiceExtensions
     {
-        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.ThreadListUpdate[]> WatchItemDiffsAsync(this Matrix.RustSdk.Bindings.ThreadListService threadListService, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.VectorDiff<Matrix.RustSdk.Bindings.ThreadListItem>[]> WatchItemDiffsAsync(this Matrix.RustSdk.Bindings.ThreadListService threadListService, System.Threading.CancellationToken cancellationToken = default) { }
         public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.Ui.ThreadListPaginationState> WatchPaginationStateAsync(this Matrix.RustSdk.Bindings.ThreadListService threadListService, System.Threading.CancellationToken cancellationToken = default) { }
     }
     public static class TimelineExtensions
     {
         public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.Sdk.PaginationStatus> WatchBackPaginationStatusAsync(this Matrix.RustSdk.Bindings.Timeline timeline, System.Threading.CancellationToken cancellationToken = default) { }
-        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.TimelineDiff[]> WatchItemDiffsAsync(this Matrix.RustSdk.Bindings.Timeline timeline, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.VectorDiff<Matrix.RustSdk.Bindings.TimelineItem>[]> WatchItemDiffsAsync(this Matrix.RustSdk.Bindings.Timeline timeline, System.Threading.CancellationToken cancellationToken = default) { }
+    }
+}
+namespace Matrix.RustSdk
+{
+    public static class LiveListExtensions
+    {
+        public static Matrix.RustSdk.LiveList<T> ToLiveList<T>(this System.Collections.Generic.IAsyncEnumerable<System.Collections.Generic.IReadOnlyList<Matrix.RustSdk.VectorDiff<T>>> diffs, System.Threading.SynchronizationContext? synchronizationContext = null) { }
+        public static Matrix.RustSdk.LiveList<T> ToLiveList<TSource, T>(this System.Collections.Generic.IAsyncEnumerable<System.Collections.Generic.IReadOnlyList<Matrix.RustSdk.VectorDiff<TSource>>> diffs, System.Func<TSource, T> selector, System.Action<T, TSource>? update = null, System.Threading.SynchronizationContext? synchronizationContext = null) { }
+        public static Matrix.RustSdk.LiveList<T> ToLiveList<TSource, T>(this System.Collections.Generic.IAsyncEnumerable<System.Collections.Generic.IReadOnlyList<Matrix.RustSdk.VectorDiff<TSource>>> diffs, System.Func<TSource, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask<T>> selector, System.Func<T, TSource, System.Threading.CancellationToken, System.Threading.Tasks.ValueTask>? update = null, System.Threading.SynchronizationContext? synchronizationContext = null) { }
+    }
+    public sealed class LiveList<T> : System.Collections.Generic.ICollection<T>, System.Collections.Generic.IEnumerable<T>, System.Collections.Generic.IList<T>, System.Collections.Generic.IReadOnlyCollection<T>, System.Collections.Generic.IReadOnlyList<T>, System.Collections.ICollection, System.Collections.IEnumerable, System.Collections.IList, System.Collections.Specialized.INotifyCollectionChanged, System.ComponentModel.INotifyPropertyChanged, System.IAsyncDisposable
+    {
+        public System.Threading.Tasks.Task Completion { get; }
+        public int Count { get; }
+        public System.Threading.Tasks.Task Initialized { get; }
+        public T this[int index] { get; }
+        public event System.EventHandler? Changed;
+        public event System.Collections.Specialized.NotifyCollectionChangedEventHandler? CollectionChanged;
+        public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+        public bool Contains(T item) { }
+        public void CopyTo(T[] array, int arrayIndex) { }
+        public System.Threading.Tasks.ValueTask DisposeAsync() { }
+        public System.Collections.Generic.IEnumerator<T> GetEnumerator() { }
+        public int IndexOf(T item) { }
+        public T[] ToArray() { }
+    }
+    public sealed class RoomListQuery
+    {
+        public RoomListQuery(int pageSize) { }
+        public Matrix.RustSdk.Bindings.RoomListEntriesDynamicFilterKind Filter { get; set; }
+        public int PageSize { get; }
+        public void AddOnePage() { }
+        public void ResetToOnePage() { }
+    }
+    public abstract class VectorDiff<T> : System.IDisposable, System.IEquatable<Matrix.RustSdk.VectorDiff<T>>
+    {
+        public void ApplyTo(System.Collections.Generic.IList<T> list, System.Action<T>? removed = null) { }
+        public void Dispose() { }
+        public sealed class Append : Matrix.RustSdk.VectorDiff<T>, System.IEquatable<Matrix.RustSdk.VectorDiff<T>.Append>
+        {
+            public Append(System.Collections.Generic.IReadOnlyList<T> Values) { }
+            public System.Collections.Generic.IReadOnlyList<T> Values { get; init; }
+        }
+        public sealed class Clear : Matrix.RustSdk.VectorDiff<T>, System.IEquatable<Matrix.RustSdk.VectorDiff<T>.Clear>
+        {
+            public Clear() { }
+        }
+        public sealed class Insert : Matrix.RustSdk.VectorDiff<T>, System.IEquatable<Matrix.RustSdk.VectorDiff<T>.Insert>
+        {
+            public Insert(int Index, T Value) { }
+            public int Index { get; init; }
+            public T Value { get; init; }
+        }
+        public sealed class PopBack : Matrix.RustSdk.VectorDiff<T>, System.IEquatable<Matrix.RustSdk.VectorDiff<T>.PopBack>
+        {
+            public PopBack() { }
+        }
+        public sealed class PopFront : Matrix.RustSdk.VectorDiff<T>, System.IEquatable<Matrix.RustSdk.VectorDiff<T>.PopFront>
+        {
+            public PopFront() { }
+        }
+        public sealed class PushBack : Matrix.RustSdk.VectorDiff<T>, System.IEquatable<Matrix.RustSdk.VectorDiff<T>.PushBack>
+        {
+            public PushBack(T Value) { }
+            public T Value { get; init; }
+        }
+        public sealed class PushFront : Matrix.RustSdk.VectorDiff<T>, System.IEquatable<Matrix.RustSdk.VectorDiff<T>.PushFront>
+        {
+            public PushFront(T Value) { }
+            public T Value { get; init; }
+        }
+        public sealed class Remove : Matrix.RustSdk.VectorDiff<T>, System.IEquatable<Matrix.RustSdk.VectorDiff<T>.Remove>
+        {
+            public Remove(int Index) { }
+            public int Index { get; init; }
+        }
+        public sealed class Reset : Matrix.RustSdk.VectorDiff<T>, System.IEquatable<Matrix.RustSdk.VectorDiff<T>.Reset>
+        {
+            public Reset(System.Collections.Generic.IReadOnlyList<T> Values) { }
+            public System.Collections.Generic.IReadOnlyList<T> Values { get; init; }
+        }
+        public sealed class Set : Matrix.RustSdk.VectorDiff<T>, System.IEquatable<Matrix.RustSdk.VectorDiff<T>.Set>
+        {
+            public Set(int Index, T Value) { }
+            public int Index { get; init; }
+            public T Value { get; init; }
+        }
+        public sealed class Truncate : Matrix.RustSdk.VectorDiff<T>, System.IEquatable<Matrix.RustSdk.VectorDiff<T>.Truncate>
+        {
+            public Truncate(int Length) { }
+            public int Length { get; init; }
+        }
     }
 }
