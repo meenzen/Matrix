@@ -206,7 +206,7 @@ One pull request per step, each usable on its own. Public APIs get a design revi
 merged, like the subscriptions did.
 
 1. ~~Generator and all subscriptions (helper 1)~~: done in #143.
-2. ~~`VectorDiff<T>`, `LiveList<T>` and the room list (helper 2)~~: done in #PR.
+2. ~~`VectorDiff<T>`, `LiveList<T>` and the room list (helper 2)~~: done in #148.
 3. **Message and timeline helpers, then the examples (helper 3).** `MessageContent.Text`/`Markdown`, `TryGetText`,
    `EventId`, `SenderDisplayName`, timestamps as `DateTimeOffset`, and `IncomingMessagesAsync` for bots (new events of
    other users from sync, each once). Rewrite the echo bot and the TUI client with the helpers, their tests then cover
