@@ -1,4 +1,3 @@
-using System.Threading.Channels;
 using Matrix.RustSdk.Bindings;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -8,20 +7,16 @@ using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 namespace Matrix.RustSdk.Examples.EchoBot;
 
 /// <summary>
-/// Logs in, joins every room the bot is invited to and sends text messages of other users back into the room.
+/// Logs in, joins every room the bot is invited to and answers text messages of other users with the same text, see
+/// <see cref="RoomEcho"/>.
 /// </summary>
 public sealed partial class EchoBotWorker(IOptions<EchoBotOptions> options, ILogger<EchoBotWorker> logger)
     : BackgroundService
 {
     private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(5);
 
-    // the timelines of the joined rooms, only used by the sync loop
-    private readonly Dictionary<string, RoomTimeline> _rooms = [];
-
-    // messages received by the timeline listeners, the echo loop sends them back
-    private readonly Channel<ReceivedMessage> _messages = Channel.CreateUnbounded<ReceivedMessage>(
-        new UnboundedChannelOptions { SingleReader = true }
-    );
+    // the echo loops of the joined rooms, only used by the sync loop
+    private readonly Dictionary<string, RoomEcho> _rooms = [];
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -38,20 +33,15 @@ public sealed partial class EchoBotWorker(IOptions<EchoBotOptions> options, ILog
             .WaitAsync(stoppingToken);
         LogLoggedIn(client.UserId());
 
-        Task echoing = EchoAsync();
         try
         {
             await SyncAsync(client, stoppingToken);
         }
         finally
         {
-            // lets the echo loop send the remaining messages and stop
-            _messages.Writer.Complete();
-            await echoing;
-
-            foreach (RoomTimeline room in _rooms.Values)
+            foreach (RoomEcho room in _rooms.Values)
             {
-                room.Dispose();
+                await room.DisposeAsync();
             }
             _rooms.Clear();
             LogStopped();
@@ -78,17 +68,18 @@ public sealed partial class EchoBotWorker(IOptions<EchoBotOptions> options, ILog
 
             foreach (string roomId in response.Rooms.Invited)
             {
-                await JoinAsync(client, roomId).WaitAsync(cancellationToken);
+                // not cancelled, a join abandoned while the bot stops would add a room after the cleanup
+                await JoinAsync(client, roomId);
             }
             foreach (string roomId in response.Rooms.Joined)
             {
-                await ListenAsync(client, roomId).WaitAsync(cancellationToken);
+                await ListenAsync(client, roomId);
             }
             foreach (string roomId in response.Rooms.Left)
             {
-                if (_rooms.Remove(roomId, out RoomTimeline? room))
+                if (_rooms.Remove(roomId, out RoomEcho? room))
                 {
-                    room.Dispose();
+                    await room.DisposeAsync();
                     LogLeft(roomId);
                 }
             }
@@ -114,7 +105,7 @@ public sealed partial class EchoBotWorker(IOptions<EchoBotOptions> options, ILog
             return;
         }
 
-        // listen right away, otherwise messages sent before the next sync would count as history
+        // echo right away, the messages of the next sync are new
         await ListenAsync(client, roomId);
     }
 
@@ -133,32 +124,11 @@ public sealed partial class EchoBotWorker(IOptions<EchoBotOptions> options, ILog
 
         try
         {
-            _rooms[roomId] = await RoomTimeline.CreateAsync(room, _messages.Writer, logger);
+            _rooms[roomId] = await RoomEcho.StartAsync(room, logger);
         }
         catch (ClientException e)
         {
             LogTimelineFailed(e, roomId);
-        }
-    }
-
-    private async Task EchoAsync()
-    {
-        await foreach (ReceivedMessage message in _messages.Reader.ReadAllAsync())
-        {
-            LogEchoing(message.Sender, message.RoomId);
-            try
-            {
-                using RoomMessageEventContentWithoutRelation content = MatrixSdkFfiMethods.MessageEventContentNew(
-                    new MessageType.Text(new TextMessageContent(message.Body, Formatted: null))
-                );
-                // queues the message, the SDK sends it in the background
-                using SendHandle _ = await message.Timeline.Send(content);
-            }
-            // the timeline is disposed when the bot left the room in the meantime
-            catch (Exception e) when (e is ClientException or ObjectDisposedException)
-            {
-                LogEchoFailed(e, message.RoomId);
-            }
         }
     }
 
@@ -182,10 +152,4 @@ public sealed partial class EchoBotWorker(IOptions<EchoBotOptions> options, ILog
 
     [LoggerMessage(LogLevel.Warning, "Opening the timeline of {RoomId} failed")]
     private partial void LogTimelineFailed(Exception exception, string roomId);
-
-    [LoggerMessage(LogLevel.Information, "Echoing a message of {Sender} in {RoomId}")]
-    private partial void LogEchoing(string sender, string roomId);
-
-    [LoggerMessage(LogLevel.Warning, "Echoing a message in {RoomId} failed")]
-    private partial void LogEchoFailed(Exception exception, string roomId);
 }

@@ -73,6 +73,9 @@ obvious:
 - Helpers extending a type of the bindings are in `<ExtendedType>Extensions` classes in the `Matrix.RustSdk.Bindings`
   namespace, so they show up without another `using`. New types go into `Matrix.RustSdk`. One partial file per concern
   (`ClientExtensions.Subscriptions.cs`).
+- Properties and static members of binding types use C# 14 extension blocks (`EventTimelineItemExtensions`). XML docs
+  reference them as `cref="EventTimelineItemExtensions.extension(EventTimelineItem).Message"`, `cref="Type.Member"`
+  doesn't resolve for static extensions.
 - Subscriptions (methods taking a listener and returning a `TaskHandle`) become `Watch…Async` methods returning
   `IAsyncEnumerable<T>`, `Watch…DiffsAsync` for `VectorDiff` streams. They are declared, `Matrix.RustSdk.Generators`
   writes the listener and the implementation (runtime in `src/Matrix.RustSdk/Subscriptions`):

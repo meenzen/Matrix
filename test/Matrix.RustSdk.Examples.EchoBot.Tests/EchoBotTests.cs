@@ -19,6 +19,7 @@ public class EchoBotTests(Homeserver homeserver)
 {
     private const string FirstMessage = "Hello, bot!";
     private const string SecondMessage = "Still there?";
+    private const string MessageBeforeInvite = "Is anyone here?";
 
     private static IHost? _bot;
     private static TestUser? _botUser;
@@ -56,16 +57,19 @@ public class EchoBotTests(Homeserver homeserver)
         ]);
         await _bot.StartAsync();
 
-        // Act
+        // Act: the message before the invite is history and must not be echoed, Bot_ShouldNotEchoItsOwnMessages checks
+        // all messages of the bot
         _roomId = await humanClient.CreateRoom(
             new CreateRoomParameters(
                 Name: "Echo",
                 IsEncrypted: false,
                 Visibility: new RoomVisibility.Private(),
-                Preset: RoomPreset.PrivateChat,
-                Invite: [_botUser.UserId]
+                Preset: RoomPreset.PrivateChat
             )
         );
+        await SendTextAsync(MessageBeforeInvite);
+        string path = $"/_matrix/client/v3/rooms/{Uri.EscapeDataString(RoomId)}/invite";
+        using HttpResponseMessage _ = await SendAsync(HttpMethod.Post, path, new { user_id = _botUser.UserId });
 
         // Assert
         await Poll.UntilAsync(

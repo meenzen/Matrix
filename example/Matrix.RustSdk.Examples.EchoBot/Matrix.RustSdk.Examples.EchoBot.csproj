@@ -7,7 +7,6 @@
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" />
   </ItemGroup>
   <ItemGroup>
-    <!-- applications using the NuGet packages reference Matrix.RustSdk.Bindings.Native.* instead, see README.md -->
-    <ProjectReference Include="..\..\src\Matrix.RustSdk.Bindings\Matrix.RustSdk.Bindings.csproj" />
+    <ProjectReference Include="..\..\src\Matrix.RustSdk\Matrix.RustSdk.csproj" />
   </ItemGroup>
 </Project>
