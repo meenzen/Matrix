@@ -76,10 +76,6 @@ internal sealed class DataDirectory : IDisposable
         {
             // left over by a write that didn't finish
             File.Delete(directory.TemporarySessionPath);
-            // the SDK would create them readable for everyone with the default umask, the crypto store contains the
-            // keys of the device
-            CreateDirectory(directory.StorePath);
-            CreateDirectory(directory.CachePath);
         }
         catch
         {
@@ -160,6 +156,16 @@ internal sealed class DataDirectory : IDisposable
         {
             Directory.Delete(path, recursive: true);
         }
+    }
+
+    /// <summary>
+    /// Creates the directories of the stores, owner only on Unix. Called before every client is built: the SDK would
+    /// create them readable for everyone with the default umask, and the crypto store contains the keys of the device.
+    /// </summary>
+    public void CreateStoreDirectories()
+    {
+        CreateDirectory(StorePath);
+        CreateDirectory(CachePath);
     }
 
     public void Dispose() => _lock.Dispose();

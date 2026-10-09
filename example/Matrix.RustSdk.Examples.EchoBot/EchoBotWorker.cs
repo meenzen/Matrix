@@ -123,20 +123,20 @@ public sealed partial class EchoBotWorker(IOptions<EchoBotOptions> options, ILog
         }
     }
 
-    private static string[] GetJoinedRoomIds(Client client)
+    private static List<string> GetJoinedRoomIds(Client client)
     {
-        Room[] rooms = client.Rooms();
-        try
+        List<string> roomIds = [];
+        foreach (Room room in client.Rooms())
         {
-            return [.. rooms.Where(room => room.Membership() == Membership.Joined).Select(room => room.Id())];
-        }
-        finally
-        {
-            foreach (Room room in rooms)
+            using (room)
             {
-                room.Dispose();
+                if (room.Membership() == Membership.Joined)
+                {
+                    roomIds.Add(room.Id());
+                }
             }
         }
+        return roomIds;
     }
 
     private async Task JoinAsync(Client client, string roomId)

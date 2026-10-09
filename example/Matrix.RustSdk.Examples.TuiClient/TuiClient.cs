@@ -24,9 +24,17 @@ public static class TuiClient
             {
                 session = await MatrixSession.TryRestoreAsync(options.DataDirectory);
             }
+            // another instance uses the data directory (DataDirectoryLockedException), a session.json or store that
+            // can't be used, a wrong store passphrase
             catch (Exception e)
+                when (e
+                        is IOException
+                            or UnauthorizedAccessException
+                            or InvalidOperationException
+                            or ClientBuildException
+                            or ClientException
+                )
             {
-                // another instance uses the data directory, a store that can't be opened, ...
                 error = $"Restoring the session failed: {e.Message}";
             }
             session ??= await LoginAsync(app, options, error, cancellationToken);

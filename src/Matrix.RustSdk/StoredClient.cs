@@ -226,7 +226,9 @@ public sealed class StoredClient : IAsyncDisposable, IDisposable
             {
                 throw new InvalidOperationException("The client is logging out already.");
             }
-            _logout = logout = LogoutCoreAsync();
+            // on the thread pool: LogoutCoreAsync clears _logout under the lock, it must not run before the
+            // assignment
+            _logout = logout = Task.Run(LogoutCoreAsync, CancellationToken.None);
         }
         await logout.ConfigureAwait(false);
     }
@@ -335,7 +337,9 @@ public sealed class StoredClient : IAsyncDisposable, IDisposable
         OpenMode mode
     )
     {
-        DataDirectory directory = DataDirectory.Lock(options.DataDirectory);
+        // released unless a client took it over
+        DataDirectory? owned = DataDirectory.Lock(options.DataDirectory);
+        DataDirectory directory = owned;
         try
         {
             SessionFile? session = directory.ReadSession();
@@ -367,20 +371,24 @@ public sealed class StoredClient : IAsyncDisposable, IDisposable
                             + "backup, or delete the directory to log in with a new device."
                     );
                 }
-                return await RestoreCoreAsync(directory, options, session, stored).ConfigureAwait(false);
+                StoredClient restored = await RestoreCoreAsync(directory, options, session, stored)
+                    .ConfigureAwait(false);
+                owned = null;
+                return restored;
             }
 
             if (mode == OpenMode.Restore)
             {
-                directory.Dispose();
                 return null;
             }
-            return await LoginCoreAsync(directory, options, credentials!, session).ConfigureAwait(false);
+            StoredClient loggedIn = await LoginCoreAsync(directory, options, credentials!, session)
+                .ConfigureAwait(false);
+            owned = null;
+            return loggedIn;
         }
-        catch
+        finally
         {
-            directory.Dispose();
-            throw;
+            owned?.Dispose();
         }
     }
 
@@ -596,6 +604,7 @@ public sealed class StoredClient : IAsyncDisposable, IDisposable
         {
             builder = configure(builder);
         }
+        directory.CreateStoreDirectories();
         using SqliteStoreBuilder store = new SqliteStoreBuilder(directory.StorePath, directory.CachePath).Passphrase(
             options.StorePassphrase
         );
