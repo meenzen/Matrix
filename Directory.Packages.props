@@ -1,0 +1,32 @@
+<Project>
+  <!-- central package management: projects reference packages without a version, the versions are set here -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <!-- referenced by every project, as private assets (build and analyzers only) -->
+  <ItemGroup>
+    <GlobalPackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="18.7.23" />
+    <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.10.94" />
+    <GlobalPackageReference Include="SonarAnalyzer.CSharp" Version="10.35.0.4138" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
+    <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.12" />
+    <PackageVersion Include="PublicApiGenerator" Version="11.5.4" />
+    <PackageVersion Include="Roslynator.Analyzers" Version="5.0.1" />
+    <PackageVersion Include="Terminal.Gui" Version="2.5.0" />
+    <PackageVersion Include="Testcontainers" Version="4.16.0" />
+    <PackageVersion Include="TUnit" Version="1.73.19" />
+    <PackageVersion Include="TUnit.Assertions" Version="1.73.19" />
+    <PackageVersion Include="TUnit.Core" Version="1.73.19" />
+  </ItemGroup>
+  <!-- the source generator -->
+  <ItemGroup>
+    <!--
+      the oldest compiler the generator has to run in (see AGENTS.md), newer compilers load it as well. Renovate doesn't
+      update it, see renovate.json.
+    -->
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="5.9.0" />
+  </ItemGroup>
+</Project>

@@ -9,10 +9,6 @@
   "packageRules": [
     {
       "description": "The source generator is built against the oldest compiler it has to run in (see AGENTS.md), newer versions of Roslyn would break older SDKs. Update it on purpose when the minimum SDK changes.",
-      "matchFileNames": [
-        "src/Matrix.RustSdk.Generators/**",
-        "test/Matrix.RustSdk.Generators.Tests/**"
-      ],
       "matchPackageNames": [
         "Microsoft.CodeAnalysis.CSharp"
       ],
