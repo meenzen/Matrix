@@ -6,8 +6,8 @@ using Matrix.RustSdk.Subscriptions;
 namespace Matrix.RustSdk;
 
 /// <summary>
-/// A read only list kept up to date from a stream of <see cref="VectorDiff{T}"/> batches, for binding to a UI or reading
-/// snapshots. Created with <see cref="LiveListExtensions"/>.
+/// A read only list kept up to date from a stream of <see cref="VectorDiff{T}"/> batches, for binding to a UI or
+/// reading snapshots. Created with <see cref="LiveListExtensions"/>.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -15,8 +15,9 @@ namespace Matrix.RustSdk;
 /// the diffs are projected and applied and the events are raised there, one diff at a time. Bind it to WPF, Avalonia or
 /// MAUI controls only when it was created on their UI thread. Without a context the list is updated on thread pool
 /// threads, use <see cref="Changed"/> and <see cref="ToArray"/> then: the list doesn't change while the handlers of
-/// its events run. Reading the list (<see cref="Count"/>, the indexer, <see cref="ToArray"/>) is safe from every
-/// thread, using the items isn't, see below.
+/// its events run. A list on another context than the current one can change before its handlers are attached, read
+/// it once after attaching them. Reading the list (<see cref="Count"/>, the indexer, <see cref="ToArray"/>) is safe
+/// from every thread, using the items isn't, see below.
 /// </para>
 /// <para>
 /// The list owns its items: an item that leaves the list (<see cref="VectorDiff{T}.Set"/>,
@@ -113,9 +114,9 @@ public sealed class LiveList<T>
     public Task Initialized => _initialized.Task;
 
     /// <summary>
-    /// Completes when the list stopped updating: successfully when the stream ended (the SDK can end streams on its own)
-    /// or the list was disposed, cancelled when the stream was cancelled, faulted when it, a projection or an event
-    /// handler threw. Observe it, the list doesn't report errors otherwise.
+    /// Completes when the list stopped updating: successfully when the stream ended (the SDK can end streams on its
+    /// own) or the list was disposed, cancelled when the stream was cancelled, faulted when it, a projection or an
+    /// event handler threw. Observe it, the list doesn't report errors otherwise.
     /// </summary>
     public Task Completion => _completion.Task;
 

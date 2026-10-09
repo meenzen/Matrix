@@ -9,8 +9,8 @@ public static partial class RoomListExtensions
 {
     /// <summary>
     /// Watches the rooms of the list matching the filter of <paramref name="query"/>, sorted by recency like the SDK
-    /// sorts them. Yields the changes in batches, starting with a <see cref="VectorDiff{T}.Reset"/> containing the first
-    /// page. Applying them to a list in order keeps a copy of the rooms, see <c>ToLiveList</c>.
+    /// sorts them. Yields the changes in batches, starting with a <see cref="VectorDiff{T}.Reset"/> containing the
+    /// first page. Applying them to a list in order keeps a copy of the rooms, see <c>ToLiveList</c>.
     /// </summary>
     /// <param name="roomList">The room list, usually <c>RoomListService.AllRooms()</c>.</param>
     /// <param name="query">

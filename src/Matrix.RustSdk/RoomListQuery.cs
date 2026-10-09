@@ -98,8 +98,8 @@ public sealed class RoomListQuery
 
     /// <summary>
     /// Yields one more page of rooms in the running enumeration. Does nothing without one (also right after
-    /// <c>ToLiveList</c>, which starts the enumeration in the background), and before the SDK knows how many rooms there
-    /// are. More rooms are available while the number of rooms is less than
+    /// <c>ToLiveList</c>, which starts the enumeration in the background), and before the SDK knows how many rooms
+    /// there are. More rooms are available while the number of rooms is less than
     /// <see cref="RoomListLoadingState.Loaded.MaximumNumberOfRooms"/>, see
     /// <see cref="RoomListExtensions.WatchLoadingStateAsync"/>.
     /// </summary>

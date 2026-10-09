@@ -135,7 +135,8 @@ internal sealed class VectorDiffShape
             );
             yield return $"    {pattern} => new {target}.{name}({arguments}),";
         }
-        yield return $"    _ => throw new global::System.ArgumentOutOfRangeException(nameof({value}), {value}, \"Unknown diff.\"),";
+        yield return "    _ => throw new global::System.ArgumentOutOfRangeException("
+            + $"nameof({value}), {value}, \"Unknown diff.\"),";
         yield return "}";
     }
 
