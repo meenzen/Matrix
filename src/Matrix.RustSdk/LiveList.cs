@@ -209,9 +209,9 @@ public sealed class LiveList<T>
         }
     }
 
-    bool IList.Contains(object? value) => IsCompatible(value) && Contains((T)value!);
+    bool IList.Contains(object? value) => IndexOfObject(value) >= 0;
 
-    int IList.IndexOf(object? value) => IsCompatible(value) ? IndexOf((T)value!) : -1;
+    int IList.IndexOf(object? value) => IndexOfObject(value);
 
     void ICollection.CopyTo(Array array, int index)
     {
@@ -263,7 +263,7 @@ public sealed class LiveList<T>
         // outside the lock, disposing runs the event handlers and frees native objects
         if (disposing is not null)
         {
-            _ = DisposeCoreAsync(disposing);
+            _ = ForwardAsync(DisposeCoreAsync(), disposing);
         }
         return new ValueTask(disposed);
     }
@@ -288,40 +288,31 @@ public sealed class LiveList<T>
             // the awaits of the pump continue on the context it starts on. VSTHRD001 is about the main thread of
             // Visual Studio, the list runs on any context.
 #pragma warning disable VSTHRD001
-            context.Post(static state => _ = ((Func<Task>)state!)(), () => list.RunAsync(diffs, projection));
+            context.Post(state => _ = list.RunAsync(diffs, projection), null);
 #pragma warning restore VSTHRD001
         }
         return list;
     }
 
     /// <summary>
-    /// Disposes the list and completes <paramref name="disposed"/>, never throws.
+    /// Stops the pump, then removes and disposes the items. Throws if an event handler threw, the items are disposed
+    /// anyway.
     /// </summary>
-    private async Task DisposeCoreAsync(TaskCompletionSource disposed)
+    private async Task DisposeCoreAsync()
     {
-        try
-        {
-            await _disposal.CancelAsync().ConfigureAwait(false);
-            // the pump completes it without waiting for the caller, its errors belong to whoever observes Completion
+        await _disposal.CancelAsync().ConfigureAwait(false);
+        // the pump completes it without waiting for the caller, its errors belong to whoever observes Completion
 #pragma warning disable VSTHRD003
-            await _completion.Task.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+        await _completion.Task.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
 #pragma warning restore VSTHRD003
-            await InvokeOnContextAsync(() => ResetTo([])).ConfigureAwait(false);
-            disposed.SetResult();
-        }
-        catch (Exception e)
-        {
-            // an event handler threw, ResetTo disposed the items anyway
-            disposed.SetException(e);
-        }
-        finally
-        {
-            _disposal.Dispose();
-        }
+        // the pump stopped, nothing uses the token anymore
+        _disposal.Dispose();
+        await InvokeOnContextAsync(() => ResetTo([])).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// Enumerates the stream and completes <see cref="Completion"/>, never throws.
+    /// Runs the pump and completes <see cref="Initialized"/> and <see cref="Completion"/> with its outcome, never
+    /// throws.
     /// </summary>
     private async Task RunAsync<TSource>(
         IAsyncEnumerable<IReadOnlyList<VectorDiff<TSource>>> diffs,
@@ -329,36 +320,74 @@ public sealed class LiveList<T>
     )
     {
         CancellationToken cancellationToken = _disposal.Token;
-        try
+        Task pump = PumpAsync(diffs, projection, cancellationToken);
+        await pump.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+        if (pump.Exception is { } exception)
         {
-            // no ConfigureAwait, the pump stays on the context of the list
-#pragma warning disable CA2007
-            await foreach (IReadOnlyList<VectorDiff<TSource>> batch in diffs.WithCancellation(cancellationToken))
-#pragma warning restore CA2007
-            {
-                await ApplyAsync(batch, projection, cancellationToken);
-                Changed?.Invoke(this, EventArgs.Empty);
-                _initialized.TrySetResult();
-            }
+            _initialized.TrySetException(exception.InnerExceptions);
+            _completion.TrySetException(exception.InnerExceptions);
+        }
+        else if (pump.IsCanceled && cancellationToken.IsCancellationRequested)
+        {
+            // disposing the list isn't an error
+            _initialized.TrySetCanceled(cancellationToken);
+            _completion.TrySetResult();
+        }
+        else if (pump.IsCanceled)
+        {
+            // the token the stream was cancelled with isn't known
+            _initialized.TrySetCanceled(CancellationToken.None);
+            _completion.TrySetCanceled(CancellationToken.None);
+        }
+        else
+        {
             _initialized.TrySetException(
                 new InvalidOperationException("The stream ended before it delivered the first items.")
             );
             _completion.TrySetResult();
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+    }
+
+    /// <summary>
+    /// Enumerates the stream on the context of the list and applies the batches.
+    /// </summary>
+    private async Task PumpAsync<TSource>(
+        IAsyncEnumerable<IReadOnlyList<VectorDiff<TSource>>> diffs,
+        LiveListProjection<TSource, T> projection,
+        CancellationToken cancellationToken
+    )
+    {
+        // no ConfigureAwait, the pump stays on the context of the list
+#pragma warning disable CA2007
+        await foreach (IReadOnlyList<VectorDiff<TSource>> batch in diffs.WithCancellation(cancellationToken))
+#pragma warning restore CA2007
         {
-            _initialized.TrySetCanceled(cancellationToken);
-            _completion.TrySetResult();
+            await ApplyAsync(batch, projection, cancellationToken);
+            Changed?.Invoke(this, EventArgs.Empty);
+            _initialized.TrySetResult();
         }
-        catch (OperationCanceledException e)
+    }
+
+    /// <summary>
+    /// Completes <paramref name="target"/> like <paramref name="task"/>, never throws.
+    /// </summary>
+    private static async Task ForwardAsync(Task task, TaskCompletionSource target)
+    {
+        // started by the caller, the outcome is forwarded instead of thrown
+#pragma warning disable VSTHRD003
+        await task.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+#pragma warning restore VSTHRD003
+        if (task.Exception is { } exception)
         {
-            _initialized.TrySetCanceled(e.CancellationToken);
-            _completion.TrySetCanceled(e.CancellationToken);
+            target.TrySetException(exception.InnerExceptions);
         }
-        catch (Exception e)
+        else if (task.IsCanceled)
         {
-            _initialized.TrySetException(e);
-            _completion.TrySetException(e);
+            target.TrySetCanceled();
+        }
+        else
+        {
+            target.TrySetResult();
         }
     }
 
@@ -544,25 +573,12 @@ public sealed class LiveList<T>
             action();
             return Task.CompletedTask;
         }
-        TaskCompletionSource done = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        // the task captures exceptions of the action, they must not escape into the context
+        Task invocation = new(action);
 #pragma warning disable VSTHRD001 // see Start
-        _context.Post(
-            _ =>
-            {
-                try
-                {
-                    action();
-                    done.SetResult();
-                }
-                catch (Exception e)
-                {
-                    done.SetException(e);
-                }
-            },
-            null
-        );
+        _context.Post(_ => invocation.RunSynchronously(TaskScheduler.Default), null);
 #pragma warning restore VSTHRD001
-        return done.Task;
+        return invocation;
     }
 
     private static void DisposeItems(ReadOnlySpan<T> items)
@@ -589,7 +605,23 @@ public sealed class LiveList<T>
     private static InvalidOperationException Empty() =>
         new("The diff removes an item from the empty list, the stream skipped a diff.");
 
-    private static bool IsCompatible(object? value) => value is T || (value is null && default(T) is null);
+    /// <summary>
+    /// The index of <paramref name="value"/> for the non generic <see cref="IList"/>, -1 for values of other types.
+    /// </summary>
+    private int IndexOfObject(object? value)
+    {
+        lock (_lock)
+        {
+            for (int i = 0; i < _items.Count; i++)
+            {
+                if (Equals(_items[i], value))
+                {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
 
     private static NotSupportedException ReadOnly() =>
         new("The list is read only, it changes with the diffs of the SDK.");

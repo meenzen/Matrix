@@ -27,7 +27,7 @@ public sealed class VectorDiffConversionGenerator : IIncrementalGenerator
     private static GeneratorResult Generate(IMethodSymbol declaration)
     {
         Location? location = declaration.Locations.FirstOrDefault();
-        if (!IsValidDeclaration(declaration, out ITypeSymbol? item))
+        if (ValidDeclarationItem(declaration) is not { } item)
         {
             return GeneratorResult.Error(
                 Diagnostics.InvalidConversion,
@@ -91,23 +91,14 @@ public sealed class VectorDiffConversionGenerator : IIncrementalGenerator
     /// <summary>
     /// <c>static partial VectorDiff&lt;T&gt; Name(this Diff diff)</c> in a top level, non generic class.
     /// </summary>
-    private static bool IsValidDeclaration(IMethodSymbol declaration, out ITypeSymbol item)
-    {
-        item = null!;
-        if (
-            !declaration.IsPartialDefinition
-            || !declaration.IsExtensionMethod
-            || declaration.IsGenericMethod
-            || declaration.ContainingType.ContainingType is not null
-            || declaration.ContainingType.IsGenericType
-            || declaration.Parameters.Length != 1
-            || declaration.Parameters[0].RefKind != RefKind.None
-            || VectorDiffShape.VectorDiffItem(declaration.ReturnType) is not { } returned
-        )
-        {
-            return false;
-        }
-        item = returned;
-        return true;
-    }
+    private static ITypeSymbol? ValidDeclarationItem(IMethodSymbol declaration) =>
+        declaration.IsPartialDefinition
+        && declaration.IsExtensionMethod
+        && !declaration.IsGenericMethod
+        && declaration.ContainingType.ContainingType is null
+        && !declaration.ContainingType.IsGenericType
+        && declaration.Parameters.Length == 1
+        && declaration.Parameters[0].RefKind == RefKind.None
+            ? VectorDiffShape.VectorDiffItem(declaration.ReturnType)
+            : null;
 }

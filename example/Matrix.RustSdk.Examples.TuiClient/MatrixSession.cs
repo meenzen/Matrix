@@ -86,7 +86,7 @@ public sealed class MatrixSession : IAsyncDisposable
         _roomListService = _syncService.RoomListService();
         _roomList = await _roomListService.AllRooms();
         _rooms = _roomList
-            .WatchRoomDiffsAsync(new RoomListQuery(RoomListPageSize))
+            .WatchRoomDiffsAsync(new RoomListQuery(RoomListPageSize), _stopping.Token)
             .ToLiveList(Summarize, synchronizationContext: ThreadPool);
         // the list is updated on another thread and may have changed before the handler was attached, so it is
         // reported once right away

@@ -269,7 +269,11 @@ public class SubscriptionCoverageTests
     /// </summary>
     private static Type? ListenerValue(MethodInfo declaration)
     {
-        string name = declaration.GetCustomAttribute<SubscriptionAttribute>()!.Method;
+        if (declaration.GetCustomAttribute<SubscriptionAttribute>() is not { } attribute)
+        {
+            return null;
+        }
+        string name = attribute.Method;
         return declaration
             .GetParameters()[0]
             .ParameterType.GetMember(name, MemberTypes.Method, Members)

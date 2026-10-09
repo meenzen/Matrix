@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Matrix.RustSdk.Bindings;
 using Matrix.RustSdk.Testing;
@@ -139,7 +140,11 @@ internal sealed class GeneratorRun
     /// <summary>
     /// Checks that <paramref name="source"/> compiles without diagnostics of the generators and snapshots the output.
     /// </summary>
-    public static async Task VerifyGeneratedAsync(string source, string testFile, string test)
+    public static async Task VerifyGeneratedAsync(
+        string source,
+        [CallerFilePath] string testFile = "",
+        [CallerMemberName] string test = ""
+    )
     {
         GeneratorRun run = Run(source);
 
@@ -151,7 +156,12 @@ internal sealed class GeneratorRun
     /// <summary>
     /// Snapshots the diagnostics and checks that the generators reported <paramref name="id"/> and generated nothing.
     /// </summary>
-    public static async Task VerifyErrorAsync(string id, string source, string testFile, string test)
+    public static async Task VerifyErrorAsync(
+        string id,
+        string source,
+        [CallerFilePath] string testFile = "",
+        [CallerMemberName] string test = ""
+    )
     {
         GeneratorRun run = Run(source);
 

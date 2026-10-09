@@ -170,13 +170,11 @@ internal sealed class AsyncSelectorProjection<TSource, T>(
         }
         catch
         {
-            await ((Task)Task.WhenAll(tasks)).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
-            foreach (Task<T> task in tasks)
+            Task all = Task.WhenAll(tasks);
+            await all.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+            foreach (Task<T> task in tasks.Where(task => task.IsCompletedSuccessfully))
             {
-                if (task.IsCompletedSuccessfully)
-                {
-                    SubscriptionStream.Dispose(await task);
-                }
+                SubscriptionStream.Dispose(await task);
             }
             throw;
         }

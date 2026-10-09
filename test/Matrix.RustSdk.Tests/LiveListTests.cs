@@ -241,7 +241,9 @@ public class LiveListTests
 
         // Act
         await list.DisposeAsync();
+#pragma warning disable S3966 // disposing twice is what the test checks
         await list.DisposeAsync();
+#pragma warning restore S3966
 
         // Assert
         await Assert.That(source.Ended).IsTrue();
@@ -492,7 +494,7 @@ public class LiveListTests
         await using LiveList<Disposable> list = source.Diffs.ToLiveList(ThreadPool);
         list.CollectionChanged += (_, e) =>
         {
-            if (e.NewItems?[0] == items[0])
+            if (ReferenceEquals(e.NewItems?[0], items[0]))
             {
                 throw new FormatException("handler failed");
             }

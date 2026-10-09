@@ -308,9 +308,12 @@ public abstract class VectorDiff<T> : IDisposable
         {
             list.RemoveAt(i);
         }
-        foreach (T item in old)
+        if (removed is not null)
         {
-            removed!(item);
+            foreach (T item in old)
+            {
+                removed(item);
+            }
         }
     }
 }
