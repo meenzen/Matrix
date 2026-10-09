@@ -252,8 +252,6 @@ Smaller follow-ups, whenever convenient:
 - Upstream: an issue on uniffi-bindgen-cs for real cancellation (`rust_future_cancel_*`). Reports for matrix-rust-sdk:
   the duplicate key and send queue subscriptions spin when the client is dropped while they run,
   `SubscribeToSendQueueStatus` doesn't send the initial status it documents, and cancelling `SubscribeToKnockRequests`
-  leaks a cleanup task. `SyncService.Stop()` sometimes never returns when it is called right after the state became
-  `Running` (`SubscriptionTests.SyncServiceStateChanges_ShouldReportRunning` hangs in about one of five full test runs,
-  on main too), needs a reproduction first.
+  leaks a cleanup task.
 - Filling gaps in `WatchIncomingMessagesAsync`, see helper 3.
 - The hosting package (helper 6) once the rest is published.
