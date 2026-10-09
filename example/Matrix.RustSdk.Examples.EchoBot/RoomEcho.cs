@@ -25,6 +25,11 @@ public sealed partial class RoomEcho : IAsyncDisposable
     }
 
     /// <summary>
+    /// Whether the echo loop runs, it stops when it fails and when the echo is disposed.
+    /// </summary>
+    public bool IsEchoing => !_echoing.IsCompleted;
+
+    /// <summary>
     /// Opens the timeline of <paramref name="room"/> and starts echoing. Messages that arrive from now on are
     /// answered, the ones before are history.
     /// </summary>

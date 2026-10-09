@@ -110,9 +110,16 @@ public sealed partial class EchoBotWorker(IOptions<EchoBotOptions> options, ILog
 
     private async Task ListenAsync(Client client, string roomId)
     {
-        if (_rooms.ContainsKey(roomId))
+        if (_rooms.TryGetValue(roomId, out RoomEcho? existing))
         {
-            return;
+            if (existing.IsEchoing)
+            {
+                return;
+            }
+
+            // the echo loop failed, start a new one, messages that arrived in between are history then
+            _rooms.Remove(roomId);
+            await existing.DisposeAsync();
         }
 
         using Room? room = client.GetRoom(roomId);
