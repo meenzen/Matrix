@@ -83,7 +83,7 @@ public sealed class ChatWindow : Window, IAsyncDisposable
         Add(roomsFrame, _timelineFrame, composerFrame, _status);
         _roomList.SetFocus();
 
-        IsRunningChanged += (_, e) =>
+        IsRunningChanged += (sender, e) =>
         {
             if (e.Value)
             {

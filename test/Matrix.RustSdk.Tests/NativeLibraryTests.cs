@@ -43,7 +43,9 @@ public class NativeLibraryTests
     public async Task ClientBuilder_ShouldBuildClient()
     {
         // exercises the async runtime across the FFI boundary, building a client doesn't contact the homeserver
+#pragma warning disable S1075 // never contacted, see above
         using Client client = await new ClientBuilder().HomeserverUrl("http://localhost:1").InMemoryStore().Build();
+#pragma warning restore S1075
 
         await Assert.That(client.Homeserver()).StartsWith("http://localhost:1");
     }
