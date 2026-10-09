@@ -27,7 +27,9 @@ public sealed class ChatWindow : Window, IAsyncDisposable
     private IReadOnlyList<RoomSummary> _rooms = [];
     private RoomTimeline? _timeline;
     private int _timelineGeneration;
-    private string _syncState = "starting";
+
+    // written by the session's thread, the status line shows the latest value
+    private volatile string _syncState = "starting";
 
     public ChatWindow(IApplication app, MatrixSession session)
     {
@@ -112,14 +114,15 @@ public sealed class ChatWindow : Window, IAsyncDisposable
     {
         try
         {
+            // the main loop may run invocations that are queued at the same time out of order, so they don't pass
+            // the state but render the latest one
             await _session.StartAsync(
                 () => _app.Invoke(ShowRooms),
                 state =>
-                    _app.Invoke(() =>
-                    {
-                        _syncState = state.ToString().ToLowerInvariant();
-                        UpdateStatus();
-                    })
+                {
+                    _syncState = state.ToString().ToLowerInvariant();
+                    _app.Invoke(() => UpdateStatus());
+                }
             );
         }
         catch (Exception e)
