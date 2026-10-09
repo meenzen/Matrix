@@ -10,8 +10,8 @@
     <NoWarn>$(NoWarn);VSTHRD200;S2696</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="PublicApiGenerator" Version="11.5.4" />
-    <PackageReference Include="TUnit" Version="1.73.19" />
+    <PackageReference Include="PublicApiGenerator" />
+    <PackageReference Include="TUnit" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Matrix.RustSdk\Matrix.RustSdk.csproj" />
