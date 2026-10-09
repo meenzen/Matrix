@@ -9,6 +9,10 @@
   env = {
     UNIFFI_BINDGEN_CS_VERSION = "0.11.0";
     UNIFFI_RS_VERSION = "0.31.0";
+    # apphosts prefer DOTNET_ROOT_<ARCH> over DOTNET_ROOT, a value inherited from outside the shell (e.g. a system wide
+    # .NET on NixOS) makes them load that runtime, which can be linked against a different glibc than the apphost
+    DOTNET_ROOT_X64 = config.env.DOTNET_ROOT;
+    DOTNET_ROOT_ARM64 = config.env.DOTNET_ROOT;
   };
 
   # https://devenv.sh/packages/
