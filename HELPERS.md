@@ -159,13 +159,15 @@ RoomMember[] members = await room.GetMembersAsync();
   only) return `RoomMember[]` with every membership. `RoomMembersIterator` is a snapshot already in memory on the Rust
   side and copies the rest on every chunk, so the helpers read it in one chunk. An `IAsyncEnumerable` would suggest
   paging that doesn't exist.
-- `MatrixSdk.Initialize(MatrixSdkOptions?)` calls `InitPlatform` once per process: logs to the standard output and/or
-  rotating files (nothing by default, decided: console apps own their output), the multi-threaded or lightweight runtime,
-  and an overload with a complete `TracingConfiguration`. Without it the SDK logs nothing, not even panics, and runs all
-  tasks on one thread. A second `InitPlatform` panics in the SDK (`PanicException`), `Initialize` throws
-  `InvalidOperationException`. It only picks the runtime if it runs before the first asynchronous SDK call, the tests
-  call it in a session hook and run on the multi-threaded runtime like apps. Rust logs can't reach `ILogger`, see
-  [Out of reach](#out-of-reach-for-helpers).
+- `MatrixSdk.Initialize(MatrixSdkOptions?)` calls `InitPlatform` once per process: logs to the standard error and/or
+  rotating files (nothing by default, decided: terminal UIs own the console), the multi-threaded or lightweight runtime,
+  and an overload with a complete `TracingConfiguration`. Without it the SDK runs all tasks on one thread and only
+  prints panics to the standard error. `InitPlatform` routes panics into the logs (`log_panics`), so with the defaults
+  panics of background tasks are lost, the docs recommend a log directory for services. `LogLevel` only raises levels,
+  the SDK always logs every HTTP request at debug, so the echo bot logs to files. A second `InitPlatform` panics in the
+  SDK (`PanicException`), `Initialize` throws `InvalidOperationException`. It only picks the runtime if it runs before
+  the first SDK call that needs one (asynchronous calls, subscriptions), the tests call it in a session hook and run on
+  the multi-threaded runtime like apps. Rust logs can't reach `ILogger`, see [Out of reach](#out-of-reach-for-helpers).
 - Not built, the bindings don't allow a correct helper: timeline pagination until a count or predicate (the timeline
   has no getter for its items, `PaginateBackwards` only returns whether the start was reached, the items arrive in the
   diff subscription), the room directory as an async enumerable (its results only arrive in the diff subscription, from
@@ -271,7 +273,7 @@ entry in an explicit ignore list, so new SDK subscriptions get noticed.
 - Real cancellation needs uniffi-bindgen-cs to generate `CancellationToken` overloads that call
   `rust_future_cancel_*`, like the Kotlin and Swift bindings do. Worth an issue or PR upstream, until then helpers can
   only offer `WaitAsync`.
-- matrix-sdk-ffi only logs to stdout and files (`TracingConfiguration`), `LogEvent` goes from C# into the Rust logs.
+- matrix-sdk-ffi only logs to stderr and files (`TracingConfiguration`), `LogEvent` goes from C# into the Rust logs.
   Forwarding Rust logs to `ILogger` needs a callback in matrix-sdk-ffi.
 
 ## Next steps
@@ -298,7 +300,9 @@ Smaller follow-ups, whenever convenient:
 - Upstream: an issue on uniffi-bindgen-cs for real cancellation (`rust_future_cancel_*`). Reports for matrix-rust-sdk:
   the duplicate key and send queue subscriptions spin when the client is dropped while they run,
   `SubscribeToSendQueueStatus` doesn't send the initial status it documents, and cancelling `SubscribeToKnockRequests`
-  leaks a cleanup task.
+  leaks a cleanup task. `WaitForBackupUploadSteadyState` (and `EnableRecovery` waiting for the upload) ends on the stale
+  `Done` or `Error` of an earlier upload, the upload progress is never reset to `Idle`. `EnableRecoveryProgress.BackingUp`
+  reports the backed up count as total count.
 - Filling gaps in `WatchIncomingMessagesAsync`, see helper 3.
 - QR code login as an `IAsyncEnumerable` of the progress, see helper 4, once there is an OAuth capable test server.
 - The hosting package (helper 6) once the rest is published.

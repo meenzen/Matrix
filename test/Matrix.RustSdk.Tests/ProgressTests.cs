@@ -10,12 +10,16 @@ namespace Matrix.RustSdk.Tests;
 [ClassDataSource<Homeserver>(Shared = SharedType.PerTestSession)]
 public class ProgressTests(Homeserver homeserver)
 {
+    // the SDK reports the progress from a separate task, nothing makes sure a report arrives before the upload
+    // completes: a few MB keep the request open long enough
+    private const int UploadSize = 4 * 1024 * 1024;
+
     [Test]
     public async Task UploadMedia_ShouldReportTheProgress()
     {
         // Arrange
         Client client = await homeserver.LoginAsync(await homeserver.CreateUserAsync("upload"));
-        byte[] data = new byte[1024 * 1024];
+        byte[] data = new byte[UploadSize];
         Random.Shared.NextBytes(data);
         RecordingProgress<TransmissionProgress> progress = new();
 
@@ -40,7 +44,7 @@ public class ProgressTests(Homeserver homeserver)
     {
         // Arrange
         Client client = await homeserver.LoginAsync(await homeserver.CreateUserAsync("upload"));
-        byte[] data = new byte[1024 * 1024];
+        byte[] data = new byte[UploadSize];
 
         // Act
         Task Upload() =>

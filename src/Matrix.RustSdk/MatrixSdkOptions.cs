@@ -8,13 +8,19 @@ namespace Matrix.RustSdk;
 public sealed class MatrixSdkOptions
 {
     /// <summary>
-    /// The level of the logs of the SDK, <see cref="LogLevel.Warn"/> by default. Some components log more by default.
+    /// The level of the logs of the SDK, <see cref="LogLevel.Warn"/> by default. It only makes components log more:
+    /// the SDK always logs its client, OAuth and the Olm account at <see cref="LogLevel.Trace"/>, the HTTP client (every
+    /// request) and the crypto store at <see cref="LogLevel.Debug"/>.
     /// </summary>
+    /// <remarks>
+    /// Apps that use Microsoft.Extensions.Logging have two <c>LogLevel</c> types in scope, use
+    /// <c>Bindings.LogLevel.Info</c> or an alias.
+    /// </remarks>
     public LogLevel LogLevel { get; init; } = LogLevel.Warn;
 
     /// <summary>
-    /// Whether the SDK writes its logs to the standard output. Off by default, the logs would mix with the output of
-    /// console apps.
+    /// Whether the SDK writes its logs to the standard error. Off by default: they are verbose even at the default
+    /// <see cref="LogLevel"/> (the SDK logs every request) and would garble the screen of terminal UIs.
     /// </summary>
     public bool LogToConsole { get; init; }
 

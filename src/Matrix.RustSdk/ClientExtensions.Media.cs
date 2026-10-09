@@ -12,13 +12,14 @@ public static partial class ClientExtensions
     /// <returns>The <c>mxc://</c> URI of the uploaded file.</returns>
     /// <remarks>
     /// <para>
-    /// Upload the content to reference it in events, room avatars for example. The send helpers of
-    /// <see cref="Timeline"/> (<see cref="Timeline.SendImage"/>, <see cref="Timeline.SendFile"/>, ...) upload the files
-    /// they send themselves.
+    /// Upload content to reference it by its URI, in the content of custom events for example. The file is stored
+    /// unencrypted: attachments, in encrypted rooms too, are sent with <see cref="Timeline.SendImage"/>,
+    /// <see cref="Timeline.SendFile"/> and the other send methods of <see cref="Timeline"/>, which upload (and encrypt)
+    /// the files themselves. Avatars are set with <see cref="Client.UploadAvatar"/> and <see cref="Room.UploadAvatar"/>.
     /// </para>
     /// <include file="Progress.xml" path="docs/remarks/*"/>
     /// </remarks>
-    /// <exception cref="ClientException">The upload failed.</exception>
+    /// <exception cref="ClientException">The upload failed or <paramref name="mimeType"/> isn't a MIME type.</exception>
     public static Task<string> UploadMediaAsync(
         this Client client,
         string mimeType,

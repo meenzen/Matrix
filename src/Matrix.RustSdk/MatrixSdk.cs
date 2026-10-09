@@ -23,43 +23,36 @@ public static class MatrixSdk
     /// <para>
     /// The SDK runs its tasks on a runtime of its own. Without this call it creates a runtime with a single thread when
     /// it needs one, so everything the SDK does in the background (syncing, sending, the subscriptions) shares one
-    /// thread, and it logs nothing, not even panics. The runtime is created by the first asynchronous call into the
-    /// SDK, calling this method afterwards still sets up the logs, but the runtime stays single threaded.
+    /// thread. The runtime is created by the first call that needs it, an asynchronous call or a subscription. Calling
+    /// this method afterwards still sets up the logs, but the runtime stays single threaded.
     /// </para>
     /// <para>
-    /// The SDK writes its logs itself, to the standard output or to files, they can't be forwarded to an
-    /// <c>ILogger</c>. It sets the environment variable <c>RUST_BACKTRACE</c>, so panics are logged with a backtrace,
-    /// and writes a line to the standard error when it creates the runtime, even without logs.
+    /// The SDK writes its logs itself, to the standard error or to files, they can't be forwarded to an
+    /// <c>ILogger</c>. This method routes panics into the logs too (without it they go to the standard error), with
+    /// the defaults they aren't written anywhere: services should set <see cref="MatrixSdkOptions.LogDirectory"/>.
+    /// Panics in a call of the bindings also surface as <see cref="PanicException"/>, panics in background tasks only
+    /// in the logs. The SDK sets the environment variable <c>RUST_BACKTRACE</c>, so panics are logged with a
+    /// backtrace, and writes a line to the standard error when it creates the runtime, even without logs.
     /// </para>
     /// </remarks>
     /// <exception cref="InvalidOperationException">
-    /// The SDK was already initialized, by this method or by <see cref="MatrixSdkFfiMethods.InitPlatform"/>.
+    /// The SDK was already initialized, by this method or by <see cref="MatrixSdkFfiMethods.InitPlatform"/>, or it
+    /// can't write to the log directory.
     /// </exception>
+    /// <exception cref="IOException">The log directory couldn't be created.</exception>
+    /// <exception cref="UnauthorizedAccessException">The log directory couldn't be created.</exception>
     public static void Initialize(MatrixSdkOptions? options = null)
     {
         options ??= new MatrixSdkOptions();
-        TracingFileConfiguration? files = null;
-        if (options.LogDirectory is { } directory)
-        {
-            directory = Path.GetFullPath(directory);
-            // the SDK panics when it can't create the directory, this reports why
-            Directory.CreateDirectory(directory);
-            files = new TracingFileConfiguration(
-                directory,
-                FilePrefix: "matrix-sdk",
-                FileSuffix: null,
-                MaxTotalSizeBytes: null,
-                MaxAgeSeconds: null
-            );
-        }
         Initialize(
-            new TracingConfiguration(
-                options.LogLevel,
-                TraceLogPacks: [],
-                ExtraTargets: [],
-                WriteToStdoutOrSystem: options.LogToConsole,
-                WriteToFiles: files
-            ),
+            () =>
+                new TracingConfiguration(
+                    options.LogLevel,
+                    TraceLogPacks: [],
+                    ExtraTargets: [],
+                    WriteToStdoutOrSystem: options.LogToConsole,
+                    WriteToFiles: options.LogDirectory is { } directory ? LogFiles(directory) : null
+                ),
             options.UseLightweightRuntime
         );
     }
@@ -77,6 +70,15 @@ public static class MatrixSdk
     public static void Initialize(TracingConfiguration tracing, bool useLightweightRuntime = false)
     {
         ArgumentNullException.ThrowIfNull(tracing);
+        Initialize(() => tracing, useLightweightRuntime);
+    }
+
+    /// <summary>
+    /// Calls <see cref="MatrixSdkFfiMethods.InitPlatform"/> unless it was called before. <paramref name="tracing"/>
+    /// runs after that check, so a second call doesn't create log directories.
+    /// </summary>
+    private static void Initialize(Func<TracingConfiguration> tracing, bool useLightweightRuntime)
+    {
         lock (InitializeLock)
         {
             if (IsInitialized)
@@ -87,18 +89,33 @@ public static class MatrixSdk
             }
             try
             {
-                MatrixSdkFfiMethods.InitPlatform(tracing, useLightweightRuntime);
+                MatrixSdkFfiMethods.InitPlatform(tracing(), useLightweightRuntime);
             }
-            // the SDK panics when it sets up the logs a second time, InitPlatform was called directly then
+            // the SDK panics when it sets up the logs a second time (InitPlatform was called directly) or can't write
+            // to the log directory
             catch (PanicException e)
             {
                 throw new InvalidOperationException(
-                    "Initializing matrix-rust-sdk failed, it was probably initialized already by a direct call of "
-                        + "MatrixSdkFfiMethods.InitPlatform.",
+                    "Initializing matrix-rust-sdk failed: it was initialized already by a direct call of "
+                        + "MatrixSdkFfiMethods.InitPlatform, or it can't write to the log directory.",
                     e
                 );
             }
             IsInitialized = true;
         }
+    }
+
+    private static TracingFileConfiguration LogFiles(string directory)
+    {
+        directory = Path.GetFullPath(directory);
+        // the SDK panics when it can't create the directory, this reports why
+        Directory.CreateDirectory(directory);
+        return new TracingFileConfiguration(
+            directory,
+            FilePrefix: "matrix-sdk",
+            FileSuffix: null,
+            MaxTotalSizeBytes: null,
+            MaxAgeSeconds: null
+        );
     }
 }

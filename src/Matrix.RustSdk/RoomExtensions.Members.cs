@@ -12,7 +12,8 @@ public static partial class RoomExtensions
     /// </returns>
     /// <remarks>
     /// The sync loads members lazily, only those of the events it delivers. The first call in a room loads the complete
-    /// list, later calls read it from the store. <see cref="Room.Member"/> gets a single member,
+    /// list, later calls read it from the store. In rooms the user is invited to it is only loaded if invited users may
+    /// see the history, otherwise the result are the stored members. <see cref="Room.Member"/> gets a single member,
     /// <see cref="Room.JoinedMembersCount"/> counts them.
     /// </remarks>
     /// <exception cref="ClientException">The member list couldn't be loaded.</exception>
