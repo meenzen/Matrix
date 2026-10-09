@@ -6,7 +6,8 @@
     <IsTestProject>true</IsTestProject>
     <!-- TUnit runs on Microsoft.Testing.Platform, test projects are executables -->
     <OutputType>Exe</OutputType>
-    <NoWarn>$(NoWarn);VSTHRD200</NoWarn>
+    <!-- S2696: tests chained with [DependsOn] share their state in static fields, TUnit creates an instance per test -->
+    <NoWarn>$(NoWarn);VSTHRD200;S2696</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="TUnit" Version="1.73.19" />
