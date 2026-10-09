@@ -2,7 +2,7 @@
 
 Design notes for `src/Matrix.RustSdk`, the helpers on top of the generated bindings. They should build on
 matrix-rust-sdk, not reimplement it, and make common tasks idiomatic in C#: `IAsyncEnumerable`, `await using`,
-cancellation, managed collections. Helpers 1 to 3 are implemented, the findings for the others are from
+cancellation, managed collections. Helpers 1 to 4 are implemented, the findings for the others are from
 `matrix-sdk-ffi/20260909` and uniffi 0.31 and should be rechecked against the bindings before building on them.
 
 ## Pain points of the bindings
@@ -135,21 +135,63 @@ await foreach (EventTimelineItem message in timeline.WatchIncomingMessagesAsync(
 - Follow-ups: filling gaps (paginate after a `Clear` and yield the events newer than the last seen one), which would
   also make the default sliding sync configuration safe for bots.
 
-### 4. Pagination
+### 4. Progress, room members and initialization (implemented)
 
-- `room.MembersAsync()` as `IAsyncEnumerable<RoomMember>` over `RoomMembersIterator.NextChunk`.
-- `timeline.PaginateBackwardsUntilAsync(...)` with a count or predicate, `PaginateBackwards` only returns whether the
-  start was reached.
-- Room directory search (`NextPage` and the `Results` listener) as an async enumerable.
+```csharp
+MatrixSdk.Initialize(new MatrixSdkOptions { LogToConsole = true });
+string uri = await client.UploadMediaAsync("image/png", data, new Progress<TransmissionProgress>(ShowProgress));
+RoomMember[] members = await room.GetMembersAsync();
+```
+
+- Progress: `Client.UploadMediaAsync`, `Encryption.EnableRecoveryAsync` and
+  `Encryption.WaitForBackupUploadSteadyStateAsync` take an optional `IProgress<T>`. Hand written, three listeners
+  don't need a generator: `ProgressReporter<T>` passes the values on. Listener exceptions become Rust panics, so it
+  catches the exception of `Report`, stops reporting and throws it from the returned task once the SDK call finished,
+  without aborting it (decided). The SDK reports after its call completed (upload) or while it returns, a gate makes
+  sure no `Report` runs after the task completed, completing waits for a running report asynchronously (a synchronous
+  wait deadlocks when the call completes on a UI thread a blocking report waits for). The SDK drops updates when the
+  receiver lags and can abort the task reporting the last one (`Done`), the docs call the progress informational.
+- QR code login (the four other progress listeners) isn't covered: the flows are interactive, the call only completes
+  after the app reacted to a progress value (`CheckCodeSender.Send`, `ContinuationMessageSender.Confirm`), several
+  progress types are `IDisposable`. An `IAsyncEnumerable` of the progress that ends with the login fits better than
+  `IProgress<T>`. It needs an OAuth capable homeserver to test, tuwunel has none.
+- Room members: `Room.GetMembersAsync` (loads the member list from the server once) and `GetCachedMembersAsync` (store
+  only) return `RoomMember[]` with every membership. `RoomMembersIterator` is a snapshot already in memory on the Rust
+  side and copies the rest on every chunk, so the helpers read it in one chunk. An `IAsyncEnumerable` would suggest
+  paging that doesn't exist.
+- `MatrixSdk.Initialize(MatrixSdkOptions?)` calls `InitPlatform` once per process: logs to the standard error and/or
+  rotating files (nothing by default, decided: terminal UIs own the console), the multi-threaded or lightweight runtime,
+  and an overload with a complete `TracingConfiguration`. Without it the SDK runs all tasks on one thread and only
+  prints panics to the standard error. `InitPlatform` routes panics into the logs (`log_panics`), so with the defaults
+  panics of background tasks are lost, the docs recommend a log directory for services. `LogLevel` only raises levels,
+  the SDK always logs every HTTP request at debug, so the echo bot logs to files. A second `InitPlatform` panics in the
+  SDK (`PanicException`), `Initialize` throws `InvalidOperationException`. It only picks the runtime if it runs before
+  the first SDK call that needs one (asynchronous calls, subscriptions), the tests call it in a session hook and run on
+  the multi-threaded runtime like apps. Rust logs can't reach `ILogger`, see [Out of reach](#out-of-reach-for-helpers).
+- Not built, the bindings don't allow a correct helper: timeline pagination until a count or predicate (the timeline
+  has no getter for its items, `PaginateBackwards` only returns whether the start was reached, the items arrive in the
+  diff subscription), the room directory as an async enumerable (its results only arrive in the diff subscription, from
+  a separate task, there is no way to tell when a page was delivered).
 
 ### 5. Client setup and sessions
 
-- `LoginOrRestoreAsync`: `SqliteStore`/`SessionPaths`, `RestoreSession` if a session is stored, otherwise a password
-  login.
-- `ISessionStore` on top of `ClientSessionDelegate` with a JSON file implementation. Check that `Session` round-trips
-  with System.Text.Json.
-- `MatrixSdk.Initialize(...)`: `InitPlatform` may only be called once per process, map Microsoft.Extensions.Logging
-  levels to `TracingConfiguration`.
+`LoginOrRestoreAsync` for bots: restore the stored session or log in with a password and store it. The design reviews
+of step 4 showed it needs more than a restore-or-login:
+
+- A data directory per account holding the session and the sqlite store, locked exclusively for the lifetime of the
+  client: two processes on one store diverge the Olm account (`CrossProcessLockConfig` defaults to single process). The
+  helper returns an owner object (`IAsyncDisposable`, client and lock) instead of a bare `Client`.
+- A session file of its own (session, username, homeserver), written atomically and readable by the owner only, it
+  contains the access token. The SDK never stores tokens, `RestoreSession` ignores `Session.HomeserverUrl` (build with
+  `HomeserverUrl`), password logins don't request refresh tokens.
+- Never wipe a store on its own: a store belongs to one device (`MismatchedAccount` otherwise), a missing or unreadable
+  session file must not delete the crypto identity. A device id generated before the login, stored with the pending
+  login, lets a login that crashed before the session was written reuse its device and store.
+- A fresh `Client` per attempt, a failed restore leaves the client unusable (`set_session` panics the second time).
+- `SlidingSyncVersionBuilder.DiscoverNative` by default, the session stores the version and `SyncService` needs
+  native sliding sync. User settings first, then the helper's server and store.
+- Revoked tokens only show at the first sync (`RestoreSession` makes no request), document the recovery.
+- `ISessionStore` and `ClientSessionDelegate` only matter for OAuth sessions (refresh), together with OAuth and QR login.
 
 ### 6. Hosting
 
@@ -169,7 +211,7 @@ declaration.
 | Pattern                                                               | Count | Generated helper              |
 | --------------------------------------------------------------------- | ----- | ----------------------------- |
 | `TaskHandle` subscription with a single method listener               | 37    | `IAsyncEnumerable<T>`         |
-| Progress listener of an async method (recovery, QR login, ...)        | 7     | overload with `IProgress<T>`  |
+| Progress listener of an async method (recovery, QR login, ...)        | 7     | none, see helper 4            |
 | `VectorDiff`-shaped enum                                              | 8     | conversion to `VectorDiff<T>` |
 | Single method listener without a `TaskHandle` (`SetUtdDelegate`, ...) | 4     | none, hand written            |
 | Several methods or a return value (`ClientSessionDelegate`, ...)      | 4     | none, hand written            |
@@ -182,7 +224,8 @@ declaration.
 - The room list is the exception: the listener is passed to `RoomList.EntriesWithDynamicAdapters` and
   `EntriesStream()` returns the `TaskHandle`, it needs a hand written helper anyway because of the filter controller.
 - The progress listeners (`EnableRecoveryProgressListener`, `BackupSteadyStateListener`, the four QR login listeners,
-  `ProgressWatcher` of `UploadMedia`) have the same shape, the same technique generates `IProgress<T>` overloads.
+  `ProgressWatcher` of `UploadMedia`) have the same shape, the same technique could generate `IProgress<T>` overloads.
+  Only three of them fit `IProgress<T>` (the QR logins are interactive), so they are hand written.
 - `CancellationToken` overloads for all async methods could be generated too, but they would only call `WaitAsync`,
   pretend to cancel and double the API. Fix it upstream instead.
 
@@ -230,7 +273,7 @@ entry in an explicit ignore list, so new SDK subscriptions get noticed.
 - Real cancellation needs uniffi-bindgen-cs to generate `CancellationToken` overloads that call
   `rust_future_cancel_*`, like the Kotlin and Swift bindings do. Worth an issue or PR upstream, until then helpers can
   only offer `WaitAsync`.
-- matrix-sdk-ffi only logs to stdout and files (`TracingConfiguration`), `LogEvent` goes from C# into the Rust logs.
+- matrix-sdk-ffi only logs to stderr and files (`TracingConfiguration`), `LogEvent` goes from C# into the Rust logs.
   Forwarding Rust logs to `ILogger` needs a callback in matrix-sdk-ffi.
 
 ## Next steps
@@ -241,10 +284,9 @@ merged, like the subscriptions did.
 1. ~~Generator and all subscriptions (helper 1)~~: done in #143.
 2. ~~`VectorDiff<T>`, `LiveList<T>` and the room list (helper 2)~~: done in #148.
 3. ~~Message and timeline helpers, the echo bot and the TUI client on top of them (helper 3)~~: done.
-4. **Remaining helpers (4 and 5).** `IProgress<T>` overloads for the 7 progress listeners (generated, they are listed
-   in `SubscriptionCoverageTests`), pagination as async enumerables, `LoginOrRestoreAsync` with a session store, and a
-   run-once `MatrixSdk.Initialize`.
-5. **First release of `Matrix.RustSdk`.** Set `IsPackable`, check the packaged XML docs, see RELEASING.md.
+4. ~~Progress, room members and `MatrixSdk.Initialize` (helper 4)~~: done.
+5. **Sessions (helper 5).** `LoginOrRestoreAsync` with an owner object, see helper 5, with its own design review.
+6. **First release of `Matrix.RustSdk`.** Set `IsPackable`, check the packaged XML docs, see RELEASING.md.
 
 Smaller follow-ups, whenever convenient:
 
@@ -258,6 +300,9 @@ Smaller follow-ups, whenever convenient:
 - Upstream: an issue on uniffi-bindgen-cs for real cancellation (`rust_future_cancel_*`). Reports for matrix-rust-sdk:
   the duplicate key and send queue subscriptions spin when the client is dropped while they run,
   `SubscribeToSendQueueStatus` doesn't send the initial status it documents, and cancelling `SubscribeToKnockRequests`
-  leaks a cleanup task.
+  leaks a cleanup task. `WaitForBackupUploadSteadyState` (and `EnableRecovery` waiting for the upload) ends on the stale
+  `Done` or `Error` of an earlier upload, the upload progress is never reset to `Idle`. `EnableRecoveryProgress.BackingUp`
+  reports the backed up count as total count.
 - Filling gaps in `WatchIncomingMessagesAsync`, see helper 3.
+- QR code login as an `IAsyncEnumerable` of the progress, see helper 4, once there is an OAuth capable test server.
 - The hosting package (helper 6) once the rest is published.

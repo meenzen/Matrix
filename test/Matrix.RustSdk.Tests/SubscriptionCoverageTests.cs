@@ -23,7 +23,9 @@ public class SubscriptionCoverageTests
         ["Client.SetDelegate"] = "ClientDelegate has two methods, it isn't a stream",
     };
 
-    private const string ProgressListener = "progress listener, candidate for an IProgress<T> overload";
+    private const string QrLogin =
+        "interactive flow, the call waits for the app to react to the progress (check code, confirmation): candidate "
+        + "for an IAsyncEnumerable of the progress, needs an OAuth capable homeserver to test";
 
     /// <summary>
     /// Methods of the bindings taking a listener that don't return a <see cref="TaskHandle"/>, keyed by
@@ -33,13 +35,14 @@ public class SubscriptionCoverageTests
     {
         ["RoomList.EntriesWithDynamicAdapters"] = "hand written: RoomList.WatchRoomDiffsAsync",
         ["RoomList.LoadingState"] = "hand written: RoomList.WatchLoadingStateAsync",
-        ["Client.UploadMedia"] = ProgressListener,
-        ["Encryption.EnableRecovery"] = ProgressListener,
-        ["Encryption.WaitForBackupUploadSteadyState"] = ProgressListener,
-        ["GrantLoginWithQrCodeHandler.Generate"] = ProgressListener,
-        ["GrantLoginWithQrCodeHandler.Scan"] = ProgressListener,
-        ["LoginWithQrCodeHandler.Generate"] = ProgressListener,
-        ["LoginWithQrCodeHandler.Scan"] = ProgressListener,
+        ["Client.UploadMedia"] = "hand written: Client.UploadMediaAsync with an IProgress<T>",
+        ["Encryption.EnableRecovery"] = "hand written: Encryption.EnableRecoveryAsync with an IProgress<T>",
+        ["Encryption.WaitForBackupUploadSteadyState"] =
+            "hand written: Encryption.WaitForBackupUploadSteadyStateAsync with an IProgress<T>",
+        ["GrantLoginWithQrCodeHandler.Generate"] = QrLogin,
+        ["GrantLoginWithQrCodeHandler.Scan"] = QrLogin,
+        ["LoginWithQrCodeHandler.Generate"] = QrLogin,
+        ["LoginWithQrCodeHandler.Scan"] = QrLogin,
         ["ClientBuilder.SetSessionDelegate"] = "delegate storing sessions, not a stream",
         ["Client.SetUtdDelegate"] = "delegate reporting decryption failures, registered for the lifetime of the client",
         ["NotificationSettings.SetDelegate"] = "delegate, not a stream",

@@ -4,7 +4,8 @@ A Matrix bot built as a .NET worker service: it logs in, joins every room it is 
 of other users back into the room.
 
 - `EchoBotHost.cs` builds the [Generic Host](https://learn.microsoft.com/dotnet/core/extensions/generic-host) and binds
-  `EchoBotOptions` from the `EchoBot` configuration section, `Program.cs` runs it.
+  `EchoBotOptions` from the `EchoBot` configuration section, `Program.cs` sets up the SDK (`MatrixSdk.Initialize`, its
+  logs go to `logs/` in the working directory) and runs the host.
 - `EchoBotWorker.cs` is the `BackgroundService`: it logs in, runs a `/sync` loop with `Client.SyncOnceV2`, joins
   invites and sends the messages back.
 - `RoomTimeline.cs` listens to the timeline of a joined room and picks out new text messages of other users.

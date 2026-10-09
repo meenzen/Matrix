@@ -105,6 +105,9 @@ obvious:
 - `LiveList<T>` (`ToLiveList`) owns its items and disposes them when they leave the list, with a projection the source
   values are disposed right after projecting. It runs entirely on the `SynchronizationContext` it was created on, only
   its pump changes the items, the lock only protects readers on other threads.
+- Async methods taking a progress listener get a `…Async` helper with an optional `IProgress<T>` (hand written, the
+  listener calls `ProgressReporter<T>.Report`). Listeners must never throw into the SDK, an exception becomes a Rust
+  panic.
 - After a matrix-rust-sdk update `SubscriptionCoverageTests` fails for new subscriptions, listeners and diff enums:
   declare them or list them with a reason. Changed subscriptions break the build (`MRSG002` not found, `MRSG003` value
   type).
@@ -120,6 +123,9 @@ obvious:
   or coverlet, they break TUnit. Coverage: `dotnet test --coverage --coverage-output-format cobertura`.
 - `SdkTests` and the example tests run against a tuwunel homeserver started with Testcontainers, they are in the
   `Homeserver` category. `NativeLibraryTests` are smoke tests without a homeserver, they run on every platform.
+- `Matrix.RustSdk.Tests` initializes the SDK once per session (`SdkSetup`, multi-threaded runtime like apps), its logs
+  are in `bin/<configuration>/net10.0/logs`. The example apps call `MatrixSdk.Initialize` in `Program.cs`, which their
+  tests don't run.
 - Shared test setup lives in `test/Matrix.RustSdk.Testing`: `Homeserver` is shared per test session
   (`[ClassDataSource<Homeserver>(Shared = SharedType.PerTestSession)]`), tests register their own users with
   `CreateUserAsync` because they run in parallel. Tests that build on each other's state are chained with

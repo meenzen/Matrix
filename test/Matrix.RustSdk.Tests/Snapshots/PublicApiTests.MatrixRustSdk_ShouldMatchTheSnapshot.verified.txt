@@ -5,6 +5,7 @@ namespace Matrix.RustSdk.Bindings
     public static class ClientExtensions
     {
         public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.SyncResponseV2> SyncV2Async(this Matrix.RustSdk.Bindings.Client client, Matrix.RustSdk.Bindings.SyncSettingsV2 settings, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Threading.Tasks.Task<string> UploadMediaAsync(this Matrix.RustSdk.Bindings.Client client, string mimeType, byte[] data, System.IProgress<Matrix.RustSdk.Bindings.TransmissionProgress>? progress = null) { }
         public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.AccountDataEvent> WatchAccountDataAsync(this Matrix.RustSdk.Bindings.Client client, Matrix.RustSdk.Bindings.AccountDataEventType eventType, System.Threading.CancellationToken cancellationToken = default) { }
         public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.DuplicateOneTimeKeyErrorMessage?> WatchDuplicateKeyUploadErrorsAsync(this Matrix.RustSdk.Bindings.Client client, System.Threading.CancellationToken cancellationToken = default) { }
         public static System.Collections.Generic.IAsyncEnumerable<string[]> WatchIgnoredUsersAsync(this Matrix.RustSdk.Bindings.Client client, System.Threading.CancellationToken cancellationToken = default) { }
@@ -24,6 +25,8 @@ namespace Matrix.RustSdk.Bindings
     }
     public static class EncryptionExtensions
     {
+        public static System.Threading.Tasks.Task<string> EnableRecoveryAsync(this Matrix.RustSdk.Bindings.Encryption encryption, string? passphrase = null, bool waitForBackupsToUpload = false, System.IProgress<Matrix.RustSdk.Bindings.EnableRecoveryProgress>? progress = null) { }
+        public static System.Threading.Tasks.Task WaitForBackupUploadSteadyStateAsync(this Matrix.RustSdk.Bindings.Encryption encryption, System.IProgress<Matrix.RustSdk.Bindings.BackupUploadState>? progress = null) { }
         public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.BackupState> WatchBackupStateAsync(this Matrix.RustSdk.Bindings.Encryption encryption, System.Threading.CancellationToken cancellationToken = default) { }
         public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.DehydratedDeviceEvent> WatchDehydratedDeviceEventsAsync(this Matrix.RustSdk.Bindings.Encryption encryption, System.Threading.CancellationToken cancellationToken = default) { }
         public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.RecoveryState> WatchRecoveryStateAsync(this Matrix.RustSdk.Bindings.Encryption encryption, System.Threading.CancellationToken cancellationToken = default) { }
@@ -52,6 +55,8 @@ namespace Matrix.RustSdk.Bindings
     }
     public static class RoomExtensions
     {
+        public static System.Threading.Tasks.Task<Matrix.RustSdk.Bindings.RoomMember[]> GetCachedMembersAsync(this Matrix.RustSdk.Bindings.Room room) { }
+        public static System.Threading.Tasks.Task<Matrix.RustSdk.Bindings.RoomMember[]> GetMembersAsync(this Matrix.RustSdk.Bindings.Room room) { }
         public static System.Collections.Generic.IAsyncEnumerable<string> WatchCallDeclinesAsync(this Matrix.RustSdk.Bindings.Room room, string rtcNotificationEventId, System.Threading.CancellationToken cancellationToken = default) { }
         public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.IdentityStatusChange[]> WatchIdentityStatusChangesAsync(this Matrix.RustSdk.Bindings.Room room, System.Threading.CancellationToken cancellationToken = default) { }
         public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.KnockRequest[]> WatchKnockRequestsAsync(this Matrix.RustSdk.Bindings.Room room, System.Threading.CancellationToken cancellationToken = default) { }
@@ -136,6 +141,20 @@ namespace Matrix.RustSdk
         public System.Collections.Generic.IEnumerator<T> GetEnumerator() { }
         public int IndexOf(T item) { }
         public T[] ToArray() { }
+    }
+    public static class MatrixSdk
+    {
+        public static bool IsInitialized { get; }
+        public static void Initialize(Matrix.RustSdk.MatrixSdkOptions? options = null) { }
+        public static void Initialize(Matrix.RustSdk.Bindings.TracingConfiguration tracing, bool useLightweightRuntime = false) { }
+    }
+    public sealed class MatrixSdkOptions
+    {
+        public MatrixSdkOptions() { }
+        public string? LogDirectory { get; init; }
+        public Matrix.RustSdk.Bindings.LogLevel LogLevel { get; init; }
+        public bool LogToConsole { get; init; }
+        public bool UseLightweightRuntime { get; init; }
     }
     public sealed class RoomListQuery
     {
