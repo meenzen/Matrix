@@ -71,6 +71,14 @@ public class SubscriptionTests(Homeserver homeserver)
                     break;
                 }
             }
+
+            // Start reports Running before the sync tasks ran once, they only subscribe to the stop signal then. A
+            // Stop before that is lost and never returns (matrix-rust-sdk race, the tests share a single threaded
+            // runtime, which makes it likely). The room list service leaves Initial after its first sync
+            using RoomListService roomListService = syncService.RoomListService();
+            await roomListService
+                .WatchStateAsync(timeout.Token)
+                .FirstAsync(roomListState => roomListState != RoomListServiceState.Initial, timeout.Token);
         }
         finally
         {
