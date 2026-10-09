@@ -1,0 +1,2 @@
+# snapshots are compared with LF line endings
+*.verified.txt text eol=lf

@@ -21,4 +21,13 @@
   <ItemGroup>
     <ProjectReference Include="..\Matrix.RustSdk.Bindings\Matrix.RustSdk.Bindings.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- unit tests of the runtime part of the subscriptions -->
+    <InternalsVisibleTo Include="Matrix.RustSdk.Tests" />
+    <ProjectReference
+      Include="..\Matrix.RustSdk.Generators\Matrix.RustSdk.Generators.csproj"
+      OutputItemType="Analyzer"
+      ReferenceOutputAssembly="false"
+    />
+  </ItemGroup>
 </Project>

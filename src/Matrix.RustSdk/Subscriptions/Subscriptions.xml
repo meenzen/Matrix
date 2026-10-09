@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Documentation shared by the Watch…Async methods, included with <include file="…" path="docs/…/*"/>. The compiler
+  copies it into the XML documentation, so it is part of the package. The fragments repeat the shared sentences, every
+  method includes exactly one of state, stream or loop.
+-->
+<docs>
+  <cancellationToken>
+    <param name="cancellationToken">
+      Cancels the enumeration, which then throws <see cref="T:System.OperationCanceledException" />.
+    </param>
+  </cancellationToken>
+  <!-- state streams, SubscriptionBuffer.Latest -->
+  <state>
+    <para>
+      Every enumeration is a subscription of its own: it subscribes when it starts and unsubscribes when it ends, by
+      <see langword="break" />, an exception or cancellation. Errors of the SDK while subscribing are thrown when the
+      enumeration starts. The loop body runs on the context of the enumerating code, not on a thread of the SDK.
+    </para>
+    <para>
+      Only the latest value the consumer didn't read yet is kept, older ones are skipped. The SDK can end the
+      subscription on its own, the enumeration ends then.
+    </para>
+  </state>
+  <!-- diff and event streams, SubscriptionBuffer.All -->
+  <stream>
+    <para>
+      Every enumeration is a subscription of its own: it subscribes when it starts and unsubscribes when it ends, by
+      <see langword="break" />, an exception or cancellation. Errors of the SDK while subscribing are thrown when the
+      enumeration starts. The loop body runs on the context of the enumerating code, not on a thread of the SDK.
+    </para>
+    <para>
+      Every value is kept until the consumer reads it, the buffer grows while the consumer is slower than the SDK. The
+      SDK can end the subscription on its own, the enumeration ends then.
+    </para>
+  </stream>
+  <!-- loops that only end because of an error, ThrowWhenFinished -->
+  <loop>
+    <para>
+      Every enumeration runs a loop of its own: it starts when the enumeration starts and stops when it ends, by
+      <see langword="break" />, an exception or cancellation. The loop body runs on the context of the enumerating code,
+      not on a thread of the SDK.
+    </para>
+    <para>
+      Every value is kept until the consumer reads it, the buffer grows while the consumer is slower than the SDK.
+    </para>
+  </loop>
+  <!-- values containing native objects -->
+  <disposable>
+    <para>
+      The values hold native objects and belong to the consumer: dispose them, or the native objects they contain, once
+      they aren't needed anymore. Values that weren't yielded are disposed for you, values skipped by LINQ operators
+      like <c>Where</c> or <c>FirstAsync</c> aren't.
+    </para>
+  </disposable>
+</docs>

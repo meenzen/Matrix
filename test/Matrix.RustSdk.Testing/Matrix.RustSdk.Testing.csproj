@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- shared setup of the test projects: the homeserver container and the native library under test -->
+  <!-- shared setup of the test projects: the homeserver container, the native library under test and snapshots -->
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <CopyNativeLibrary>true</CopyNativeLibrary>
@@ -7,6 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Testcontainers" Version="4.16.0" />
+    <PackageReference Include="TUnit.Assertions" Version="1.73.19" />
     <PackageReference Include="TUnit.Core" Version="1.73.19" />
   </ItemGroup>
   <ItemGroup>
