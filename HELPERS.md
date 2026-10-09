@@ -219,6 +219,12 @@ merged, like the subscriptions did.
 
 Smaller follow-ups, whenever convenient:
 
+- Upstream report for matrix-rust-sdk: `SyncService.Stop()` never returns when it runs before the sync tasks were
+  polled once. `Start()` sets `Running` right after spawning the supervisor, the stop signal of sliding sync is a
+  broadcast whose only receiver `SlidingSync::sync()` creates inside the child task's stream, so an early stop fails
+  with "internal channel is broken" (only logged) and the supervisor awaits the room list task forever. Without
+  `InitPlatform` all tasks share one runtime thread, which makes it likely. Waiting until the room list service left
+  `Initial` avoids it (`SubscriptionTests`).
 - One shared timer for the finished checks of idle subscriptions instead of one per enumeration.
 - Upstream: an issue on uniffi-bindgen-cs for real cancellation (`rust_future_cancel_*`). Reports for matrix-rust-sdk:
   the duplicate key and send queue subscriptions spin when the client is dropped while they run,
