@@ -14,15 +14,19 @@ namespace Matrix.RustSdk;
 /// The list enumerates the stream in the background, on the <see cref="SynchronizationContext"/> it was created with:
 /// the diffs are projected and applied and the events are raised there, one diff at a time. Bind it to WPF, Avalonia or
 /// MAUI controls only when it was created on their UI thread. Without a context the list is updated on thread pool
-/// threads, use <see cref="Changed"/> and <see cref="ToArray"/> then. Reading is safe from every thread.
+/// threads, use <see cref="Changed"/> and <see cref="ToArray"/> then: the list doesn't change while the handlers of
+/// its events run. Reading the list (<see cref="Count"/>, the indexer, <see cref="ToArray"/>) is safe from every
+/// thread, using the items isn't, see below.
 /// </para>
 /// <para>
 /// The list owns its items: an item that leaves the list (<see cref="VectorDiff{T}.Set"/>,
 /// <see cref="VectorDiff{T}.Remove"/>, <see cref="VectorDiff{T}.Truncate"/>, <see cref="VectorDiff{T}.Reset"/>, ...)
 /// is disposed after the events for it were raised if it is <see cref="IDisposable"/>, the remaining ones when the
 /// list is disposed. Items holding native objects (<c>Room</c>, <c>TimelineItem</c>) are only valid while they are in
-/// the list, and the SDK replaces items often (a room on every new message): don't keep them, project them to managed
-/// values instead.
+/// the list: use them on the context of the list or in its event handlers, a snapshot taken elsewhere can contain
+/// items that are disposed a moment later. The SDK replaces items often (a room on every new message), and moves them
+/// with <see cref="VectorDiff{T}.Remove"/> and <see cref="VectorDiff{T}.Insert"/>: don't keep them, project them to
+/// managed values instead, and don't share projections between lists or positions.
 /// </para>
 /// <para>
 /// The list stops when the stream ends, throws or the list is disposed, see <see cref="Completion"/>. It keeps its
@@ -100,9 +104,11 @@ public sealed class LiveList<T>
     }
 
     /// <summary>
-    /// Completes when the first batch of diffs was applied, usually the current items of the SDK. Fails like
-    /// <see cref="Completion"/> if the list stops before, and with an <see cref="InvalidOperationException"/> if the
-    /// stream ended without a batch.
+    /// Completes when the first batch of diffs was applied, the items the SDK had when the stream started. That isn't
+    /// necessarily everything: a room list can still be loading (<c>RoomList.WatchLoadingStateAsync</c>) and a timeline
+    /// only contains what was paginated. Fails like <see cref="Completion"/> if the stream throws before, with an
+    /// <see cref="InvalidOperationException"/> if it ended without a batch, and is cancelled if the list is disposed
+    /// before.
     /// </summary>
     public Task Initialized => _initialized.Task;
 
@@ -132,7 +138,8 @@ public sealed class LiveList<T>
 
     bool IList.IsReadOnly => true;
 
-    bool IList.IsFixedSize => false;
+    // like ReadOnlyCollection<T>, WPF offers adding and removing rows for lists that aren't fixed size
+    bool IList.IsFixedSize => true;
 
     bool ICollection.IsSynchronized => false;
 
@@ -168,6 +175,9 @@ public sealed class LiveList<T>
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
+    /// <summary>
+    /// Whether the list contains <paramref name="item"/>.
+    /// </summary>
     public bool Contains(T item)
     {
         lock (_lock)
@@ -176,6 +186,9 @@ public sealed class LiveList<T>
         }
     }
 
+    /// <summary>
+    /// The index of <paramref name="item"/>, -1 if the list doesn't contain it.
+    /// </summary>
     public int IndexOf(T item)
     {
         lock (_lock)
@@ -184,6 +197,9 @@ public sealed class LiveList<T>
         }
     }
 
+    /// <summary>
+    /// Copies the items to <paramref name="array"/>, starting at <paramref name="arrayIndex"/>.
+    /// </summary>
     public void CopyTo(T[] array, int arrayIndex)
     {
         lock (_lock)
@@ -227,15 +243,28 @@ public sealed class LiveList<T>
     /// <summary>
     /// Stops the list, which ends the subscription of the stream, then removes the items (raising
     /// <see cref="NotifyCollectionChangedAction.Reset"/> on the context of the list) and disposes them. Don't block on
-    /// it on the context of the list, the list needs the context to stop.
+    /// it on the context of the list, the list needs the context to stop, and don't await it in a projection, the list
+    /// waits for the projection to stop.
     /// </summary>
     public ValueTask DisposeAsync()
     {
+        TaskCompletionSource? disposing = null;
+        Task disposed;
         lock (_lock)
         {
-            _disposed ??= DisposeCoreAsync();
-            return new ValueTask(_disposed);
+            if (_disposed is null)
+            {
+                disposing = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                _disposed = disposing.Task;
+            }
+            disposed = _disposed;
         }
+        // outside the lock, disposing runs the event handlers and frees native objects
+        if (disposing is not null)
+        {
+            _ = DisposeCoreAsync(disposing);
+        }
+        return new ValueTask(disposed);
     }
 
     /// <summary>
@@ -264,29 +293,30 @@ public sealed class LiveList<T>
         return list;
     }
 
-    private async Task DisposeCoreAsync()
+    /// <summary>
+    /// Disposes the list and completes <paramref name="disposed"/>, never throws.
+    /// </summary>
+    private async Task DisposeCoreAsync(TaskCompletionSource disposed)
     {
-        await _disposal.CancelAsync().ConfigureAwait(false);
-        // the pump completes it without waiting for the caller, and its errors belong to whoever observes Completion
+        try
+        {
+            await _disposal.CancelAsync().ConfigureAwait(false);
+            // the pump completes it without waiting for the caller, its errors belong to whoever observes Completion
 #pragma warning disable VSTHRD003
-        await _completion.Task.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+            await _completion.Task.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
 #pragma warning restore VSTHRD003
-        await InvokeOnContextAsync(() =>
-            {
-                T[] removed;
-                lock (_lock)
-                {
-                    removed = [.. _items];
-                    _items.Clear();
-                }
-                if (removed.Length > 0)
-                {
-                    RaiseChanged(ResetArgs, countChanged: true);
-                }
-                DisposeItems(removed);
-            })
-            .ConfigureAwait(false);
-        _disposal.Dispose();
+            await InvokeOnContextAsync(() => ResetTo([])).ConfigureAwait(false);
+            disposed.SetResult();
+        }
+        catch (Exception e)
+        {
+            // an event handler threw, ResetTo disposed the items anyway
+            disposed.SetException(e);
+        }
+        finally
+        {
+            _disposal.Dispose();
+        }
     }
 
     /// <summary>
@@ -369,9 +399,19 @@ public sealed class LiveList<T>
         switch (diff)
         {
             case VectorDiff<TSource>.Append append:
-                foreach (T item in await projection.CreateAllAsync(append.Values, cancellationToken))
+                T[] appended = await projection.CreateAllAsync(append.Values, cancellationToken);
+                int inserted = 0;
+                try
                 {
-                    Insert(Count, item);
+                    while (inserted < appended.Length)
+                    {
+                        Insert(Count, appended[inserted++]);
+                    }
+                }
+                finally
+                {
+                    // an event handler threw, the items after it aren't in the list
+                    DisposeItems(appended.AsSpan(inserted));
                 }
                 break;
             case VectorDiff<TSource>.Clear:
@@ -472,6 +512,10 @@ public sealed class LiveList<T>
             _items.Clear();
             _items.AddRange(items);
         }
+        if (old.Length == 0 && items.Length == 0)
+        {
+            return;
+        }
         try
         {
             RaiseChanged(ResetArgs, countChanged: old.Length != items.Length);
@@ -520,7 +564,7 @@ public sealed class LiveList<T>
         return done.Task;
     }
 
-    private static void DisposeItems(T[] items)
+    private static void DisposeItems(ReadOnlySpan<T> items)
     {
         foreach (T item in items)
         {

@@ -441,6 +441,150 @@ public class LiveListTests
         await Assert.That(() => nonGeneric.RemoveAt(0)).Throws<NotSupportedException>();
         await Assert.That(nonGeneric.IndexOf(2)).IsEqualTo(1);
         await Assert.That(nonGeneric.Contains("2")).IsFalse();
+        // WPF offers adding and removing rows for lists that aren't fixed size
+        await Assert.That(nonGeneric.IsFixedSize).IsTrue();
+    }
+
+    [Test]
+    public async Task DisposeAsyncAfterTheStreamEnded_ShouldNotBlockReadersDuringItsEvents()
+    {
+        // Arrange
+        DiffSource<int> source = new();
+        LiveList<int> list = source.Diffs.ToLiveList(ThreadPool);
+        await source.SendAsync(list, new VectorDiff<int>.Reset([1, 2]));
+        source.Complete();
+        await list.Completion.WaitAsync(Poll.DefaultTimeout);
+        bool readOnAnotherThread = false;
+        list.CollectionChanged += (_, _) =>
+#pragma warning disable VSTHRD002 // a handler waiting for another thread, the case that must not deadlock
+            readOnAnotherThread = Task.Run(() => list.Count).Wait(TimeSpan.FromSeconds(5));
+#pragma warning restore VSTHRD002
+
+        // Act
+        await list.DisposeAsync();
+
+        // Assert
+        await Assert.That(readOnAnotherThread).IsTrue();
+    }
+
+    [Test]
+    public async Task ThrowingHandlerWhileDisposing_ShouldStillDisposeTheItems()
+    {
+        // Arrange
+        DiffSource<Disposable> source = new();
+        Disposable[] items = [new(1), new(2)];
+        LiveList<Disposable> list = source.Diffs.ToLiveList(ThreadPool);
+        await source.SendAsync(list, new VectorDiff<Disposable>.Reset(items));
+        list.CollectionChanged += (_, _) => throw new FormatException("handler failed");
+
+        // Act & Assert
+        await Assert.That(async () => await list.DisposeAsync()).Throws<FormatException>();
+        await Assert.That(items.All(item => item.IsDisposed)).IsTrue();
+        await Assert.That(list.Count).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task ThrowingHandlerDuringAppend_ShouldDisposeTheItemsNotInTheList()
+    {
+        // Arrange
+        DiffSource<Disposable> source = new();
+        Disposable[] items = [new(1), new(2), new(3)];
+        await using LiveList<Disposable> list = source.Diffs.ToLiveList(ThreadPool);
+        list.CollectionChanged += (_, e) =>
+        {
+            if (e.NewItems?[0] == items[0])
+            {
+                throw new FormatException("handler failed");
+            }
+        };
+
+        // Act
+        source.Write(new VectorDiff<Disposable>.Append(items));
+
+        // Assert
+        await Assert.That(() => list.Completion.WaitAsync(Poll.DefaultTimeout)).Throws<FormatException>();
+        await Assert
+            .That(items.Select(item => item.IsDisposed))
+            .IsEquivalentTo([false, true, true], CollectionOrdering.Matching);
+        await Assert.That(list.ToArray()).IsEquivalentTo([items[0]]);
+    }
+
+    [Test]
+    public async Task SelectorReturningATask_ShouldBeRejected()
+    {
+        // Arrange
+        DiffSource<int> source = new();
+
+        // Act & Assert
+        await Assert
+            .That(() =>
+                source.Diffs.ToLiveList(async value => await Task.FromResult(value), synchronizationContext: ThreadPool)
+            )
+            .Throws<ArgumentException>()
+            .WithParameterName("selector");
+    }
+
+    [Test]
+    public async Task AsyncSelector_ShouldProjectTheValuesOfADiffConcurrently()
+    {
+        // Arrange
+        DiffSource<int> source = new();
+        TaskCompletionSource allStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        int started = 0;
+        await using LiveList<int> list = source.Diffs.ToLiveList(
+            async (value, cancellationToken) =>
+            {
+                // sequential projections would wait here forever
+                if (Interlocked.Increment(ref started) == 3)
+                {
+                    allStarted.SetResult();
+                }
+                await allStarted.Task.WaitAsync(cancellationToken);
+                return value;
+            },
+            synchronizationContext: ThreadPool
+        );
+
+        // Act
+        await source.SendAsync(list, new VectorDiff<int>.Reset([1, 2, 3]));
+
+        // Assert
+        await Assert.That(list.ToArray()).IsEquivalentTo([1, 2, 3], CollectionOrdering.Matching);
+    }
+
+    [Test]
+    public async Task FailingAsyncSelector_ShouldDisposeTheOtherProjections()
+    {
+        // Arrange
+        DiffSource<Disposable> source = new();
+        Disposable[] values = [new(1), new(2), new(3)];
+        List<Disposable> projections = [];
+        await using LiveList<Disposable> list = source.Diffs.ToLiveList(
+            async (value, cancellationToken) =>
+            {
+                await Task.Yield();
+                if (value.Id == 2)
+                {
+                    throw new FormatException("projection failed");
+                }
+                Disposable projection = new(value.Id * 10);
+                lock (projections)
+                {
+                    projections.Add(projection);
+                }
+                return projection;
+            },
+            synchronizationContext: ThreadPool
+        );
+
+        // Act
+        source.Write(new VectorDiff<Disposable>.Reset(values));
+
+        // Assert
+        await Assert.That(() => list.Completion.WaitAsync(Poll.DefaultTimeout)).Throws<FormatException>();
+        await Assert.That(values.All(value => value.IsDisposed)).IsTrue();
+        await Assert.That(projections.All(projection => projection.IsDisposed)).IsTrue();
+        await Assert.That(list.Count).IsEqualTo(0);
     }
 
     private static string Describe(NotifyCollectionChangedEventArgs e) =>

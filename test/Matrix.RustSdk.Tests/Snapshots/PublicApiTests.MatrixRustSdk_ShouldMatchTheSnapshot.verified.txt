@@ -48,8 +48,8 @@ namespace Matrix.RustSdk.Bindings
     }
     public static class RoomListExtensions
     {
-        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.VectorDiff<Matrix.RustSdk.Bindings.Room>[]> WatchEntryDiffsAsync(this Matrix.RustSdk.Bindings.RoomList roomList, Matrix.RustSdk.RoomListQuery query, System.Threading.CancellationToken cancellationToken = default) { }
         public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.RoomListLoadingState> WatchLoadingStateAsync(this Matrix.RustSdk.Bindings.RoomList roomList, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.VectorDiff<Matrix.RustSdk.Bindings.Room>[]> WatchRoomDiffsAsync(this Matrix.RustSdk.Bindings.RoomList roomList, Matrix.RustSdk.RoomListQuery query, System.Threading.CancellationToken cancellationToken = default) { }
     }
     public static class RoomListServiceExtensions
     {
@@ -114,68 +114,88 @@ namespace Matrix.RustSdk
     public sealed class RoomListQuery
     {
         public RoomListQuery(int pageSize) { }
-        public Matrix.RustSdk.Bindings.RoomListEntriesDynamicFilterKind Filter { get; set; }
+        public Matrix.RustSdk.Bindings.RoomListEntriesDynamicFilterKind BaseFilter { get; init; }
+        public Matrix.RustSdk.Bindings.RoomListEntriesDynamicFilterKind? Filter { get; set; }
         public int PageSize { get; }
         public void AddOnePage() { }
         public void ResetToOnePage() { }
     }
-    public abstract class VectorDiff<T> : System.IDisposable, System.IEquatable<Matrix.RustSdk.VectorDiff<T>>
+    public abstract class VectorDiff<T> : System.IDisposable
     {
         public void ApplyTo(System.Collections.Generic.IList<T> list, System.Action<T>? removed = null) { }
         public void Dispose() { }
-        public sealed class Append : Matrix.RustSdk.VectorDiff<T>, System.IEquatable<Matrix.RustSdk.VectorDiff<T>.Append>
+        public sealed class Append : Matrix.RustSdk.VectorDiff<T>
         {
-            public Append(System.Collections.Generic.IReadOnlyList<T> Values) { }
-            public System.Collections.Generic.IReadOnlyList<T> Values { get; init; }
+            public Append(System.Collections.Generic.IReadOnlyList<T> values) { }
+            public System.Collections.Generic.IReadOnlyList<T> Values { get; }
+            public void Deconstruct(out System.Collections.Generic.IReadOnlyList<T> values) { }
+            public override string ToString() { }
         }
-        public sealed class Clear : Matrix.RustSdk.VectorDiff<T>, System.IEquatable<Matrix.RustSdk.VectorDiff<T>.Clear>
+        public sealed class Clear : Matrix.RustSdk.VectorDiff<T>
         {
             public Clear() { }
+            public override string ToString() { }
         }
-        public sealed class Insert : Matrix.RustSdk.VectorDiff<T>, System.IEquatable<Matrix.RustSdk.VectorDiff<T>.Insert>
+        public sealed class Insert : Matrix.RustSdk.VectorDiff<T>
         {
-            public Insert(int Index, T Value) { }
-            public int Index { get; init; }
-            public T Value { get; init; }
+            public Insert(int index, T value) { }
+            public int Index { get; }
+            public T Value { get; }
+            public void Deconstruct(out int index, out T value) { }
+            public override string ToString() { }
         }
-        public sealed class PopBack : Matrix.RustSdk.VectorDiff<T>, System.IEquatable<Matrix.RustSdk.VectorDiff<T>.PopBack>
+        public sealed class PopBack : Matrix.RustSdk.VectorDiff<T>
         {
             public PopBack() { }
+            public override string ToString() { }
         }
-        public sealed class PopFront : Matrix.RustSdk.VectorDiff<T>, System.IEquatable<Matrix.RustSdk.VectorDiff<T>.PopFront>
+        public sealed class PopFront : Matrix.RustSdk.VectorDiff<T>
         {
             public PopFront() { }
+            public override string ToString() { }
         }
-        public sealed class PushBack : Matrix.RustSdk.VectorDiff<T>, System.IEquatable<Matrix.RustSdk.VectorDiff<T>.PushBack>
+        public sealed class PushBack : Matrix.RustSdk.VectorDiff<T>
         {
-            public PushBack(T Value) { }
-            public T Value { get; init; }
+            public PushBack(T value) { }
+            public T Value { get; }
+            public void Deconstruct(out T value) { }
+            public override string ToString() { }
         }
-        public sealed class PushFront : Matrix.RustSdk.VectorDiff<T>, System.IEquatable<Matrix.RustSdk.VectorDiff<T>.PushFront>
+        public sealed class PushFront : Matrix.RustSdk.VectorDiff<T>
         {
-            public PushFront(T Value) { }
-            public T Value { get; init; }
+            public PushFront(T value) { }
+            public T Value { get; }
+            public void Deconstruct(out T value) { }
+            public override string ToString() { }
         }
-        public sealed class Remove : Matrix.RustSdk.VectorDiff<T>, System.IEquatable<Matrix.RustSdk.VectorDiff<T>.Remove>
+        public sealed class Remove : Matrix.RustSdk.VectorDiff<T>
         {
-            public Remove(int Index) { }
-            public int Index { get; init; }
+            public Remove(int index) { }
+            public int Index { get; }
+            public void Deconstruct(out int index) { }
+            public override string ToString() { }
         }
-        public sealed class Reset : Matrix.RustSdk.VectorDiff<T>, System.IEquatable<Matrix.RustSdk.VectorDiff<T>.Reset>
+        public sealed class Reset : Matrix.RustSdk.VectorDiff<T>
         {
-            public Reset(System.Collections.Generic.IReadOnlyList<T> Values) { }
-            public System.Collections.Generic.IReadOnlyList<T> Values { get; init; }
+            public Reset(System.Collections.Generic.IReadOnlyList<T> values) { }
+            public System.Collections.Generic.IReadOnlyList<T> Values { get; }
+            public void Deconstruct(out System.Collections.Generic.IReadOnlyList<T> values) { }
+            public override string ToString() { }
         }
-        public sealed class Set : Matrix.RustSdk.VectorDiff<T>, System.IEquatable<Matrix.RustSdk.VectorDiff<T>.Set>
+        public sealed class Set : Matrix.RustSdk.VectorDiff<T>
         {
-            public Set(int Index, T Value) { }
-            public int Index { get; init; }
-            public T Value { get; init; }
+            public Set(int index, T value) { }
+            public int Index { get; }
+            public T Value { get; }
+            public void Deconstruct(out int index, out T value) { }
+            public override string ToString() { }
         }
-        public sealed class Truncate : Matrix.RustSdk.VectorDiff<T>, System.IEquatable<Matrix.RustSdk.VectorDiff<T>.Truncate>
+        public sealed class Truncate : Matrix.RustSdk.VectorDiff<T>
         {
-            public Truncate(int Length) { }
-            public int Length { get; init; }
+            public Truncate(int length) { }
+            public int Length { get; }
+            public void Deconstruct(out int length) { }
+            public override string ToString() { }
         }
     }
 }

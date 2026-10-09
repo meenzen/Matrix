@@ -1,14 +1,22 @@
 namespace Matrix.RustSdk;
 
 /// <summary>
-/// Creates <see cref="LiveList{T}"/>s from the diff streams of the SDK, like
+/// Creates <see cref="LiveList{T}"/>s from the diff streams of the SDK (the <c>Watch…DiffsAsync</c> methods), like
 /// <c>timeline.WatchItemDiffsAsync(cancellationToken).ToLiveList(item => Format(item))</c>.
 /// </summary>
 /// <remarks>
+/// <para>
 /// The list starts enumerating the stream right away on <c>synchronizationContext</c>, by default the current one
 /// (<see cref="SynchronizationContext.Current"/>, the UI thread in WPF, Avalonia and MAUI, none in console apps). Pass
-/// <c>new SynchronizationContext()</c> to update the list on thread pool threads from a UI thread. Dispose the list to
-/// stop it, which also ends the subscription. See <see cref="LiveList{T}"/> for the ownership of the items.
+/// <c>synchronizationContext: new SynchronizationContext()</c> to update the list on thread pool threads from a UI
+/// thread. Dispose the list to stop it, which also ends the subscription. See <see cref="LiveList{T}"/> for the
+/// ownership of the items.
+/// </para>
+/// <para>
+/// Asynchronous projections take a cancellation token, write them as
+/// <c>ToLiveList(async (room, cancellationToken) => new RoomItem(await room.RoomInfo()))</c>. Projections of different
+/// types need the type arguments: <c>ToLiveList&lt;TimelineItem, ItemViewModel&gt;(...)</c>.
+/// </para>
 /// </remarks>
 public static class LiveListExtensions
 {
@@ -44,6 +52,9 @@ public static class LiveListExtensions
     /// <param name="synchronizationContext">The context to update the list on, by default the current one.</param>
     /// <typeparam name="TSource">The type of the values of the diffs.</typeparam>
     /// <typeparam name="T">The type of the items.</typeparam>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="selector"/> returns a task, asynchronous projections take a cancellation token.
+    /// </exception>
     public static LiveList<T> ToLiveList<TSource, T>(
         this IAsyncEnumerable<IReadOnlyList<VectorDiff<TSource>>> diffs,
         Func<TSource, T> selector,
@@ -52,6 +63,19 @@ public static class LiveListExtensions
     )
     {
         ArgumentNullException.ThrowIfNull(selector);
+        // async room => ... binds to this overload and would keep tasks, the asynchronous one needs the token
+        if (
+            typeof(Task).IsAssignableFrom(typeof(T))
+            || typeof(T) == typeof(ValueTask)
+            || (typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(ValueTask<>))
+        )
+        {
+            throw new ArgumentException(
+                "The selector returns a task, use the overload for asynchronous projections: "
+                    + "ToLiveList(async (value, cancellationToken) => ...).",
+                nameof(selector)
+            );
+        }
         return LiveList<T>.Start(
             diffs,
             new SelectorProjection<TSource, T>(selector, update),
@@ -61,10 +85,11 @@ public static class LiveListExtensions
 
     /// <summary>
     /// Keeps a list of projections of the values of <paramref name="diffs"/> up to date, with an asynchronous
-    /// projection for data like <c>Room.RoomInfo()</c>. The values are projected one after another and applied in
-    /// order. Every value is disposed right after <paramref name="selector"/> (or <paramref name="update"/>)
-    /// completed, the projections must not keep it. The list owns the projections like <see cref="ToLiveList{T}"/>
-    /// owns the values.
+    /// projection for data like <c>Room.RoomInfo()</c>. The values of an <see cref="VectorDiff{T}.Append"/> or
+    /// <see cref="VectorDiff{T}.Reset"/> are projected concurrently, the diffs one after another, and applied in order.
+    /// Every value is disposed right after <paramref name="selector"/> (or <paramref name="update"/>) completed, the
+    /// projections must not keep it. The list owns the projections like <see cref="ToLiveList{T}"/> owns the
+    /// values.
     /// </summary>
     /// <param name="diffs">The diffs, applied batch by batch.</param>
     /// <param name="selector">

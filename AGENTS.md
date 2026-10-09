@@ -88,8 +88,16 @@ obvious:
   first, otherwise set `Current = nameof(Getter)` if the type has a getter. Document when the SDK ends it on its own,
   set `ThrowWhenFinished` if that only happens because of an error. Include `docs/disposable` if the values contain
   `IDisposable`s.
-- After a matrix-rust-sdk update `SubscriptionCoverageTests` fails for new subscriptions and listeners: declare them or
-  list them with a reason. Changed subscriptions break the build (`MRSG002` not found, `MRSG003` value type).
+- The diff enums of the bindings (`TimelineDiff`, `RoomListEntriesUpdate`, ...) aren't exposed: diff subscriptions yield
+  `VectorDiff<T>[]` and the generator converts the enum in the listener. Hand written listeners declare the conversion
+  with `[VectorDiffConversion] private static partial VectorDiff<Room> ToVectorDiff(this RoomListEntriesUpdate diff);`.
+  The generator checks that the enum has exactly the variants of `VectorDiff<T>` (`MRSG006`).
+- `LiveList<T>` (`ToLiveList`) owns its items and disposes them when they leave the list, with a projection the source
+  values are disposed right after projecting. It runs entirely on the `SynchronizationContext` it was created on, only
+  its pump changes the items, the lock only protects readers on other threads.
+- After a matrix-rust-sdk update `SubscriptionCoverageTests` fails for new subscriptions, listeners and diff enums:
+  declare them or list them with a reason. Changed subscriptions break the build (`MRSG002` not found, `MRSG003` value
+  type).
 - The generator targets netstandard2.0 and Microsoft.CodeAnalysis 4.14 (the oldest compiler it has to run in),
   `renovate.json` keeps Renovate from updating it. Its tests compile declarations against the real bindings and compare
   the output with snapshots.

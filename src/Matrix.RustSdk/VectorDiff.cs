@@ -5,16 +5,17 @@ namespace Matrix.RustSdk;
 /// <summary>
 /// One change of a list. The SDK describes changes of its lists (timeline items, rooms, threads, search results, ...)
 /// with these diffs, applying them in order to a list keeps a copy of it, see <see cref="ApplyTo"/> and
-/// <c>ToLiveList</c>.
+/// <see cref="LiveListExtensions"/>.
 /// </summary>
 /// <remarks>
 /// The values belong to the diff until it is applied: disposing a diff disposes the values it contains if they are
-/// <see cref="IDisposable"/>, don't dispose diffs whose values you keep.
+/// <see cref="IDisposable"/>, don't dispose diffs whose values you keep. Match the variants with patterns like
+/// <c>case VectorDiff&lt;Room&gt;.Insert(int index, Room room):</c>.
 /// </remarks>
 /// <typeparam name="T">The type of the items.</typeparam>
 // S3881: only the nested, sealed variants derive from it, there is nothing a Dispose(bool) could be overridden for
 #pragma warning disable S3881
-public abstract record VectorDiff<T> : IDisposable
+public abstract class VectorDiff<T> : IDisposable
 #pragma warning restore S3881
 {
     // only the nested variants derive from it
@@ -23,8 +24,17 @@ public abstract record VectorDiff<T> : IDisposable
     /// <summary>
     /// <see cref="Values"/> were added at the end.
     /// </summary>
-    public sealed record Append(IReadOnlyList<T> Values) : VectorDiff<T>
+    public sealed class Append(IReadOnlyList<T> values) : VectorDiff<T>
     {
+        /// <summary>
+        /// The added values.
+        /// </summary>
+        public IReadOnlyList<T> Values { get; } = values ?? throw new ArgumentNullException(nameof(values));
+
+        public void Deconstruct(out IReadOnlyList<T> values) => values = Values;
+
+        public override string ToString() => $"Append({Values.Count} values)";
+
         private protected override void Apply(IList<T> list, Action<T>? removed)
         {
             foreach (T value in Values)
@@ -39,16 +49,27 @@ public abstract record VectorDiff<T> : IDisposable
     /// <summary>
     /// All items were removed.
     /// </summary>
-    public sealed record Clear : VectorDiff<T>
+    public sealed class Clear : VectorDiff<T>
     {
+        public override string ToString() => "Clear";
+
         private protected override void Apply(IList<T> list, Action<T>? removed) => RemoveFrom(list, 0, removed);
     }
 
     /// <summary>
     /// <see cref="Value"/> was added at the start.
     /// </summary>
-    public sealed record PushFront(T Value) : VectorDiff<T>
+    public sealed class PushFront(T value) : VectorDiff<T>
     {
+        /// <summary>
+        /// The added value.
+        /// </summary>
+        public T Value { get; } = value;
+
+        public void Deconstruct(out T value) => value = Value;
+
+        public override string ToString() => $"PushFront({Value})";
+
         private protected override void Apply(IList<T> list, Action<T>? removed) => list.Insert(0, Value);
 
         private protected override IEnumerable<T> GetValues() => [Value];
@@ -57,8 +78,17 @@ public abstract record VectorDiff<T> : IDisposable
     /// <summary>
     /// <see cref="Value"/> was added at the end.
     /// </summary>
-    public sealed record PushBack(T Value) : VectorDiff<T>
+    public sealed class PushBack(T value) : VectorDiff<T>
     {
+        /// <summary>
+        /// The added value.
+        /// </summary>
+        public T Value { get; } = value;
+
+        public void Deconstruct(out T value) => value = Value;
+
+        public override string ToString() => $"PushBack({Value})";
+
         private protected override void Apply(IList<T> list, Action<T>? removed) => list.Add(Value);
 
         private protected override IEnumerable<T> GetValues() => [Value];
@@ -67,8 +97,10 @@ public abstract record VectorDiff<T> : IDisposable
     /// <summary>
     /// The first item was removed.
     /// </summary>
-    public sealed record PopFront : VectorDiff<T>
+    public sealed class PopFront : VectorDiff<T>
     {
+        public override string ToString() => "PopFront";
+
         private protected override void Apply(IList<T> list, Action<T>? removed)
         {
             EnsureNotEmpty(list);
@@ -79,8 +111,10 @@ public abstract record VectorDiff<T> : IDisposable
     /// <summary>
     /// The last item was removed.
     /// </summary>
-    public sealed record PopBack : VectorDiff<T>
+    public sealed class PopBack : VectorDiff<T>
     {
+        public override string ToString() => "PopBack";
+
         private protected override void Apply(IList<T> list, Action<T>? removed)
         {
             EnsureNotEmpty(list);
@@ -91,8 +125,22 @@ public abstract record VectorDiff<T> : IDisposable
     /// <summary>
     /// <see cref="Value"/> was inserted at <see cref="Index"/>, the items from there on moved back by one.
     /// </summary>
-    public sealed record Insert(int Index, T Value) : VectorDiff<T>
+    public sealed class Insert(int index, T value) : VectorDiff<T>
     {
+        /// <summary>
+        /// The index of the inserted value.
+        /// </summary>
+        public int Index { get; } = index;
+
+        /// <summary>
+        /// The inserted value.
+        /// </summary>
+        public T Value { get; } = value;
+
+        public void Deconstruct(out int index, out T value) => (index, value) = (Index, Value);
+
+        public override string ToString() => $"Insert({Index}, {Value})";
+
         private protected override void Apply(IList<T> list, Action<T>? removed)
         {
             // List<T> allows inserting at Count, other lists may not check it
@@ -107,8 +155,22 @@ public abstract record VectorDiff<T> : IDisposable
     /// <summary>
     /// The item at <see cref="Index"/> was replaced with <see cref="Value"/>, for example because it changed.
     /// </summary>
-    public sealed record Set(int Index, T Value) : VectorDiff<T>
+    public sealed class Set(int index, T value) : VectorDiff<T>
     {
+        /// <summary>
+        /// The index of the replaced item.
+        /// </summary>
+        public int Index { get; } = index;
+
+        /// <summary>
+        /// The new value.
+        /// </summary>
+        public T Value { get; } = value;
+
+        public void Deconstruct(out int index, out T value) => (index, value) = (Index, Value);
+
+        public override string ToString() => $"Set({Index}, {Value})";
+
         private protected override void Apply(IList<T> list, Action<T>? removed)
         {
             T old = list[Index];
@@ -122,16 +184,34 @@ public abstract record VectorDiff<T> : IDisposable
     /// <summary>
     /// The item at <see cref="Index"/> was removed, the items after it moved forward by one.
     /// </summary>
-    public sealed record Remove(int Index) : VectorDiff<T>
+    public sealed class Remove(int index) : VectorDiff<T>
     {
+        /// <summary>
+        /// The index of the removed item.
+        /// </summary>
+        public int Index { get; } = index;
+
+        public void Deconstruct(out int index) => index = Index;
+
+        public override string ToString() => $"Remove({Index})";
+
         private protected override void Apply(IList<T> list, Action<T>? removed) => RemoveAt(list, Index, removed);
     }
 
     /// <summary>
     /// The items from <see cref="Length"/> on were removed.
     /// </summary>
-    public sealed record Truncate(int Length) : VectorDiff<T>
+    public sealed class Truncate(int length) : VectorDiff<T>
     {
+        /// <summary>
+        /// The number of items that are left.
+        /// </summary>
+        public int Length { get; } = length;
+
+        public void Deconstruct(out int length) => length = Length;
+
+        public override string ToString() => $"Truncate({Length})";
+
         private protected override void Apply(IList<T> list, Action<T>? removed)
         {
             ArgumentOutOfRangeException.ThrowIfNegative(Length);
@@ -143,8 +223,17 @@ public abstract record VectorDiff<T> : IDisposable
     /// <summary>
     /// All items were replaced with <see cref="Values"/>.
     /// </summary>
-    public sealed record Reset(IReadOnlyList<T> Values) : VectorDiff<T>
+    public sealed class Reset(IReadOnlyList<T> values) : VectorDiff<T>
     {
+        /// <summary>
+        /// The new values.
+        /// </summary>
+        public IReadOnlyList<T> Values { get; } = values ?? throw new ArgumentNullException(nameof(values));
+
+        public void Deconstruct(out IReadOnlyList<T> values) => values = Values;
+
+        public override string ToString() => $"Reset({Values.Count} values)";
+
         private protected override void Apply(IList<T> list, Action<T>? removed)
         {
             RemoveFrom(list, 0, removed);

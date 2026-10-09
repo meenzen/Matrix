@@ -15,6 +15,7 @@ public static partial class LiveLocationsObserverExtensions
     /// <include file="Subscriptions/Subscriptions.xml" path="docs/cancellationToken/*"/>
     /// <remarks>
     /// <include file="Subscriptions/Subscriptions.xml" path="docs/stream/*"/>
+    /// <include file="Subscriptions/Subscriptions.xml" path="docs/diffs/*"/>
     /// <para>Disposing the observer ends the enumeration.</para>
     /// </remarks>
     [Subscription(nameof(LiveLocationsObserver.Subscribe), SubscriptionBuffer.All)]

@@ -16,6 +16,7 @@ public static partial class ThreadListServiceExtensions
     /// <include file="Subscriptions/Subscriptions.xml" path="docs/cancellationToken/*"/>
     /// <remarks>
     /// <include file="Subscriptions/Subscriptions.xml" path="docs/stream/*"/>
+    /// <include file="Subscriptions/Subscriptions.xml" path="docs/diffs/*"/>
     /// <include file="Subscriptions/Subscriptions.xml" path="docs/disposable/*"/>
     /// <para>Disposing a diff disposes the threads it contains, don't dispose diffs whose threads you keep.</para>
     /// </remarks>

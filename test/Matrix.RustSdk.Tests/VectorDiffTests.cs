@@ -126,6 +126,32 @@ public class VectorDiffTests
         await Assert.That(new[] { first, second, third }.All(d => d.IsDisposed)).IsTrue();
     }
 
+    [Test]
+    public async Task Variants_ShouldDeconstructAndPrint()
+    {
+        // Arrange
+        VectorDiff<string>[] diffs = [new VectorDiff<string>.Insert(2, "a"), new VectorDiff<string>.Reset(["b", "c"])];
+
+        // Act
+        string[] described =
+        [
+            .. diffs.Select(diff =>
+                diff switch
+                {
+                    VectorDiff<string>.Insert(int index, string value) => $"{index}:{value}",
+                    VectorDiff<string>.Reset(IReadOnlyList<string> values) => string.Join(",", values),
+                    _ => "",
+                }
+            ),
+        ];
+
+        // Assert
+        await Assert.That(described).IsEquivalentTo(["2:a", "b,c"], CollectionOrdering.Matching);
+        await Assert
+            .That(diffs.Select(diff => diff.ToString() ?? ""))
+            .IsEquivalentTo(["Insert(2, a)", "Reset(2 values)"], CollectionOrdering.Matching);
+    }
+
     private sealed class Disposable : IDisposable
     {
         public bool IsDisposed { get; private set; }

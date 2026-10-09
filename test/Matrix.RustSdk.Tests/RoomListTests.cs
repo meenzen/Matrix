@@ -25,7 +25,7 @@ public class RoomListTests(Homeserver homeserver)
 
         // Act
         await using LiveList<string> rooms = sync
-            .RoomList.WatchEntryDiffsAsync(query)
+            .RoomList.WatchRoomDiffsAsync(query)
             .ToLiveList(room => room.Id(), synchronizationContext: ThreadPool);
         await Poll.UntilAsync(
             () => Task.FromResult(rooms.Contains(first) && rooms.Contains(second)),
@@ -72,14 +72,14 @@ public class RoomListTests(Homeserver homeserver)
         await using SyncSession sync = await SyncSession.StartAsync(client);
         RoomListQuery query = new(pageSize: 10);
         LiveList<string> rooms = sync
-            .RoomList.WatchEntryDiffsAsync(query)
+            .RoomList.WatchRoomDiffsAsync(query)
             .ToLiveList(entry => entry.Id(), synchronizationContext: ThreadPool);
         await rooms.Initialized.WaitAsync(Poll.DefaultTimeout);
 
         // Act
         async Task EnumerateAsync()
         {
-            await foreach (VectorDiff<Room>[] diffs in sync.RoomList.WatchEntryDiffsAsync(query))
+            await foreach (VectorDiff<Room>[] diffs in sync.RoomList.WatchRoomDiffsAsync(query))
             {
                 // the query is in use, the enumeration throws before the first value
                 _ = diffs;
@@ -96,7 +96,7 @@ public class RoomListTests(Homeserver homeserver)
         }
         await rooms.DisposeAsync();
         await using LiveList<string> again = sync
-            .RoomList.WatchEntryDiffsAsync(query)
+            .RoomList.WatchRoomDiffsAsync(query)
             .ToLiveList(entry => entry.Id(), synchronizationContext: ThreadPool);
         await Poll.UntilAsync(() => Task.FromResult(again.Contains(room)), "the query works again");
 

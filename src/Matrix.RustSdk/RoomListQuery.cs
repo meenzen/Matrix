@@ -3,23 +3,46 @@ using Matrix.RustSdk.Bindings;
 namespace Matrix.RustSdk;
 
 /// <summary>
-/// The filter and paging of a room list, passed to <see cref="RoomListExtensions.WatchEntryDiffsAsync"/>. Changes
-/// apply to the running enumeration right away, a new enumeration starts with <see cref="Filter"/> and one page.
+/// The filter and paging of a room list, passed to <see cref="RoomListExtensions.WatchRoomDiffsAsync"/>. Changes
+/// apply to the running enumeration right away, a new enumeration starts with the current filter and one page.
 /// </summary>
 /// <remarks>
 /// A query is used by at most one enumeration at a time. Its members can be called from any thread.
 /// </remarks>
 public sealed class RoomListQuery
 {
+    /// <summary>
+    /// The default <see cref="BaseFilter"/>, the one Element X uses: rooms that weren't left and aren't spaces, invites
+    /// to spaces, and only the current version of upgraded rooms.
+    /// </summary>
+    private static readonly RoomListEntriesDynamicFilterKind DefaultBaseFilter =
+        new RoomListEntriesDynamicFilterKind.All([
+            new RoomListEntriesDynamicFilterKind.Any([
+                new RoomListEntriesDynamicFilterKind.All([
+                    new RoomListEntriesDynamicFilterKind.NonSpace(),
+                    new RoomListEntriesDynamicFilterKind.NonLeft(),
+                ]),
+                new RoomListEntriesDynamicFilterKind.All([
+                    new RoomListEntriesDynamicFilterKind.Space(),
+                    new RoomListEntriesDynamicFilterKind.Invite(),
+                ]),
+            ]),
+            new RoomListEntriesDynamicFilterKind.DeduplicateVersions(),
+        ]);
+
     private readonly Lock _lock = new();
-    private RoomListEntriesDynamicFilterKind _filter = new RoomListEntriesDynamicFilterKind.NonLeft();
+    private readonly RoomListEntriesDynamicFilterKind _baseFilter = DefaultBaseFilter;
+    private RoomListEntriesDynamicFilterKind? _filter;
     private bool _inUse;
     private RoomListDynamicEntriesController? _controller;
 
     /// <summary>
-    /// Creates a query yielding <paramref name="pageSize"/> rooms per page, by default all rooms that weren't left.
+    /// Creates a query yielding <paramref name="pageSize"/> rooms per page.
     /// </summary>
-    /// <param name="pageSize">How many rooms a page contains, the enumeration starts with one page.</param>
+    /// <param name="pageSize">
+    /// How many rooms a page contains, the enumeration starts with one page. Element X shows 20 rooms per page and
+    /// loads three more pages when the user scrolls close to the end.
+    /// </param>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="pageSize"/> is less than 1.</exception>
     public RoomListQuery(int pageSize)
     {
@@ -33,11 +56,24 @@ public sealed class RoomListQuery
     public int PageSize { get; }
 
     /// <summary>
-    /// Which rooms to yield, by default <see cref="RoomListEntriesDynamicFilterKind.NonLeft"/>. Changing it while an
-    /// enumeration runs makes the SDK start over with a <see cref="VectorDiff{T}.Reset"/> of the matching rooms, which
-    /// replaces every room of a list.
+    /// The rooms the list contains at most, <see cref="Filter"/> narrows them down. By default the rooms Element X
+    /// shows: rooms that weren't left and aren't spaces, invites to spaces, and only the current version of upgraded
+    /// rooms. <c>new RoomListEntriesDynamicFilterKind.All([])</c> contains every room.
     /// </summary>
-    public RoomListEntriesDynamicFilterKind Filter
+    public RoomListEntriesDynamicFilterKind BaseFilter
+    {
+        get => _baseFilter;
+        init => _baseFilter = value ?? throw new ArgumentNullException(nameof(value));
+    }
+
+    /// <summary>
+    /// Narrows the rooms of <see cref="BaseFilter"/> down, for example to
+    /// <see cref="RoomListEntriesDynamicFilterKind.Favourite"/> or
+    /// <see cref="RoomListEntriesDynamicFilterKind.NormalizedMatchRoomName"/>, <see langword="null"/> (the default)
+    /// for all of them. Changing it while an enumeration runs goes back to one page and makes the SDK start over with a
+    /// <see cref="VectorDiff{T}.Reset"/> of the matching rooms, which replaces every item of a list.
+    /// </summary>
+    public RoomListEntriesDynamicFilterKind? Filter
     {
         get
         {
@@ -48,19 +84,24 @@ public sealed class RoomListQuery
         }
         set
         {
-            ArgumentNullException.ThrowIfNull(value);
             lock (_lock)
             {
                 _filter = value;
-                _controller?.SetFilter(value);
+                if (_controller is not null)
+                {
+                    _controller.ResetToOnePage();
+                    _controller.SetFilter(EffectiveFilter());
+                }
             }
         }
     }
 
     /// <summary>
-    /// Yields one more page of rooms in the running enumeration. Does nothing without one, and before the SDK knows how
-    /// many rooms there are (<see cref="RoomListLoadingState.Loaded"/>, see
-    /// <see cref="RoomListExtensions.WatchLoadingStateAsync"/>).
+    /// Yields one more page of rooms in the running enumeration. Does nothing without one (also right after
+    /// <c>ToLiveList</c>, which starts the enumeration in the background), and before the SDK knows how many rooms there
+    /// are. More rooms are available while the number of rooms is less than
+    /// <see cref="RoomListLoadingState.Loaded.MaximumNumberOfRooms"/>, see
+    /// <see cref="RoomListExtensions.WatchLoadingStateAsync"/>.
     /// </summary>
     public void AddOnePage()
     {
@@ -108,7 +149,7 @@ public sealed class RoomListQuery
         lock (_lock)
         {
             _controller = controller;
-            controller.SetFilter(_filter);
+            controller.SetFilter(EffectiveFilter());
         }
     }
 
@@ -123,4 +164,7 @@ public sealed class RoomListQuery
             _inUse = false;
         }
     }
+
+    private RoomListEntriesDynamicFilterKind EffectiveFilter() =>
+        _filter is null ? _baseFilter : new RoomListEntriesDynamicFilterKind.All([_baseFilter, _filter]);
 }

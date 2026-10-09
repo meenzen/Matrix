@@ -26,7 +26,10 @@ internal abstract class LiveListProjection<TSource, T>
     /// </summary>
     // no ConfigureAwait, projections run on the context of the list
 #pragma warning disable CA2007
-    public async ValueTask<T[]> CreateAllAsync(IReadOnlyList<TSource> sources, CancellationToken cancellationToken)
+    public virtual async ValueTask<T[]> CreateAllAsync(
+        IReadOnlyList<TSource> sources,
+        CancellationToken cancellationToken
+    )
     {
         T[] items = new T[sources.Count];
         int created = 0;
@@ -137,6 +140,45 @@ internal sealed class AsyncSelectorProjection<TSource, T>(
         finally
         {
             SubscriptionStream.Dispose(source);
+        }
+    }
+
+    /// <summary>
+    /// Projects all values concurrently, a page of rooms would otherwise wait for one round trip per room. If one
+    /// fails, the others are awaited and their items disposed.
+    /// </summary>
+    public override async ValueTask<T[]> CreateAllAsync(
+        IReadOnlyList<TSource> sources,
+        CancellationToken cancellationToken
+    )
+    {
+        // every task disposes its source, also when starting it fails
+        Task<T>[] tasks = new Task<T>[sources.Count];
+        for (int i = 0; i < tasks.Length; i++)
+        {
+            tasks[i] = CreateAsync(sources[i], cancellationToken).AsTask();
+        }
+        try
+        {
+            // in order, the results are on the context of the list then
+            T[] items = new T[tasks.Length];
+            for (int i = 0; i < tasks.Length; i++)
+            {
+                items[i] = await tasks[i];
+            }
+            return items;
+        }
+        catch
+        {
+            await ((Task)Task.WhenAll(tasks)).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+            foreach (Task<T> task in tasks)
+            {
+                if (task.IsCompletedSuccessfully)
+                {
+                    SubscriptionStream.Dispose(await task);
+                }
+            }
+            throw;
         }
     }
 #pragma warning restore CA2007

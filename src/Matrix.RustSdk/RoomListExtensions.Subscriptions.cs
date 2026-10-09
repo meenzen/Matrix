@@ -19,16 +19,21 @@ public static partial class RoomListExtensions
     /// <include file="Subscriptions/Subscriptions.xml" path="docs/cancellationToken/*"/>
     /// <remarks>
     /// <include file="Subscriptions/Subscriptions.xml" path="docs/stream/*"/>
+    /// <include file="Subscriptions/Subscriptions.xml" path="docs/diffs/*"/>
     /// <include file="Subscriptions/Subscriptions.xml" path="docs/disposable/*"/>
     /// <para>
     /// The SDK replaces a room with a new <see cref="Room"/> (<see cref="VectorDiff{T}.Set"/>) whenever something
-    /// notable changes, a new message or unread counts, keep the room id instead of the object.
+    /// notable changes, a new message or unread counts, and moves it with <see cref="VectorDiff{T}.Remove"/> and
+    /// <see cref="VectorDiff{T}.Insert"/> when the order changes: keep the room id instead of the object. The first
+    /// <see cref="VectorDiff{T}.Reset"/> contains the rooms known so far, it can be empty before the first sync,
+    /// <see cref="WatchLoadingStateAsync"/> tells when the list is loaded.
     /// </para>
     /// </remarks>
     /// <exception cref="InvalidOperationException">
-    /// Another enumeration uses <paramref name="query"/>, thrown when the enumeration starts.
+    /// Another enumeration uses <paramref name="query"/>, thrown when the enumeration starts (in a <c>LiveList</c>:
+    /// its <c>Completion</c> fails).
     /// </exception>
-    public static IAsyncEnumerable<VectorDiff<Room>[]> WatchEntryDiffsAsync(
+    public static IAsyncEnumerable<VectorDiff<Room>[]> WatchRoomDiffsAsync(
         this RoomList roomList,
         RoomListQuery query,
         CancellationToken cancellationToken = default
