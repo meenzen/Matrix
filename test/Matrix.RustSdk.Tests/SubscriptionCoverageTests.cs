@@ -23,6 +23,8 @@ public class SubscriptionCoverageTests
         ["Client.SetDelegate"] = "ClientDelegate has two methods, it isn't a stream",
     };
 
+    private const string ProgressListener = "progress listener, candidate for an IProgress<T> overload";
+
     /// <summary>
     /// Methods of the bindings taking a listener that don't return a <see cref="TaskHandle"/>, keyed by
     /// <c>Type.Method</c>. They aren't subscriptions, but some deserve a helper of their own.
@@ -31,13 +33,13 @@ public class SubscriptionCoverageTests
     {
         ["RoomList.EntriesWithDynamicAdapters"] = "room list, needs a hand written helper",
         ["RoomList.LoadingState"] = "room list, needs a hand written helper",
-        ["Client.UploadMedia"] = "progress listener, candidate for an IProgress<T> overload",
-        ["Encryption.EnableRecovery"] = "progress listener, candidate for an IProgress<T> overload",
-        ["Encryption.WaitForBackupUploadSteadyState"] = "progress listener, candidate for an IProgress<T> overload",
-        ["GrantLoginWithQrCodeHandler.Generate"] = "progress listener, candidate for an IProgress<T> overload",
-        ["GrantLoginWithQrCodeHandler.Scan"] = "progress listener, candidate for an IProgress<T> overload",
-        ["LoginWithQrCodeHandler.Generate"] = "progress listener, candidate for an IProgress<T> overload",
-        ["LoginWithQrCodeHandler.Scan"] = "progress listener, candidate for an IProgress<T> overload",
+        ["Client.UploadMedia"] = ProgressListener,
+        ["Encryption.EnableRecovery"] = ProgressListener,
+        ["Encryption.WaitForBackupUploadSteadyState"] = ProgressListener,
+        ["GrantLoginWithQrCodeHandler.Generate"] = ProgressListener,
+        ["GrantLoginWithQrCodeHandler.Scan"] = ProgressListener,
+        ["LoginWithQrCodeHandler.Generate"] = ProgressListener,
+        ["LoginWithQrCodeHandler.Scan"] = ProgressListener,
         ["ClientBuilder.SetSessionDelegate"] = "delegate storing sessions, not a stream",
         ["Client.SetUtdDelegate"] = "delegate reporting decryption failures, registered for the lifetime of the client",
         ["NotificationSettings.SetDelegate"] = "delegate, not a stream",
@@ -204,13 +206,13 @@ public class SubscriptionCoverageTests
     private static IEnumerable<(MethodInfo Method, string Subscription)> Declarations() =>
         typeof(ClientExtensions)
             .Assembly.GetTypes()
+            // the hand written wrappers call internal declarations
+#pragma warning disable S3011
             .SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static))
-            .Select(method => (Method: method, Attribute: method.GetCustomAttribute<SubscriptionAttribute>()))
-            .Where(declaration => declaration.Attribute is not null)
-            .Select(declaration =>
-                (
-                    declaration.Method,
-                    $"{declaration.Method.GetParameters()[0].ParameterType.Name}.{declaration.Attribute!.Method}"
-                )
+#pragma warning restore S3011
+            .SelectMany(method =>
+                method
+                    .GetCustomAttributes<SubscriptionAttribute>()
+                    .Select(attribute => (method, $"{method.GetParameters()[0].ParameterType.Name}.{attribute.Method}"))
             );
 }

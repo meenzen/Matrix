@@ -1,4 +1,6 @@
 using System.Collections.Immutable;
+using System.Globalization;
+using System.Text;
 using Matrix.RustSdk.Bindings;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -25,8 +27,8 @@ internal sealed class GeneratorRun
 
     private static readonly ImmutableArray<MetadataReference> References =
     [
-        .. ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!)
-            .Split(Path.PathSeparator)
+        .. (AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string ?? "")
+            .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
             .Select(path => MetadataReference.CreateFromFile(path)),
         MetadataReference.CreateFromFile(typeof(Room).Assembly.Location),
     ];
@@ -35,7 +37,7 @@ internal sealed class GeneratorRun
     [
         CSharpSyntaxTree.ParseText(GlobalUsings, ParseOptions, "GlobalUsings.cs"),
         .. Directory
-            .GetFiles(Path.Combine(AppContext.BaseDirectory, "Runtime"), "*.cs")
+            .GetFiles(Path.Join(AppContext.BaseDirectory, "Runtime"), "*.cs")
             .Order(StringComparer.Ordinal)
             .Select(path => CSharpSyntaxTree.ParseText(File.ReadAllText(path), ParseOptions, path)),
     ];
@@ -47,7 +49,7 @@ internal sealed class GeneratorRun
     }
 
     /// <summary>
-    /// The driver after the run, Verify.SourceGenerators snapshots its generated sources and diagnostics.
+    /// The driver after the run.
     /// </summary>
     public GeneratorDriver Driver { get; }
 
@@ -69,6 +71,42 @@ internal sealed class GeneratorRun
             .GetDiagnostics()
             .Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error)
             .Select(diagnostic => diagnostic.ToString());
+
+    /// <summary>
+    /// The generated sources ordered by their hint name, followed by the diagnostics of the generator, for snapshots.
+    /// </summary>
+    public string Render()
+    {
+        GeneratorDriverRunResult result = Driver.GetRunResult();
+        StringBuilder builder = new();
+        foreach (
+            GeneratedSourceResult source in result
+                .Results.SelectMany(r => r.GeneratedSources)
+                .OrderBy(s => s.HintName, StringComparer.Ordinal)
+        )
+        {
+            builder.Append("// ----- ").Append(source.HintName).Append(" -----\n");
+            builder.Append(source.SourceText.ToString().ReplaceLineEndings("\n"));
+            builder.Append('\n');
+        }
+        foreach (Diagnostic diagnostic in result.Diagnostics.OrderBy(d => d.Location.SourceSpan.Start))
+        {
+            FileLinePositionSpan span = diagnostic.Location.GetLineSpan();
+            builder
+                .Append("// ----- ")
+                .Append(diagnostic.Id)
+                .Append(' ')
+                .Append(diagnostic.Severity)
+                .Append(" at ")
+                .Append(span.StartLinePosition.Line + 1)
+                .Append(':')
+                .Append(span.StartLinePosition.Character + 1)
+                .Append(" -----\n")
+                .Append(diagnostic.GetMessage(CultureInfo.InvariantCulture))
+                .Append('\n');
+        }
+        return builder.ToString();
+    }
 
     public static GeneratorRun Run(string source) => Run(CreateCompilation(source));
 

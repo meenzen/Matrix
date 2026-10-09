@@ -14,6 +14,7 @@
     <ProjectReference Include="..\..\src\Matrix.RustSdk.Generators\Matrix.RustSdk.Generators.csproj" />
     <!-- only the metadata of the bindings is used, the test compilations reference it -->
     <ProjectReference Include="..\..\src\Matrix.RustSdk.Bindings\Matrix.RustSdk.Bindings.csproj" />
+    <ProjectReference Include="..\Matrix.RustSdk.Testing\Matrix.RustSdk.Testing.csproj" />
   </ItemGroup>
   <ItemGroup>
     <!-- the test compilations contain the runtime part of the subscriptions, like Matrix.RustSdk does -->

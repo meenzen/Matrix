@@ -92,8 +92,10 @@ public class SubscriptionTests(Homeserver homeserver)
         // Act
         try
         {
-            // nobody types and nothing syncs, the enumeration waits until it is cancelled
-            await foreach (string[] _ in room.WatchTypingUsersAsync(cancellation.Token)) { }
+            await foreach (string[] _ in room.WatchTypingUsersAsync(cancellation.Token))
+            {
+                // nobody types and nothing syncs, the enumeration waits until it is cancelled
+            }
         }
         catch (OperationCanceledException e)
         {

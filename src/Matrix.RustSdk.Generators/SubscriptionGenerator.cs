@@ -64,27 +64,8 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
             // the compiler reports the invalid attribute usage
             return Result.Empty;
         }
-        string buffer = bufferType
-            .GetMembers()
-            .OfType<IFieldSymbol>()
-            .Where(field => field.HasConstantValue && Equals(field.ConstantValue, bufferValue))
-            .Select(field => $"{bufferType.ToDisplayString(TypeFormat)}.{field.Name}")
-            .DefaultIfEmpty($"({bufferType.ToDisplayString(TypeFormat)}){bufferValue}")
-            .First();
 
-        // static partial IAsyncEnumerable<T> Name(this Owner owner, extra..., CancellationToken cancellationToken)
-        if (
-            !declaration.IsPartialDefinition
-            || !declaration.IsExtensionMethod
-            || declaration.IsGenericMethod
-            || declaration.ContainingType.ContainingType is not null
-            || declaration.ContainingType.IsGenericType
-            || declaration.Parameters.Length < 2
-            || declaration.Parameters.Last().Type.ToDisplayString() != "System.Threading.CancellationToken"
-            || declaration.Parameters.Any(p => p.RefKind != RefKind.None || p.IsParams || p.Name == Writer)
-            || declaration.ReturnType is not INamedTypeSymbol { Arity: 1 } returnType
-            || returnType.ConstructedFrom.ToDisplayString() != "System.Collections.Generic.IAsyncEnumerable<T>"
-        )
+        if (!IsValidDeclaration(declaration))
         {
             return Result.Error(
                 Diagnostics.InvalidDeclaration,
@@ -95,43 +76,20 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
             );
         }
 
-        ITypeSymbol valueType = returnType.TypeArguments[0];
-        IParameterSymbol self = declaration.Parameters[0];
-        ImmutableArray<IParameterSymbol> extra = declaration
-            .Parameters.RemoveAt(0)
-            .RemoveAt(declaration.Parameters.Length - 2);
+        ITypeSymbol valueType = GetValueType(declaration);
+        ITypeSymbol self = declaration.Parameters[0].Type;
+        ImmutableArray<IParameterSymbol> extra = GetExtraParameters(declaration);
 
-        IMethodSymbol? target = null;
-        IParameterSymbol? listener = null;
-        foreach (IMethodSymbol candidate in self.Type.GetMembers(methodName).OfType<IMethodSymbol>())
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            IParameterSymbol? candidateListener = candidate.Parameters.FirstOrDefault(p =>
-                GetListenerMethod(p.Type) is not null
-            );
-            if (
-                candidateListener is not null
-                && !candidate.IsStatic
-                && ReturnsTaskHandle(candidate.ReturnType)
-                && ParametersMatch(candidate, candidateListener, extra)
-            )
-            {
-                target = candidate;
-                listener = candidateListener;
-                break;
-            }
-        }
-
-        if (target is null || listener is null)
+        if (FindSubscribeMethod(self, methodName, extra, cancellationToken) is not { } subscribe)
         {
             string parameters =
                 extra.Length == 0
                     ? "no other parameters"
                     : string.Join(", ", extra.Select(p => $"{p.Type.ToDisplayString()} {p.Name}"));
-            return Result.Error(Diagnostics.MethodNotFound, location, self.Type.Name, methodName, parameters);
+            return Result.Error(Diagnostics.MethodNotFound, location, self.Name, methodName, parameters);
         }
 
-        IMethodSymbol listenerMethod = GetListenerMethod(listener.Type)!;
+        IMethodSymbol listenerMethod = subscribe.ListenerMethod;
         if (!MatchesValueType(listenerMethod, valueType))
         {
             string expected =
@@ -144,44 +102,132 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
         IMethodSymbol? current = null;
         if (NamedArgument(attribute, "Current") is string currentName)
         {
-            current = self
-                .Type.GetMembers(currentName)
-                .OfType<IMethodSymbol>()
-                .FirstOrDefault(candidate =>
-                    !candidate.IsStatic
-                    && ParametersMatch(candidate.Parameters.ToArray(), extra)
-                    && ReturnsValue(candidate.ReturnType, valueType)
-                );
+            current = FindCurrentMethod(self, currentName, extra, valueType);
             if (current is null)
             {
                 return Result.Error(
                     Diagnostics.CurrentNotFound,
                     location,
-                    self.Type.Name,
+                    self.Name,
                     currentName,
                     valueType.ToDisplayString()
                 );
             }
         }
 
-        // overloads need distinct file and listener names. The listener keeps the Async suffix of the method, without it
-        // AccountDataAsync would get a nested AccountDataListener hiding the listener interface of the bindings.
+        // overloads need distinct file and listener names
         string suffix = OverloadSuffix(declaration);
         Subscription subscription = new(
             declaration,
-            extra,
-            valueType,
-            target,
-            listener,
-            listenerMethod,
-            buffer,
+            subscribe,
+            BufferExpression(bufferType, bufferValue),
             current,
             NamedArgument(attribute, "ThrowWhenFinished") is true,
-            declaration.Name + "Listener" + suffix
+            suffix
         );
         string hintName = $"{declaration.ContainingType.ToDisplayString()}.{declaration.Name}{suffix}.g.cs";
         return new Result(hintName, Render(subscription), null);
     }
+
+    /// <summary>
+    /// <c>static partial IAsyncEnumerable&lt;T&gt; Name(this Owner owner, extra..., CancellationToken cancellationToken)</c>
+    /// in a top level, non generic class.
+    /// </summary>
+    private static bool IsValidDeclaration(IMethodSymbol declaration) =>
+        declaration.IsPartialDefinition
+        && declaration.IsExtensionMethod
+        && !declaration.IsGenericMethod
+        && declaration.ContainingType.ContainingType is null
+        && !declaration.ContainingType.IsGenericType
+        && declaration.Parameters.Length >= 2
+        && declaration.Parameters.Last().Type.ToDisplayString() == "System.Threading.CancellationToken"
+        && declaration.Parameters.All(p => p.RefKind == RefKind.None && !p.IsParams && p.Name != Writer)
+        && declaration.ReturnType is INamedTypeSymbol { Arity: 1 } returnType
+        && returnType.ConstructedFrom.ToDisplayString() == "System.Collections.Generic.IAsyncEnumerable<T>";
+
+    /// <summary>
+    /// The <c>T</c> of the <c>IAsyncEnumerable&lt;T&gt;</c> returned by a valid declaration.
+    /// </summary>
+    private static ITypeSymbol GetValueType(IMethodSymbol declaration) =>
+        ((INamedTypeSymbol)declaration.ReturnType).TypeArguments[0];
+
+    /// <summary>
+    /// The parameters of a valid declaration between the extended type and the cancellation token.
+    /// </summary>
+    private static ImmutableArray<IParameterSymbol> GetExtraParameters(IMethodSymbol declaration) =>
+        declaration.Parameters.RemoveAt(0).RemoveAt(declaration.Parameters.Length - 2);
+
+    /// <summary>
+    /// The buffer as C# expression, the name of the enum member if there is one.
+    /// </summary>
+    private static string BufferExpression(INamedTypeSymbol bufferType, object bufferValue) =>
+        bufferType
+            .GetMembers()
+            .OfType<IFieldSymbol>()
+            .Where(field => field.HasConstantValue && Equals(field.ConstantValue, bufferValue))
+            .Select(field => $"{bufferType.ToDisplayString(TypeFormat)}.{field.Name}")
+            .DefaultIfEmpty($"({bufferType.ToDisplayString(TypeFormat)}){bufferValue}")
+            .First();
+
+    /// <summary>
+    /// The instance method <paramref name="name"/> of <paramref name="type"/> that returns a <c>TaskHandle</c>, takes a
+    /// listener and otherwise the <paramref name="extra"/> parameters, null if there is none.
+    /// </summary>
+    private static SubscribeMethod? FindSubscribeMethod(
+        ITypeSymbol type,
+        string name,
+        ImmutableArray<IParameterSymbol> extra,
+        CancellationToken cancellationToken
+    )
+    {
+        foreach (IMethodSymbol candidate in type.GetMembers(name).OfType<IMethodSymbol>())
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (AsSubscribeMethod(candidate) is { } subscribe && ParametersMatch(candidate, subscribe.Listener, extra))
+            {
+                return subscribe;
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// <paramref name="method"/> with its listener if it is an instance method returning a <c>TaskHandle</c> that takes
+    /// a listener, null otherwise.
+    /// </summary>
+    private static SubscribeMethod? AsSubscribeMethod(IMethodSymbol method)
+    {
+        if (method.IsStatic || !ReturnsTaskHandle(method.ReturnType))
+        {
+            return null;
+        }
+        foreach (IParameterSymbol parameter in method.Parameters)
+        {
+            if (GetListenerMethod(parameter.Type) is { } listenerMethod)
+            {
+                return new SubscribeMethod(method, parameter, listenerMethod);
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// The instance method <paramref name="name"/> of <paramref name="type"/> that takes the <paramref name="extra"/>
+    /// parameters and returns the value type or a task of it, null if there is none.
+    /// </summary>
+    private static IMethodSymbol? FindCurrentMethod(
+        ITypeSymbol type,
+        string name,
+        ImmutableArray<IParameterSymbol> extra,
+        ITypeSymbol valueType
+    ) =>
+        type.GetMembers(name)
+            .OfType<IMethodSymbol>()
+            .FirstOrDefault(candidate =>
+                !candidate.IsStatic
+                && ParametersMatch(candidate.Parameters.ToArray(), extra)
+                && ReturnsValue(candidate.ReturnType, valueType)
+            );
 
     private static string Render(Subscription subscription)
     {
@@ -196,13 +242,13 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
             .ToArray();
         string arguments = string.Join(
             ", ",
-            subscription.Target.Parameters.Select(p =>
-                SymbolEqualityComparer.Default.Equals(p, subscription.Listener)
+            subscription.Subscribe.Method.Parameters.Select(p =>
+                SymbolEqualityComparer.Default.Equals(p, subscription.Subscribe.Listener)
                     ? $"new {listenerClass}({Writer})"
                     : Identifier(p)
             )
         );
-        IMethodSymbol listenerMethod = subscription.ListenerMethod;
+        IMethodSymbol listenerMethod = subscription.Subscribe.ListenerMethod;
         string written =
             listenerMethod.Parameters.Length == 1
                 ? Identifier(listenerMethod.Parameters[0])
@@ -237,7 +283,7 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
         code.Line($"return {Stream}.CreateAsync<{value}, global::{TaskHandle}>(");
         code.Indent();
         code.Line($"{Writer} => new global::System.Threading.Tasks.ValueTask<global::{TaskHandle}>(");
-        code.Indented(new[] { $"{Identifier(self)}.{subscription.Target.Name}({arguments})" });
+        code.Indented(new[] { $"{Identifier(self)}.{subscription.Subscribe.Method.Name}({arguments})" });
         code.Line("),");
         code.Line($"{subscription.Buffer},");
         if (subscription.Current is { } current)
@@ -259,7 +305,7 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
 
         code.Line($"private sealed class {listenerClass}(");
         code.Indented(new[] { $"global::Matrix.RustSdk.Subscriptions.SubscriptionWriter<{value}> {Writer}" });
-        code.Line($") : {subscription.Listener.Type.ToDisplayString(TypeFormat)}");
+        code.Line($") : {subscription.Subscribe.Listener.Type.ToDisplayString(TypeFormat)}");
         code.Open();
         code.Line(
             $"public void {listenerMethod.Name}({string.Join(", ", listenerMethod.Parameters.Select(Parameter))}) =>"
@@ -376,19 +422,30 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
         };
 
     /// <summary>
+    /// A subscription method of the bindings and its listener parameter.
+    /// </summary>
+    private sealed class SubscribeMethod(IMethodSymbol method, IParameterSymbol listener, IMethodSymbol listenerMethod)
+    {
+        public IMethodSymbol Method { get; } = method;
+
+        public IParameterSymbol Listener { get; } = listener;
+
+        /// <summary>
+        /// The single method of the listener interface.
+        /// </summary>
+        public IMethodSymbol ListenerMethod { get; } = listenerMethod;
+    }
+
+    /// <summary>
     /// A valid declaration and the members of the bindings it uses.
     /// </summary>
     private sealed class Subscription(
         IMethodSymbol declaration,
-        ImmutableArray<IParameterSymbol> extra,
-        ITypeSymbol valueType,
-        IMethodSymbol target,
-        IParameterSymbol listener,
-        IMethodSymbol listenerMethod,
+        SubscribeMethod subscribe,
         string buffer,
         IMethodSymbol? current,
         bool throwWhenFinished,
-        string listenerClass
+        string overloadSuffix
     )
     {
         public IMethodSymbol Declaration { get; } = declaration;
@@ -396,18 +453,14 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
         /// <summary>
         /// The parameters between the extended type and the cancellation token, passed through by name.
         /// </summary>
-        public ImmutableArray<IParameterSymbol> Extra { get; } = extra;
+        public ImmutableArray<IParameterSymbol> Extra { get; } = GetExtraParameters(declaration);
 
-        public ITypeSymbol ValueType { get; } = valueType;
+        public ITypeSymbol ValueType { get; } = GetValueType(declaration);
 
         /// <summary>
         /// The subscription method of the bindings.
         /// </summary>
-        public IMethodSymbol Target { get; } = target;
-
-        public IParameterSymbol Listener { get; } = listener;
-
-        public IMethodSymbol ListenerMethod { get; } = listenerMethod;
+        public SubscribeMethod Subscribe { get; } = subscribe;
 
         /// <summary>
         /// The buffer as C# expression.
@@ -421,7 +474,11 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
 
         public bool ThrowWhenFinished { get; } = throwWhenFinished;
 
-        public string ListenerClass { get; } = listenerClass;
+        /// <summary>
+        /// The name of the generated listener. It keeps the Async suffix of the method, without it AccountDataAsync
+        /// would get a nested AccountDataListener hiding the listener interface of the bindings.
+        /// </summary>
+        public string ListenerClass { get; } = declaration.Name + "Listener" + overloadSuffix;
     }
 
     /// <summary>

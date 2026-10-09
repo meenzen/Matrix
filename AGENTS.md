@@ -15,8 +15,8 @@ matrix-rust-sdk.
 - `src/Matrix.RustSdk`: idiomatic helpers on top of the bindings, not published yet, see [Helpers](#helpers) and
   [HELPERS.md](HELPERS.md) for the design notes
 - `src/Matrix.RustSdk.Generators`: source generator for the helpers, a build time dependency of `Matrix.RustSdk` only
-- `test/Matrix.RustSdk.Tests`: TUnit tests, `test/Matrix.RustSdk.Testing`: shared test setup (homeserver container),
-  `test/Matrix.RustSdk.Generators.Tests`: snapshot tests of the generator
+- `test/Matrix.RustSdk.Tests`: TUnit tests, `test/Matrix.RustSdk.Testing`: shared test setup (homeserver container,
+  snapshots), `test/Matrix.RustSdk.Generators.Tests`: snapshot tests of the generator
 - `example/`: example apps referencing the bindings from source, each tested by `test/<example>.Tests`
 - `scripts/`: local development scripts, `.github/scripts/`: scripts used by CI
 - `.github/workflows/`: `build.yml` (PRs and main), `packages.yml` (reusable: native builds for all platforms, tests,
@@ -91,9 +91,9 @@ obvious:
 - After a matrix-rust-sdk update `SubscriptionCoverageTests` fails for new subscriptions and listeners: declare them or
   list them with a reason. Changed subscriptions break the build (`MRSG002` not found, `MRSG003` value type).
 - The generator targets netstandard2.0 and Microsoft.CodeAnalysis 4.14 (the oldest compiler it has to run in). Its
-  tests compile declarations against the real bindings and compare the output with `Snapshots/*.verified.txt`: review
-  the `.received.txt` of a failing test and rename it, or run the tests with `UPDATE_SNAPSHOTS=1`. Verify isn't used,
-  its license requires a sponsorship or exemption declaration.
+  tests compile declarations against the real bindings and compare the output with snapshots.
+- `PublicApiTests` snapshots the public API of `Matrix.RustSdk` (PublicApiGenerator), every change of it shows up as a
+  snapshot diff and has to be accepted on purpose.
 
 ## Tests
 
@@ -105,6 +105,9 @@ obvious:
   (`[ClassDataSource<Homeserver>(Shared = SharedType.PerTestSession)]`), tests register their own users with
   `CreateUserAsync` because they run in parallel. Tests that build on each other's state are chained with
   `[DependsOn]` instead of repeating the setup. Wait for asynchronous results with `Poll.UntilAsync`, not fixed delays.
+- Snapshot tests use `Snapshot.VerifyAsync` (`Matrix.RustSdk.Testing`), the snapshots are in
+  `<test project>/Snapshots/*.verified.txt`. Review the `.received.txt` of a failing test and rename it, or run the
+  tests with `UPDATE_SNAPSHOTS=1`. Verify isn't used, its license requires a sponsorship or exemption declaration.
 - Every example in `example/` has exactly one test project `test/<example>.Tests` that runs the real example app
   against the homeserver.
 - The native library under test defaults to the debug build, `-p:NativeLibraryPath=...` selects another one (CI uses

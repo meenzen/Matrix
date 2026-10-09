@@ -9,6 +9,7 @@
     <NoWarn>$(NoWarn);VSTHRD200</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="PublicApiGenerator" Version="11.5.4" />
     <PackageReference Include="TUnit" Version="1.73.5" />
   </ItemGroup>
   <ItemGroup>

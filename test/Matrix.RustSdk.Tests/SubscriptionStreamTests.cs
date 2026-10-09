@@ -28,7 +28,7 @@ public class SubscriptionStreamTests
             out _
         );
         int beforeEnumeration = subscriptions;
-        await foreach (int _ in values) { }
+        await ConsumeAsync(values);
 
         // Assert
         await Assert.That(beforeEnumeration).IsEqualTo(0);
@@ -104,10 +104,7 @@ public class SubscriptionStreamTests
         );
 
         // Act
-        await foreach (Value[] _ in values)
-        {
-            break;
-        }
+        _ = await values.FirstAsync();
 
         // Assert
         await Assert.That(handle()!.IsDisposed).IsTrue();
@@ -123,10 +120,7 @@ public class SubscriptionStreamTests
         IAsyncEnumerable<int> values = Create<int>(SubscriptionBuffer.All, (_, _) => { }, out Func<FakeHandle?> handle);
 
         // Act
-        async Task EnumerateAsync()
-        {
-            await foreach (int _ in values.WithCancellation(cancellation.Token)) { }
-        }
+        Task EnumerateAsync() => ConsumeAsync(values, cancellation.Token);
 
         // Assert
         await Assert.That(EnumerateAsync).Throws<OperationCanceledException>();
@@ -215,7 +209,7 @@ public class SubscriptionStreamTests
             },
             out _
         );
-        await foreach (Value _ in values) { }
+        await ConsumeAsync(values);
         Value late = new(1);
 
         // Act
@@ -292,10 +286,7 @@ public class SubscriptionStreamTests
         );
 
         // Act
-        async Task EnumerateAsync()
-        {
-            await foreach (int _ in values) { }
-        }
+        Task EnumerateAsync() => ConsumeAsync(values);
 
         // Assert
         await Assert.That(EnumerateAsync).Throws<InvalidOperationException>().WithMessage("current failed");
@@ -361,10 +352,7 @@ public class SubscriptionStreamTests
         );
 
         // Act
-        async Task EnumerateAsync()
-        {
-            await foreach (Value _ in values) { }
-        }
+        Task EnumerateAsync() => ConsumeAsync(values);
 
         // Assert
         await Assert.That(EnumerateAsync).Throws<InvalidOperationException>().WithMessage("subscribing failed");
@@ -388,10 +376,7 @@ public class SubscriptionStreamTests
         );
 
         // Act
-        await foreach ((string RoomId, Value Update) _ in values)
-        {
-            break;
-        }
+        _ = await values.FirstAsync();
 
         // Assert
         await Assert.That(first.IsDisposed).IsFalse();
@@ -451,10 +436,7 @@ public class SubscriptionStreamTests
         );
 
         // Act
-        async Task EnumerateAsync()
-        {
-            await foreach (int _ in values) { }
-        }
+        Task EnumerateAsync() => ConsumeAsync(values);
 
         // Assert
         await Assert.That(EnumerateAsync).Throws<OperationCanceledException>();
@@ -509,6 +491,17 @@ public class SubscriptionStreamTests
             await Assert.That(lost).IsEmpty();
             await Assert.That(disposedTwice).IsEmpty();
             await Assert.That(received.Where(value => value.IsDisposed)).IsEmpty();
+        }
+    }
+
+    /// <summary>
+    /// Enumerates <paramref name="values"/> to the end, for tests that only check how the enumeration ends.
+    /// </summary>
+    private static async Task ConsumeAsync<T>(IAsyncEnumerable<T> values, CancellationToken cancellationToken = default)
+    {
+        await foreach (T _ in values.WithCancellation(cancellationToken))
+        {
+            // the values don't matter
         }
     }
 

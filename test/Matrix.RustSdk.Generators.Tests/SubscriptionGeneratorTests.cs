@@ -1,4 +1,5 @@
 using System.Runtime.CompilerServices;
+using Matrix.RustSdk.Testing;
 using Microsoft.CodeAnalysis;
 
 namespace Matrix.RustSdk.Generators.Tests;
@@ -9,6 +10,12 @@ namespace Matrix.RustSdk.Generators.Tests;
 /// </summary>
 public class SubscriptionGeneratorTests
 {
+    // the ids of the diagnostics in Diagnostics.cs
+    private const string InvalidDeclaration = "MRSG001";
+    private const string MethodNotFound = "MRSG002";
+    private const string ValueTypeMismatch = "MRSG003";
+    private const string CurrentNotFound = "MRSG004";
+
     private const string Usings = """
         using Matrix.RustSdk.Bindings;
         using Matrix.RustSdk.Subscriptions;
@@ -189,7 +196,7 @@ public class SubscriptionGeneratorTests
     [Test]
     public Task UnknownCurrent_ShouldReportCurrentNotFound() =>
         VerifyErrorAsync(
-            "MRSG004",
+            CurrentNotFound,
             """
             public static partial class RoomExtensions
             {
@@ -205,7 +212,7 @@ public class SubscriptionGeneratorTests
     [Test]
     public Task CurrentOfAnotherType_ShouldReportCurrentNotFound() =>
         VerifyErrorAsync(
-            "MRSG004",
+            CurrentNotFound,
             """
             public static partial class RoomExtensions
             {
@@ -225,7 +232,7 @@ public class SubscriptionGeneratorTests
     [Test]
     public Task ReservedParameterName_ShouldReportInvalidDeclaration() =>
         VerifyErrorAsync(
-            "MRSG001",
+            InvalidDeclaration,
             """
             public static partial class RoomExtensions
             {
@@ -241,7 +248,7 @@ public class SubscriptionGeneratorTests
     [Test]
     public Task NotPartial_ShouldReportInvalidDeclaration() =>
         VerifyErrorAsync(
-            "MRSG001",
+            InvalidDeclaration,
             """
             public static partial class RoomExtensions
             {
@@ -257,7 +264,7 @@ public class SubscriptionGeneratorTests
     [Test]
     public Task MissingCancellationToken_ShouldReportInvalidDeclaration() =>
         VerifyErrorAsync(
-            "MRSG001",
+            InvalidDeclaration,
             """
             public static partial class RoomExtensions
             {
@@ -270,7 +277,7 @@ public class SubscriptionGeneratorTests
     [Test]
     public Task WrongReturnType_ShouldReportInvalidDeclaration() =>
         VerifyErrorAsync(
-            "MRSG001",
+            InvalidDeclaration,
             """
             public static partial class RoomExtensions
             {
@@ -286,7 +293,7 @@ public class SubscriptionGeneratorTests
     [Test]
     public Task NotASubscription_ShouldReportMethodNotFound() =>
         VerifyErrorAsync(
-            "MRSG002",
+            MethodNotFound,
             """
             public static partial class RoomExtensions
             {
@@ -302,7 +309,7 @@ public class SubscriptionGeneratorTests
     [Test]
     public Task ListenerWithSeveralMethods_ShouldReportMethodNotFound() =>
         VerifyErrorAsync(
-            "MRSG002",
+            MethodNotFound,
             """
             public static partial class ClientExtensions
             {
@@ -318,7 +325,7 @@ public class SubscriptionGeneratorTests
     [Test]
     public Task WrongParameterName_ShouldReportMethodNotFound() =>
         VerifyErrorAsync(
-            "MRSG002",
+            MethodNotFound,
             """
             public static partial class ClientExtensions
             {
@@ -335,7 +342,7 @@ public class SubscriptionGeneratorTests
     [Test]
     public Task WrongParameterType_ShouldReportMethodNotFound() =>
         VerifyErrorAsync(
-            "MRSG002",
+            MethodNotFound,
             """
             public static partial class ClientExtensions
             {
@@ -352,7 +359,7 @@ public class SubscriptionGeneratorTests
     [Test]
     public Task WrongValueType_ShouldReportMismatch() =>
         VerifyErrorAsync(
-            "MRSG003",
+            ValueTypeMismatch,
             """
             public static partial class RoomExtensions
             {
@@ -368,7 +375,7 @@ public class SubscriptionGeneratorTests
     [Test]
     public Task MissingNullability_ShouldReportMismatch() =>
         VerifyErrorAsync(
-            "MRSG003",
+            ValueTypeMismatch,
             """
             public static partial class ClientExtensions
             {
@@ -384,7 +391,7 @@ public class SubscriptionGeneratorTests
     [Test]
     public Task TupleForSingleValue_ShouldReportMismatch() =>
         VerifyErrorAsync(
-            "MRSG003",
+            ValueTypeMismatch,
             """
             public static partial class ClientExtensions
             {
@@ -452,7 +459,7 @@ public class SubscriptionGeneratorTests
 
         await Assert.That(run.GeneratorDiagnostics).IsEmpty();
         await Assert.That(run.CompilationErrors).IsEmpty();
-        await Snapshot.VerifyAsync(run, testFile, test);
+        await Snapshot.VerifyAsync(run.Render(), testFile, test);
     }
 
     /// <summary>
@@ -469,6 +476,6 @@ public class SubscriptionGeneratorTests
 
         await Assert.That(run.GeneratorDiagnostics.Select(diagnostic => diagnostic.Id)).IsEquivalentTo([id]);
         await Assert.That(run.Driver.GetRunResult().GeneratedTrees).IsEmpty();
-        await Snapshot.VerifyAsync(run, testFile, test);
+        await Snapshot.VerifyAsync(run.Render(), testFile, test);
     }
 }

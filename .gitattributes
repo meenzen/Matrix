@@ -1,2 +1,2 @@
-# the snapshots of the generator tests are compared with LF line endings
+# snapshots are compared with LF line endings
 *.verified.txt text eol=lf

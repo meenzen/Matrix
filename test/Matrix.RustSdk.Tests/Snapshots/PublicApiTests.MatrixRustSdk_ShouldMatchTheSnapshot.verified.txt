@@ -1,0 +1,84 @@
+[assembly: System.Reflection.AssemblyMetadata("RepositoryUrl", "https://github.com/meenzen/Matrix")]
+[assembly: System.Runtime.Versioning.TargetFramework(".NETCoreApp,Version=v10.0", FrameworkDisplayName=".NET 10.0")]
+namespace Matrix.RustSdk.Bindings
+{
+    public static class ClientExtensions
+    {
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.SyncResponseV2> SyncV2Async(this Matrix.RustSdk.Bindings.Client client, Matrix.RustSdk.Bindings.SyncSettingsV2 settings, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.AccountDataEvent> WatchAccountDataAsync(this Matrix.RustSdk.Bindings.Client client, Matrix.RustSdk.Bindings.AccountDataEventType eventType, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.DuplicateOneTimeKeyErrorMessage?> WatchDuplicateKeyUploadErrorsAsync(this Matrix.RustSdk.Bindings.Client client, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<string[]> WatchIgnoredUsersAsync(this Matrix.RustSdk.Bindings.Client client, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.MediaPreviewConfig?> WatchMediaPreviewConfigAsync(this Matrix.RustSdk.Bindings.Client client, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.BeaconInfoUpdate> WatchOwnBeaconInfoUpdatesAsync(this Matrix.RustSdk.Bindings.Client client, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.UserProfile> WatchOwnProfileAsync(this Matrix.RustSdk.Bindings.Client client, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.RoomAccountDataEvent> WatchRoomAccountDataAsync(this Matrix.RustSdk.Bindings.Client client, string roomId, Matrix.RustSdk.Bindings.RumaEvents.RoomAccountDataEventType eventType, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.RoomInfo> WatchRoomInfoAsync(this Matrix.RustSdk.Bindings.Client client, string roomId, System.Threading.CancellationToken cancellationToken = default) { }
+        [return: System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                "RoomId",
+                "Error"})]
+        public static System.Collections.Generic.IAsyncEnumerable<System.ValueTuple<string, Matrix.RustSdk.Bindings.ClientException>> WatchSendQueueErrorsAsync(this Matrix.RustSdk.Bindings.Client client, System.Threading.CancellationToken cancellationToken = default) { }
+        [return: System.Runtime.CompilerServices.TupleElementNames(new string[] {
+                "RoomId",
+                "Update"})]
+        public static System.Collections.Generic.IAsyncEnumerable<System.ValueTuple<string, Matrix.RustSdk.Bindings.RoomSendQueueUpdate>> WatchSendQueueUpdatesAsync(this Matrix.RustSdk.Bindings.Client client, System.Threading.CancellationToken cancellationToken = default) { }
+    }
+    public static class EncryptionExtensions
+    {
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.BackupState> WatchBackupStateAsync(this Matrix.RustSdk.Bindings.Encryption encryption, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.DehydratedDeviceEvent> WatchDehydratedDeviceEventsAsync(this Matrix.RustSdk.Bindings.Encryption encryption, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.RecoveryState> WatchRecoveryStateAsync(this Matrix.RustSdk.Bindings.Encryption encryption, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.VerificationState> WatchVerificationStateAsync(this Matrix.RustSdk.Bindings.Encryption encryption, System.Threading.CancellationToken cancellationToken = default) { }
+    }
+    public static class LiveLocationsObserverExtensions
+    {
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.LiveLocationShareUpdate[]> WatchLiveLocationShareDiffsAsync(this Matrix.RustSdk.Bindings.LiveLocationsObserver liveLocationsObserver, System.Threading.CancellationToken cancellationToken = default) { }
+    }
+    public static class RoomDirectorySearchExtensions
+    {
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.RoomDirectorySearchEntryUpdate[]> WatchResultDiffsAsync(this Matrix.RustSdk.Bindings.RoomDirectorySearch roomDirectorySearch, System.Threading.CancellationToken cancellationToken = default) { }
+    }
+    public static class RoomExtensions
+    {
+        public static System.Collections.Generic.IAsyncEnumerable<string> WatchCallDeclinesAsync(this Matrix.RustSdk.Bindings.Room room, string rtcNotificationEventId, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.IdentityStatusChange[]> WatchIdentityStatusChangesAsync(this Matrix.RustSdk.Bindings.Room room, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.KnockRequest[]> WatchKnockRequestsAsync(this Matrix.RustSdk.Bindings.Room room, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.RoomInfo> WatchRoomInfoAsync(this Matrix.RustSdk.Bindings.Room room, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.RoomSendQueueUpdate> WatchSendQueueUpdatesAsync(this Matrix.RustSdk.Bindings.Room room, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<string[]> WatchTypingUsersAsync(this Matrix.RustSdk.Bindings.Room room, System.Threading.CancellationToken cancellationToken = default) { }
+    }
+    public static class RoomListServiceExtensions
+    {
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.RoomListServiceState> WatchStateAsync(this Matrix.RustSdk.Bindings.RoomListService roomListService, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.RoomListServiceSyncIndicator> WatchSyncIndicatorAsync(this Matrix.RustSdk.Bindings.RoomListService roomListService, System.TimeSpan delayBeforeShowing, System.TimeSpan delayBeforeHiding, System.Threading.CancellationToken cancellationToken = default) { }
+    }
+    public static class SearchServiceExtensions
+    {
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.Ui.SearchServicePaginationState> WatchPaginationStateAsync(this Matrix.RustSdk.Bindings.SearchService searchService, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.SearchServiceResultsUpdate[]> WatchResultDiffsAsync(this Matrix.RustSdk.Bindings.SearchService searchService, System.Threading.CancellationToken cancellationToken = default) { }
+    }
+    public static class SpaceRoomListExtensions
+    {
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.Ui.SpaceRoomListPaginationState> WatchPaginationStateAsync(this Matrix.RustSdk.Bindings.SpaceRoomList spaceRoomList, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.SpaceListUpdate[]> WatchRoomDiffsAsync(this Matrix.RustSdk.Bindings.SpaceRoomList spaceRoomList, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.SpaceRoom?> WatchSpaceAsync(this Matrix.RustSdk.Bindings.SpaceRoomList spaceRoomList, System.Threading.CancellationToken cancellationToken = default) { }
+    }
+    public static class SpaceServiceExtensions
+    {
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.SpaceFilterUpdate[]> WatchSpaceFilterDiffsAsync(this Matrix.RustSdk.Bindings.SpaceService spaceService, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.SpaceListUpdate[]> WatchTopLevelJoinedSpaceDiffsAsync(this Matrix.RustSdk.Bindings.SpaceService spaceService, System.Threading.CancellationToken cancellationToken = default) { }
+    }
+    public static class SyncServiceExtensions
+    {
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.SyncServiceState> WatchStateAsync(this Matrix.RustSdk.Bindings.SyncService syncService, System.Threading.CancellationToken cancellationToken = default) { }
+    }
+    public static class ThreadListServiceExtensions
+    {
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.ThreadListUpdate[]> WatchItemDiffsAsync(this Matrix.RustSdk.Bindings.ThreadListService threadListService, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.Ui.ThreadListPaginationState> WatchPaginationStateAsync(this Matrix.RustSdk.Bindings.ThreadListService threadListService, System.Threading.CancellationToken cancellationToken = default) { }
+    }
+    public static class TimelineExtensions
+    {
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.Sdk.PaginationStatus> WatchBackPaginationStatusAsync(this Matrix.RustSdk.Bindings.Timeline timeline, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.TimelineDiff[]> WatchItemDiffsAsync(this Matrix.RustSdk.Bindings.Timeline timeline, System.Threading.CancellationToken cancellationToken = default) { }
+    }
+}
