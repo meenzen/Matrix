@@ -11,6 +11,9 @@ env:
   # upstream's size optimized profile (opt-level "s" + LTO), additionally strip the symbol table to keep the package small
   CARGO_PROFILE: small-release-stripped
   CARGO_PROFILE_SMALL_RELEASE_STRIPPED_STRIP: symbols
+  # Testcontainers would pull its cleanup container (ryuk) from Docker Hub, which rate limits the shared runners. The
+  # tests dispose their containers, the runner is thrown away afterwards anyway.
+  TESTCONTAINERS_RYUK_DISABLED: "true"
 
 jobs:
   native:
@@ -154,19 +157,21 @@ jobs:
           workspaces: |
             external/matrix-rust-sdk
 
+      # the official image from the mirror on ECR Public: Docker Hub rate limits anonymous pulls per IP, which the
+      # shared runners exceed
       - name: Build matrix-sdk-ffi
         run: >-
           docker run --rm -v "$PWD:/work" -w /work -v "$HOME/.cargo:/cargo" -e CARGO_HOME=/cargo
           -e CARGO_TERM_COLOR -e CARGO_PROFILE -e CARGO_PROFILE_SMALL_RELEASE_STRIPPED_STRIP
           -e TARGET=${{ matrix.target }} -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)"
-          rust:1-alpine .github/scripts/build-musl.sh
+          public.ecr.aws/docker/library/rust:1-alpine .github/scripts/build-musl.sh
 
       # test the exact library that ends up in the package, docker is available so all tests run
       - name: Test native library
         run: >-
           docker run --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -v "$PWD:/work" -w /work
           -e NATIVE_LIBRARY_PATH="../../external/matrix-rust-sdk/target/${{ matrix.target }}/$CARGO_PROFILE/libmatrix_sdk_ffi.so"
-          -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)"
+          -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" -e TESTCONTAINERS_RYUK_DISABLED
           mcr.microsoft.com/dotnet/sdk:10.0-alpine .github/scripts/test-musl.sh
 
       - name: Collect native library
