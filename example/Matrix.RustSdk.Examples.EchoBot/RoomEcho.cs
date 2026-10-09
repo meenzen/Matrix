@@ -56,9 +56,10 @@ public sealed partial class RoomEcho : IAsyncDisposable
         {
             // the bot left the room or stops
         }
-        catch (Exception e)
+        catch (Exception e) when (!cancellationToken.IsCancellationRequested)
         {
-            // the loop runs in the background, log instead of failing DisposeAsync much later
+            // the loop failed on its own while the bot is in the room, it runs in the background: log right away
+            // instead of failing DisposeAsync much later
             LogEchoingStopped(e, _roomId);
         }
     }
@@ -82,18 +83,14 @@ public sealed partial class RoomEcho : IAsyncDisposable
     /// </summary>
     public async ValueTask DisposeAsync()
     {
-        try
+        using (_timeline)
+        using (_stopping)
         {
             await _stopping.CancelAsync();
             // the echo loop was started by this object and doesn't need the caller's context
 #pragma warning disable VSTHRD003
             await _echoing;
 #pragma warning restore VSTHRD003
-        }
-        finally
-        {
-            _stopping.Dispose();
-            _timeline.Dispose();
         }
     }
 

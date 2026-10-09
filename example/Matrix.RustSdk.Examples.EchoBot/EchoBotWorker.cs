@@ -75,13 +75,12 @@ public sealed partial class EchoBotWorker(IOptions<EchoBotOptions> options, ILog
             {
                 await ListenAsync(client, roomId);
             }
-            foreach (string roomId in response.Rooms.Left)
+            foreach (string roomId in response.Rooms.Left.Where(_rooms.ContainsKey))
             {
-                if (_rooms.Remove(roomId, out RoomEcho? room))
-                {
-                    await room.DisposeAsync();
-                    LogLeft(roomId);
-                }
+                RoomEcho room = _rooms[roomId];
+                _rooms.Remove(roomId);
+                await room.DisposeAsync();
+                LogLeft(roomId);
             }
         }
     }

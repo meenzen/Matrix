@@ -134,17 +134,11 @@ public static partial class TimelineExtensions
         List<EventTimelineItem?> events = [];
         try
         {
-            foreach (VectorDiff<TimelineItem> diff in batch)
-            {
-                foreach (TimelineItem item in diff.GetValues())
-                {
-                    // virtual items like day dividers aren't events
-                    if (item.AsEvent() is { } eventItem)
-                    {
-                        events.Add(eventItem);
-                    }
-                }
-            }
+            // virtual items like day dividers aren't events. AddRange adds one by one, the events created before an
+            // exception are disposed below
+            events.AddRange(
+                batch.SelectMany(diff => diff.GetValues()).Select(item => item.AsEvent()).OfType<EventTimelineItem>()
+            );
 
             List<EventTimelineItem> messages = [];
             foreach (int index in filter.Filter([.. events.Select(eventItem => ToFilterItem(eventItem!))]))
