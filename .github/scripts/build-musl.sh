@@ -2,7 +2,7 @@
 # Builds matrix-sdk-ffi for musl inside an alpine container, used by the native workflow:
 #
 #   docker run --rm -v "$PWD:/work" -w /work -e TARGET -e CARGO_PROFILE -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" \
-#     rust:1-alpine .github/scripts/build-musl.sh
+#     public.ecr.aws/docker/library/rust:1-alpine .github/scripts/build-musl.sh
 #
 # GitHub's javascript actions can't run inside alpine containers on arm64, so the job runs the container itself.
 
