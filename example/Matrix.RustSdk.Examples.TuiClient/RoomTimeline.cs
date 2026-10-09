@@ -77,13 +77,7 @@ public sealed class RoomTimeline : IAsyncDisposable
     /// Sends a text message, markdown is converted to HTML. The message shows up in the timeline right away as a local
     /// echo and is updated once the server confirms it.
     /// </summary>
-    public async Task SendAsync(string text)
-    {
-        using RoomMessageEventContentWithoutRelation content = MatrixSdkFfiMethods.MessageEventContentFromMarkdown(
-            text
-        );
-        using SendHandle sendHandle = await _timeline.Send(content);
-    }
+    public Task SendAsync(string text) => _timeline.SendMarkdownAsync(text);
 
     public async ValueTask DisposeAsync()
     {
@@ -106,25 +100,23 @@ public sealed class RoomTimeline : IAsyncDisposable
             return null;
         }
 
-        string sender = eventItem.SenderProfile is ProfileDetails.Ready { DisplayName: { } displayName }
-            ? displayName
-            : eventItem.Sender;
-        string time = DateTimeOffset
-            .FromUnixTimeMilliseconds((long)eventItem.Timestamp)
-            .ToLocalTime()
+        string sender = eventItem.SenderDisplayName;
+        string time = eventItem
+            .SentAt.ToLocalTime()
             .ToString("HH:mm", System.Globalization.CultureInfo.InvariantCulture);
 
-        string? text = eventItem.Content switch
-        {
-            TimelineItemContent.MsgLike { Content.Kind: MsgLikeKind.Message message } =>
-                $"<{sender}> {message.Content.Body.ReplaceLineEndings(" ")}",
-            TimelineItemContent.MsgLike { Content.Kind: MsgLikeKind.UnableToDecrypt } =>
-                $"<{sender}> (unable to decrypt)",
-            TimelineItemContent.MsgLike { Content.Kind: MsgLikeKind.Redacted } => $"<{sender}> (deleted)",
-            TimelineItemContent.RoomMembership membership =>
-                $"* {membership.UserDisplayName ?? membership.UserId}: {membership.Change}",
-            _ => null,
-        };
+        // the plain text of every kind of message, emotes and media aren't rendered differently
+        string? text = eventItem.Message is { } message
+            ? $"<{sender}> {message.Body.ReplaceLineEndings(" ")}"
+            : eventItem.Content switch
+            {
+                TimelineItemContent.MsgLike { Content.Kind: MsgLikeKind.UnableToDecrypt } =>
+                    $"<{sender}> (unable to decrypt)",
+                TimelineItemContent.MsgLike { Content.Kind: MsgLikeKind.Redacted } => $"<{sender}> (deleted)",
+                TimelineItemContent.RoomMembership membership =>
+                    $"* {membership.UserDisplayName ?? membership.UserId}: {membership.Change}",
+                _ => null,
+            };
         return text is null ? null : $"{time} {text}";
     }
 }

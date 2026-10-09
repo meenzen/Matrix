@@ -2,7 +2,7 @@
 
 Design notes for `src/Matrix.RustSdk`, the helpers on top of the generated bindings. They should build on
 matrix-rust-sdk, not reimplement it, and make common tasks idiomatic in C#: `IAsyncEnumerable`, `await using`,
-cancellation, managed collections. Helpers 1 and 2 are implemented, the findings for the others are from
+cancellation, managed collections. Helpers 1 to 3 are implemented, the findings for the others are from
 `matrix-sdk-ffi/20260909` and uniffi 0.31 and should be rechecked against the bindings before building on them.
 
 ## Pain points of the bindings
@@ -93,14 +93,47 @@ query.Filter = new RoomListEntriesDynamicFilterKind.Favourite();
 - Follow-ups: an opt-out of disposing projections (`disposeItems: false`) if view models get cached across lists,
   `GeneratorResult` keeps the `Diagnostic` (and its syntax tree) of failed declarations, so those don't cache.
 
-### 3. Messages and timeline items
+### 3. Messages and timeline items (implemented)
 
-- `MessageContent.Text(body)`, `MessageContent.Markdown(markdown)`, `timeline.SendTextAsync(text)` instead of
-  `MatrixSdkFfiMethods.MessageEventContentNew(new MessageType.Text(new TextMessageContent(body, Formatted: null)))`.
-- On `EventTimelineItem`: `TryGetText(out string body)`, `EventId` (unwraps `EventOrTransactionId.EventId`),
-  `SenderDisplayName` (falls back to `Sender`), timestamps as `DateTimeOffset`.
-- `timeline.IncomingMessages(cancellationToken)`: only new events of other users received by sync, each once. This
-  replaces most of the echo bot's `RoomTimeline`.
+```csharp
+await foreach (EventTimelineItem message in timeline.WatchIncomingMessagesAsync(cancellationToken))
+{
+    using (message)
+    {
+        if (message.TryGetText(out string? body))
+        {
+            await timeline.SendTextAsync(body, inReplyTo: message.EventId);
+        }
+    }
+}
+```
+
+- Reading, C# 14 extension properties on `EventTimelineItem`: `EventId`, `SenderDisplayName` (disambiguated like
+  Element when another member uses the same name: `Alice (@alice:example.org)`), `SentAt` (`DateTimeOffset`, UTC),
+  `Message` (the `MessageContent` of any msgtype, like Rust's `as_message()`), `ThreadRootEventId`,
+  `InReplyToEventId`, and `TryGetText(out body)` for `m.text` only, so bots don't answer the notices of other bots.
+- Sending: static extensions `RoomMessageEventContentWithoutRelation.Text(body, html?)`, `Notice(body, html?)` and
+  `Markdown(markdown)` (a static class `MessageContent` would clash with the record of the bindings), and
+  `timeline.SendTextAsync`/`SendNoticeAsync`/`SendMarkdownAsync` with an optional `inReplyTo`. Replies use
+  `Timeline.SendReply`, which keeps the thread of the replied-to event. The helpers return once the message is queued
+  and dispose the `SendHandle`, disposing it doesn't abort sending.
+- `WatchIncomingMessagesAsync`: messages of other users that arrived by sync since the timeline was created, each once.
+  The timeline reports events again on every change and re-adds them after a gappy sync (`Clear`, then origin `Sync`
+  again), so the filter (`IncomingMessageFilter`) remembers the event ids it saw (bounded, FIFO) and decides by origin
+  alone: `init_focus` loads the cached events with origin `Cache`, so the first `Reset` needs no special case and
+  messages arriving before the subscription started aren't lost. The position doesn't matter, eyeball's `Skip` shows
+  a new subscriber only the latest items and adds hidden ones, live ones too, with `PushFront` later. Events that
+  couldn't be decrypted aren't remembered, the decrypted `Set` keeps the origin. The sync of the own join (sliding
+  sync) contains the history before it with origin `Sync`, in the same batch: everything before the own join is
+  history.
+- Limitations, documented: events lost in a gappy sync are only loaded by pagination and aren't yielded. Sliding sync
+  syncs one event per room by default, bots raise it with `SyncServiceBuilder.WithRoomListTimelineLimit`. Events that
+  arrive while the timeline reloads from the cache (client fell behind) have origin `Cache` and are missed too. The
+  event cache handles a sync in the background, a timeline created right after the first sync can get its events as
+  new ones (the messages that arrived while a bot with a persistent store was offline, or recent history with an
+  in-memory store): bots compare `SentAt` with their start if they don't want those.
+- Follow-ups: filling gaps (paginate after a `Clear` and yield the events newer than the last seen one), which would
+  also make the default sliding sync configuration safe for bots.
 
 ### 4. Pagination
 
@@ -207,11 +240,7 @@ merged, like the subscriptions did.
 
 1. ~~Generator and all subscriptions (helper 1)~~: done in #143.
 2. ~~`VectorDiff<T>`, `LiveList<T>` and the room list (helper 2)~~: done in #148.
-3. **Message and timeline helpers, then the examples (helper 3).** `MessageContent.Text`/`Markdown`, `TryGetText`,
-   `EventId`, `SenderDisplayName`, timestamps as `DateTimeOffset`, and `IncomingMessagesAsync` for bots (new events of
-   other users from sync, each once). Rewrite the echo bot with the helpers, its test then covers them end to end. The
-   TUI client already uses the subscriptions, `LiveList` and the room list since #148, the message helpers can replace
-   its `Format` and `SendAsync`.
+3. ~~Message and timeline helpers, the echo bot and the TUI client on top of them (helper 3)~~: done.
 4. **Remaining helpers (4 and 5).** `IProgress<T>` overloads for the 7 progress listeners (generated, they are listed
    in `SubscriptionCoverageTests`), pagination as async enumerables, `LoginOrRestoreAsync` with a session store, and a
    run-once `MatrixSdk.Initialize`.
@@ -230,4 +259,5 @@ Smaller follow-ups, whenever convenient:
   the duplicate key and send queue subscriptions spin when the client is dropped while they run,
   `SubscribeToSendQueueStatus` doesn't send the initial status it documents, and cancelling `SubscribeToKnockRequests`
   leaks a cleanup task.
+- Filling gaps in `WatchIncomingMessagesAsync`, see helper 3.
 - The hosting package (helper 6) once the rest is published.

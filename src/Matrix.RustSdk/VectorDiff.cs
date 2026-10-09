@@ -43,7 +43,7 @@ public abstract class VectorDiff<T> : IDisposable
             }
         }
 
-        private protected override IEnumerable<T> GetValues() => Values;
+        internal override IEnumerable<T> GetValues() => Values;
     }
 
     /// <summary>
@@ -72,7 +72,7 @@ public abstract class VectorDiff<T> : IDisposable
 
         private protected override void Apply(IList<T> list, Action<T>? removed) => list.Insert(0, Value);
 
-        private protected override IEnumerable<T> GetValues() => [Value];
+        internal override IEnumerable<T> GetValues() => [Value];
     }
 
     /// <summary>
@@ -91,7 +91,7 @@ public abstract class VectorDiff<T> : IDisposable
 
         private protected override void Apply(IList<T> list, Action<T>? removed) => list.Add(Value);
 
-        private protected override IEnumerable<T> GetValues() => [Value];
+        internal override IEnumerable<T> GetValues() => [Value];
     }
 
     /// <summary>
@@ -149,7 +149,7 @@ public abstract class VectorDiff<T> : IDisposable
             list.Insert(Index, Value);
         }
 
-        private protected override IEnumerable<T> GetValues() => [Value];
+        internal override IEnumerable<T> GetValues() => [Value];
     }
 
     /// <summary>
@@ -178,7 +178,7 @@ public abstract class VectorDiff<T> : IDisposable
             removed?.Invoke(old);
         }
 
-        private protected override IEnumerable<T> GetValues() => [Value];
+        internal override IEnumerable<T> GetValues() => [Value];
     }
 
     /// <summary>
@@ -243,7 +243,7 @@ public abstract class VectorDiff<T> : IDisposable
             }
         }
 
-        private protected override IEnumerable<T> GetValues() => Values;
+        internal override IEnumerable<T> GetValues() => Values;
     }
 
     /// <summary>
@@ -281,7 +281,7 @@ public abstract class VectorDiff<T> : IDisposable
     /// <summary>
     /// The values the diff adds to the list.
     /// </summary>
-    private protected virtual IEnumerable<T> GetValues() => [];
+    internal virtual IEnumerable<T> GetValues() => [];
 
     private static void EnsureNotEmpty(IList<T> list)
     {
