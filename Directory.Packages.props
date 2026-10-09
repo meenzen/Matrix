@@ -2,6 +2,10 @@
   <!-- central package management: projects reference packages without a version, the versions are set here -->
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!-- the versions here also apply to transitive dependencies -->
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+    <!-- projects can't override a version with VersionOverride -->
+    <CentralPackageVersionOverrideEnabled>false</CentralPackageVersionOverrideEnabled>
   </PropertyGroup>
   <!-- referenced by every project, as private assets (build and analyzers only) -->
   <ItemGroup>
