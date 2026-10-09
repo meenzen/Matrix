@@ -9,26 +9,28 @@ public static partial class SpaceServiceExtensions
 {
     /// <summary>
     /// Watches the space filters. Yields the changes in batches, starting with a
-    /// <see cref="SpaceFilterUpdate.Reset"/>.
+    /// <see cref="VectorDiff{T}.Reset"/>.
     /// </summary>
     /// <param name="spaceService">The space service.</param>
     /// <include file="Subscriptions/Subscriptions.xml" path="docs/cancellationToken/*"/>
     /// <remarks><include file="Subscriptions/Subscriptions.xml" path="docs/stream/*"/></remarks>
+    /// <remarks><include file="Subscriptions/Subscriptions.xml" path="docs/diffs/*"/></remarks>
     [Subscription(nameof(SpaceService.SubscribeToSpaceFilters), SubscriptionBuffer.All)]
-    public static partial IAsyncEnumerable<SpaceFilterUpdate[]> WatchSpaceFilterDiffsAsync(
+    public static partial IAsyncEnumerable<VectorDiff<SpaceFilter>[]> WatchSpaceFilterDiffsAsync(
         this SpaceService spaceService,
         CancellationToken cancellationToken = default
     );
 
     /// <summary>
     /// Watches the joined spaces that aren't a child of another joined space. Yields the changes in batches, starting
-    /// with a <see cref="SpaceListUpdate.Reset"/>.
+    /// with a <see cref="VectorDiff{T}.Reset"/>.
     /// </summary>
     /// <param name="spaceService">The space service.</param>
     /// <include file="Subscriptions/Subscriptions.xml" path="docs/cancellationToken/*"/>
     /// <remarks><include file="Subscriptions/Subscriptions.xml" path="docs/stream/*"/></remarks>
+    /// <remarks><include file="Subscriptions/Subscriptions.xml" path="docs/diffs/*"/></remarks>
     [Subscription(nameof(SpaceService.SubscribeToTopLevelJoinedSpaces), SubscriptionBuffer.All)]
-    public static partial IAsyncEnumerable<SpaceListUpdate[]> WatchTopLevelJoinedSpaceDiffsAsync(
+    public static partial IAsyncEnumerable<VectorDiff<SpaceRoom>[]> WatchTopLevelJoinedSpaceDiffsAsync(
         this SpaceService spaceService,
         CancellationToken cancellationToken = default
     );

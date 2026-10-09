@@ -28,7 +28,7 @@ public static class TuiClient
 
         await using (session)
         {
-            using ChatWindow chatWindow = new(app, session);
+            await using ChatWindow chatWindow = new(app, session);
             await app.RunAsync(chatWindow, cancellationToken);
         }
     }

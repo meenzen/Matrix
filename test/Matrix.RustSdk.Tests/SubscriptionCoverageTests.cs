@@ -17,9 +17,9 @@ public class SubscriptionCoverageTests
     private static readonly Dictionary<string, string> NotDeclared = new()
     {
         ["RoomListEntriesWithDynamicAdaptersResult.EntriesStream"] =
-            "the listener is passed to RoomList.EntriesWithDynamicAdapters, the room list needs a hand written helper",
+            "the listener is passed to RoomList.EntriesWithDynamicAdapters, hand written: RoomList.WatchRoomDiffsAsync",
         ["RoomListLoadingStateResult.StateStream"] =
-            "the listener is passed to RoomList.LoadingState, the room list needs a hand written helper",
+            "the listener is passed to RoomList.LoadingState, hand written: RoomList.WatchLoadingStateAsync",
         ["Client.SetDelegate"] = "ClientDelegate has two methods, it isn't a stream",
     };
 
@@ -31,8 +31,8 @@ public class SubscriptionCoverageTests
     /// </summary>
     private static readonly Dictionary<string, string> OtherListeners = new()
     {
-        ["RoomList.EntriesWithDynamicAdapters"] = "room list, needs a hand written helper",
-        ["RoomList.LoadingState"] = "room list, needs a hand written helper",
+        ["RoomList.EntriesWithDynamicAdapters"] = "hand written: RoomList.WatchRoomDiffsAsync",
+        ["RoomList.LoadingState"] = "hand written: RoomList.WatchLoadingStateAsync",
         ["Client.UploadMedia"] = ProgressListener,
         ["Encryption.EnableRecovery"] = ProgressListener,
         ["Encryption.WaitForBackupUploadSteadyState"] = ProgressListener,
@@ -139,6 +139,59 @@ public class SubscriptionCoverageTests
             );
     }
 
+    [Test]
+    public async Task EveryDiff_ShouldBeConvertedToVectorDiff()
+    {
+        // Arrange
+        HashSet<Type> converted =
+        [
+            .. Declarations().Select(declaration => ListenerValue(declaration.Method)?.GetElementType()).OfType<Type>(),
+            .. Conversions().Select(conversion => conversion.GetParameters()[0].ParameterType),
+        ];
+
+        // Act
+        string[] missing = [.. DiffTypes().Where(diff => !converted.Contains(diff)).Select(diff => diff.Name)];
+
+        // Assert
+        await Assert
+            .That(missing)
+            .IsEmpty()
+            .Because(
+                "every diff enum of the bindings needs a subscription yielding VectorDiff<T>[] or a "
+                    + "[VectorDiffConversion] declaration for its hand written listener"
+            );
+    }
+
+    [Test]
+    public async Task DiffSubscriptions_ShouldYieldVectorDiffs()
+    {
+        // Arrange
+        HashSet<Type> diffs = [.. DiffTypes()];
+
+        // Act
+        string[] raw =
+        [
+            .. Declarations()
+                .Where(declaration =>
+                    ListenerValue(declaration.Method)?.GetElementType() is { } element
+                    && diffs.Contains(element)
+                    && (
+                        declaration.Method.ReturnType.GetGenericArguments()[0] is not { IsArray: true } yielded
+                        || !yielded.GetElementType()!.IsGenericType
+                        || yielded.GetElementType()!.GetGenericTypeDefinition() != typeof(VectorDiff<>)
+                        || !declaration.Method.Name.EndsWith("DiffsAsync", StringComparison.Ordinal)
+                    )
+                )
+                .Select(declaration => $"{declaration.Method.DeclaringType!.Name}.{declaration.Method.Name}"),
+        ];
+
+        // Assert
+        await Assert
+            .That(raw)
+            .IsEmpty()
+            .Because("diff subscriptions are named Watch…DiffsAsync and yield VectorDiff<T>[], see AGENTS.md");
+    }
+
     private static IEnumerable<Type> BindingClasses() =>
         // the generated interfaces (IClient, ...) repeat the methods of the classes
         typeof(TaskHandle).Assembly.GetExportedTypes().Where(type => type.IsClass);
@@ -198,6 +251,52 @@ public class SubscriptionCoverageTests
     // instance methods and functions (static methods like those of MatrixSdkFfiMethods)
     private const BindingFlags Members =
         BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
+
+    /// <summary>
+    /// The diff enums of the bindings, records with the nested variants of <see cref="VectorDiff{T}"/>.
+    /// </summary>
+    private static IEnumerable<Type> DiffTypes() =>
+        BindingClasses()
+            .Where(type =>
+                typeof(VectorDiff<>)
+                    .GetNestedTypes()
+                    .All(variant => type.GetNestedType(variant.Name) is { } nested && nested.BaseType == type)
+            );
+
+    /// <summary>
+    /// The type the listener of the subscription wrapped by <paramref name="declaration"/> receives, null if it
+    /// receives several values.
+    /// </summary>
+    private static Type? ListenerValue(MethodInfo declaration)
+    {
+        if (declaration.GetCustomAttribute<SubscriptionAttribute>() is not { } attribute)
+        {
+            return null;
+        }
+        string name = attribute.Method;
+        return declaration
+            .GetParameters()[0]
+            .ParameterType.GetMember(name, MemberTypes.Method, Members)
+            .Cast<MethodInfo>()
+            .SelectMany(method => method.GetParameters())
+            .Select(parameter => parameter.ParameterType)
+            .Where(type => type.IsInterface && type.GetMethods().Length == 1)
+            .Select(listener => listener.GetMethods()[0].GetParameters())
+            .Where(parameters => parameters.Length == 1)
+            .Select(parameters => parameters[0].ParameterType)
+            .FirstOrDefault();
+    }
+
+    /// <summary>
+    /// The <see cref="VectorDiffConversionAttribute"/> declarations in Matrix.RustSdk.
+    /// </summary>
+    private static IEnumerable<MethodInfo> Conversions() =>
+        typeof(ClientExtensions)
+            .Assembly.GetTypes()
+#pragma warning disable S3011
+            .SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static))
+#pragma warning restore S3011
+            .Where(method => method.IsDefined(typeof(VectorDiffConversionAttribute)));
 
     /// <summary>
     /// The <see cref="SubscriptionAttribute"/> declarations in Matrix.RustSdk, including internal ones, with the

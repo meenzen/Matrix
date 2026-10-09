@@ -3,27 +3,36 @@ using Matrix.RustSdk.Bindings;
 namespace Matrix.RustSdk.Examples.TuiClient;
 
 /// <summary>
-/// A room in the room list.
+/// A room in the room list. It keeps the room id instead of the <see cref="Room"/>: the room list replaces its rooms
+/// with new objects whenever something changes, <see cref="MatrixSession.GetRoom"/> gets the room when it is opened.
 /// </summary>
-public sealed record RoomSummary(Room Room, string Name, bool IsInvite)
+public sealed record RoomSummary(string RoomId, string Name, bool IsInvite)
 {
     public override string ToString() => IsInvite ? $"{Name} (invite)" : Name;
 }
 
 /// <summary>
 /// The SDK side of the client: a logged in <see cref="Client"/>, the <see cref="SyncService"/> that keeps it up to date
-/// and the room list. This class doesn't know anything about the UI. The SDK calls the listeners on its own threads,
-/// the UI has to move the updates to its main loop.
+/// and the room list. This class doesn't know anything about the UI, it reports changes on thread pool threads and the
+/// UI has to move them to its main loop.
 /// </summary>
 public sealed class MatrixSession : IAsyncDisposable
 {
-    private const uint RoomListPageSize = 200;
+    /// <summary>
+    /// Updates the live lists on thread pool threads. Without it they would use the main loop of Terminal.Gui, which is
+    /// gone when the session is disposed after the UI closed.
+    /// </summary>
+    internal static readonly SynchronizationContext ThreadPool = new();
+
+    private const int RoomListPageSize = 200;
 
     private readonly Client _client;
     private readonly SyncService _syncService;
-    private TaskHandle? _syncStateHandle;
+    private readonly CancellationTokenSource _stopping = new();
+    private RoomListService? _roomListService;
     private RoomList? _roomList;
-    private RoomListEntriesWithDynamicAdaptersResult? _roomListEntries;
+    private LiveList<RoomSummary>? _rooms;
+    private Task? _syncStateWatcher;
 
     private MatrixSession(Client client, SyncService syncService)
     {
@@ -33,6 +42,11 @@ public sealed class MatrixSession : IAsyncDisposable
     }
 
     public string UserId { get; }
+
+    /// <summary>
+    /// The rooms, sorted by recency. Empty until <see cref="StartAsync"/> was called.
+    /// </summary>
+    public IReadOnlyList<RoomSummary> Rooms => _rooms?.ToArray() ?? [];
 
     /// <summary>
     /// Logs in with a password. The client uses an in-memory store, so every start is a new login (and a new device).
@@ -60,35 +74,52 @@ public sealed class MatrixSession : IAsyncDisposable
     }
 
     /// <summary>
-    /// Starts syncing. <paramref name="onRoomsChanged"/> is called with the whole room list whenever it changes and
+    /// Starts syncing. <paramref name="onRoomsChanged"/> is called whenever <see cref="Rooms"/> changes and
     /// <paramref name="onSyncStateChanged"/> whenever the state of the sync service changes.
     /// </summary>
-    public async Task StartAsync(
-        Action<IReadOnlyList<RoomSummary>> onRoomsChanged,
-        Action<SyncServiceState> onSyncStateChanged
-    )
+    public async Task StartAsync(System.Action onRoomsChanged, Action<SyncServiceState> onSyncStateChanged)
     {
-        _syncStateHandle = _syncService.State(new SyncStateObserver(onSyncStateChanged));
+        _syncStateWatcher = WatchSyncStateAsync(onSyncStateChanged);
 
-        // the room list service is driven by the sync service, it yields the rooms sorted by recency
-        RoomListService roomListService = _syncService.RoomListService();
-        _roomList = await roomListService.AllRooms();
-        _roomListEntries = _roomList.EntriesWithDynamicAdapters(RoomListPageSize, new RoomListObserver(onRoomsChanged));
-        // the entries stream doesn't emit anything until a filter is set
-        _roomListEntries.Controller().SetFilter(new RoomListEntriesDynamicFilterKind.NonLeft());
+        // the room list service is driven by the sync service, it yields the rooms sorted by recency. The query hides
+        // spaces, left rooms and old versions of upgraded rooms, like Element X does.
+        _roomListService = _syncService.RoomListService();
+        _roomList = await _roomListService.AllRooms();
+        _rooms = _roomList
+            .WatchRoomDiffsAsync(new RoomListQuery(RoomListPageSize), _stopping.Token)
+            .ToLiveList(Summarize, synchronizationContext: ThreadPool);
+        // the list is updated on another thread and may have changed before the handler was attached, so it is
+        // reported once right away
+        _rooms.Changed += (_, _) => onRoomsChanged();
+        onRoomsChanged();
 
         await _syncService.Start();
     }
 
+    /// <summary>
+    /// The room with <paramref name="roomId"/>, null if the client doesn't know it. The caller disposes it.
+    /// </summary>
+    public Room? GetRoom(string roomId) => _client.GetRoom(roomId);
+
     public async ValueTask DisposeAsync()
     {
         await _syncService.Stop();
-        _roomListEntries?.EntriesStream().Cancel();
-        _roomListEntries?.Dispose();
+        await _stopping.CancelAsync();
+        if (_syncStateWatcher is not null)
+        {
+            // started by StartAsync, it ends with the cancellation
+#pragma warning disable VSTHRD003
+            await _syncStateWatcher;
+#pragma warning restore VSTHRD003
+        }
+        if (_rooms is not null)
+        {
+            await _rooms.DisposeAsync();
+        }
         _roomList?.Dispose();
-        _syncStateHandle?.Cancel();
-        _syncStateHandle?.Dispose();
+        _roomListService?.Dispose();
         _syncService.Dispose();
+        _stopping.Dispose();
 
         // the in-memory session can't be restored, remove the device from the account again
         try
@@ -102,75 +133,22 @@ public sealed class MatrixSession : IAsyncDisposable
         _client.Dispose();
     }
 
-    /// <summary>
-    /// Keeps a copy of the room list and applies the diffs of the SDK to it.
-    /// </summary>
-    private sealed class RoomListObserver(Action<IReadOnlyList<RoomSummary>> onRoomsChanged) : RoomListEntriesListener
+    private async Task WatchSyncStateAsync(Action<SyncServiceState> onSyncStateChanged)
     {
-        private readonly Lock _lock = new();
-        private readonly List<RoomSummary> _rooms = [];
-
-        public void OnUpdate(RoomListEntriesUpdate[] roomEntriesUpdate)
+        try
         {
-            RoomSummary[] snapshot;
-            lock (_lock)
+            await foreach (SyncServiceState state in _syncService.WatchStateAsync(_stopping.Token))
             {
-                foreach (RoomListEntriesUpdate update in roomEntriesUpdate)
-                {
-                    Apply(update);
-                }
-                snapshot = [.. _rooms];
-            }
-            onRoomsChanged(snapshot);
-        }
-
-        private void Apply(RoomListEntriesUpdate update)
-        {
-            switch (update)
-            {
-                case RoomListEntriesUpdate.Append append:
-                    _rooms.AddRange(append.Values.Select(Summarize));
-                    break;
-                case RoomListEntriesUpdate.Clear:
-                    _rooms.Clear();
-                    break;
-                case RoomListEntriesUpdate.PushFront pushFront:
-                    _rooms.Insert(0, Summarize(pushFront.Value));
-                    break;
-                case RoomListEntriesUpdate.PushBack pushBack:
-                    _rooms.Add(Summarize(pushBack.Value));
-                    break;
-                case RoomListEntriesUpdate.PopFront:
-                    _rooms.RemoveAt(0);
-                    break;
-                case RoomListEntriesUpdate.PopBack:
-                    _rooms.RemoveAt(_rooms.Count - 1);
-                    break;
-                case RoomListEntriesUpdate.Insert insert:
-                    _rooms.Insert((int)insert.Index, Summarize(insert.Value));
-                    break;
-                case RoomListEntriesUpdate.Set set:
-                    _rooms[(int)set.Index] = Summarize(set.Value);
-                    break;
-                case RoomListEntriesUpdate.Remove remove:
-                    _rooms.RemoveAt((int)remove.Index);
-                    break;
-                case RoomListEntriesUpdate.Truncate truncate:
-                    _rooms.RemoveRange((int)truncate.Length, _rooms.Count - (int)truncate.Length);
-                    break;
-                case RoomListEntriesUpdate.Reset reset:
-                    _rooms.Clear();
-                    _rooms.AddRange(reset.Values.Select(Summarize));
-                    break;
+                onSyncStateChanged(state);
             }
         }
-
-        private static RoomSummary Summarize(Room room) =>
-            new(room, room.DisplayName() ?? room.Id(), room.Membership() == Membership.Invited);
+        catch (OperationCanceledException) when (_stopping.IsCancellationRequested)
+        {
+            // the session is disposed
+        }
     }
 
-    private sealed class SyncStateObserver(Action<SyncServiceState> onSyncStateChanged) : SyncServiceStateObserver
-    {
-        public void OnUpdate(SyncServiceState state) => onSyncStateChanged(state);
-    }
+    // the room is disposed right after, only managed values may be kept
+    private static RoomSummary Summarize(Room room) =>
+        new(room.Id(), room.DisplayName() ?? room.Id(), room.Membership() == Membership.Invited);
 }

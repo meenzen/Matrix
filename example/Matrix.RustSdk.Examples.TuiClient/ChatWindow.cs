@@ -9,10 +9,11 @@ namespace Matrix.RustSdk.Examples.TuiClient;
 /// The main window: the room list on the left, the timeline of the opened room and the composer on the right.
 /// </summary>
 /// <remarks>
-/// Views may only be changed on the main loop of Terminal.Gui. The SDK calls the listeners on its own threads, so every
-/// update is moved to the main loop with <see cref="IApplication.Invoke(System.Action)"/>.
+/// Views may only be changed on the main loop of Terminal.Gui. The session reports changes on other threads, so every
+/// update is moved to the main loop with <see cref="IApplication.Invoke(System.Action)"/>, which renders the latest
+/// state.
 /// </remarks>
-public sealed class ChatWindow : Window
+public sealed class ChatWindow : Window, IAsyncDisposable
 {
     private readonly IApplication _app;
     private readonly MatrixSession _session;
@@ -96,7 +97,7 @@ public sealed class ChatWindow : Window
         try
         {
             await _session.StartAsync(
-                rooms => _app.Invoke(() => ShowRooms(rooms)),
+                () => _app.Invoke(ShowRooms),
                 state =>
                     _app.Invoke(() =>
                     {
@@ -111,8 +112,9 @@ public sealed class ChatWindow : Window
         }
     }
 
-    private void ShowRooms(IReadOnlyList<RoomSummary> rooms)
+    private void ShowRooms()
     {
+        IReadOnlyList<RoomSummary> rooms = _session.Rooms;
         int? selected = _roomList.SelectedItem;
         _rooms = rooms;
         _roomList.SetSource(new ObservableCollection<string>(rooms.Select(r => r.ToString())));
@@ -134,31 +136,40 @@ public sealed class ChatWindow : Window
     {
         // updates of a previously opened timeline can still be queued, they are ignored
         int generation = ++_timelineGeneration;
-        _timeline?.Dispose();
+        RoomTimeline? previous = _timeline;
         _timeline = null;
         _timelineFrame.Title = room.Name;
         ShowTimeline([room.IsInvite ? "Joining..." : "Loading..."]);
 
         try
         {
-            RoomTimeline timeline = await RoomTimeline.OpenAsync(
-                room.Room,
-                lines =>
+            if (previous is not null)
+            {
+                await previous.DisposeAsync();
+            }
+            // the room list only keeps the id, the timeline owns the room
+            Bindings.Room nativeRoom =
+                _session.GetRoom(room.RoomId) ?? throw new InvalidOperationException("The room is gone.");
+            RoomTimeline? opened = null;
+            opened = await RoomTimeline.OpenAsync(
+                nativeRoom,
+                () =>
                     _app.Invoke(() =>
                     {
-                        if (generation == _timelineGeneration)
+                        if (generation == _timelineGeneration && opened is not null)
                         {
-                            ShowTimeline(lines);
+                            ShowTimeline(opened.Lines);
                         }
                     })
             );
             if (generation != _timelineGeneration)
             {
                 // another room was opened in the meantime
-                timeline.Dispose();
+                await opened.DisposeAsync();
                 return;
             }
-            _timeline = timeline;
+            ShowTimeline(opened.Lines);
+            _timeline = opened;
             _composer.SetFocus();
             UpdateStatus();
         }
@@ -206,13 +217,16 @@ public sealed class ChatWindow : Window
     private void UpdateStatus(string? message = null) =>
         _status.Text = message ?? $"Sync: {_syncState} | Enter: open room / send | Tab: next pane | Esc: quit";
 
-    protected override void Dispose(bool disposing)
+    /// <summary>
+    /// Closes the opened timeline and disposes the window.
+    /// </summary>
+    public async ValueTask DisposeAsync()
     {
-        if (disposing)
+        if (_timeline is not null)
         {
-            _timeline?.Dispose();
+            await _timeline.DisposeAsync();
             _timeline = null;
         }
-        base.Dispose(disposing);
+        Dispose();
     }
 }

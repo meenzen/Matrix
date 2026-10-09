@@ -1,0 +1,2 @@
+// ----- MRSG005 Error at 8:46 -----
+Invalid diff conversion declaration: a diff conversion has to be a static partial extension method of a top level, non generic class with a single parameter, returning Matrix.RustSdk.VectorDiff<T>

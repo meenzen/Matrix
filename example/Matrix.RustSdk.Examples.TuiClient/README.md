@@ -1,18 +1,20 @@
 # TUI client
 
 A basic Matrix client for the terminal, built with [Terminal.Gui](https://github.com/tui-cs/Terminal.Gui) on top of
-the bindings. It logs in with a password, shows the room list, the live timeline of the opened room and sends text
-messages.
+the bindings and the helpers of `Matrix.RustSdk`. It logs in with a password, shows the room list, the live timeline of
+the opened room and sends text messages.
 
 The parts of the SDK it uses:
 
-- [`MatrixSession.cs`](MatrixSession.cs): `ClientBuilder` and `Client.Login`, the `SyncService` and its
-  `RoomListService`, the room list with `RoomList.EntriesWithDynamicAdapters`
-- [`RoomTimeline.cs`](RoomTimeline.cs): `Room.Join`, `Room.Timeline`, `Timeline.AddListener` with its diffs,
-  `Timeline.PaginateBackwards` and `Timeline.Send`
+- [`MatrixSession.cs`](MatrixSession.cs): `ClientBuilder` and `Client.Login`, the `SyncService` (`WatchStateAsync`)
+  and its `RoomListService`, the room list with `RoomList.WatchRoomDiffsAsync` and a `RoomListQuery`, kept as a
+  `LiveList` of room summaries with `ToLiveList`
+- [`RoomTimeline.cs`](RoomTimeline.cs): `Room.Join`, `Room.Timeline`, `Timeline.WatchItemDiffsAsync` kept as a
+  `LiveList` of lines, `Timeline.PaginateBackwards` and `Timeline.Send`
 
-The SDK calls the listeners on its own threads, [`ChatWindow.cs`](ChatWindow.cs) moves the updates to the main loop of
-Terminal.Gui with `IApplication.Invoke`.
+The live lists project the native rooms and timeline items to managed values right away, the native objects are
+disposed after projecting. They are updated on thread pool threads, [`ChatWindow.cs`](ChatWindow.cs) moves the updates
+to the main loop of Terminal.Gui with `IApplication.Invoke`.
 
 To keep it short, the client uses an in-memory store: every start is a new login with a new device (removed again when
 quitting), so messages in encrypted rooms sent before the start can't be decrypted. Real clients use

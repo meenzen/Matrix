@@ -17,10 +17,15 @@
     <ProjectReference Include="..\Matrix.RustSdk.Testing\Matrix.RustSdk.Testing.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <!-- the test compilations contain the runtime part of the subscriptions, like Matrix.RustSdk does -->
+    <!-- the test compilations contain the runtime part of the generated code, like Matrix.RustSdk does -->
     <None
       Include="..\..\src\Matrix.RustSdk\Subscriptions\*.cs"
       Link="Runtime\%(Filename)%(Extension)"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+    <None
+      Include="..\..\src\Matrix.RustSdk\VectorDiff.cs"
+      Link="Runtime\VectorDiff.cs"
       CopyToOutputDirectory="PreserveNewest"
     />
   </ItemGroup>

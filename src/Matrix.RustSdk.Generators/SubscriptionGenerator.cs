@@ -18,39 +18,32 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
     private const string Stream = "global::Matrix.RustSdk.Subscriptions.SubscriptionStream";
     private const string TaskHandle = "Matrix.RustSdk.Bindings.TaskHandle";
 
+    // the conversion of diffs in the generated listener
+    private const string ConvertMethod = "ToVectorDiff";
+
     // the name of the writer in the generated code, reserved so it can't hide or be hidden by a parameter
     private const string Writer = "__writer";
 
-    private static readonly SymbolDisplayFormat TypeFormat =
+    internal static readonly SymbolDisplayFormat TypeFormat =
         SymbolDisplayFormat.FullyQualifiedFormat.AddMiscellaneousOptions(
             SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier
         );
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        IncrementalValuesProvider<Result> results = context.SyntaxProvider.ForAttributeWithMetadataName(
+        IncrementalValuesProvider<GeneratorResult> results = context.SyntaxProvider.ForAttributeWithMetadataName(
             AttributeName,
             static (node, _) => node is MethodDeclarationSyntax,
             static (attributeContext, cancellationToken) => Generate(attributeContext, cancellationToken)
         );
 
-        context.RegisterSourceOutput(
-            results,
-            static (output, result) =>
-            {
-                if (result.Diagnostic is not null)
-                {
-                    output.ReportDiagnostic(result.Diagnostic);
-                }
-                if (result.Source is not null)
-                {
-                    output.AddSource(result.HintName, result.Source);
-                }
-            }
-        );
+        context.RegisterSourceOutput(results, static (output, result) => result.AddTo(output));
     }
 
-    private static Result Generate(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
+    private static GeneratorResult Generate(
+        GeneratorAttributeSyntaxContext context,
+        CancellationToken cancellationToken
+    )
     {
         IMethodSymbol declaration = (IMethodSymbol)context.TargetSymbol;
         Location? location = declaration.Locations.FirstOrDefault();
@@ -62,12 +55,12 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
         )
         {
             // the compiler reports the invalid attribute usage
-            return Result.Empty;
+            return GeneratorResult.Empty;
         }
 
         if (!IsValidDeclaration(declaration))
         {
-            return Result.Error(
+            return GeneratorResult.Error(
                 Diagnostics.InvalidDeclaration,
                 location,
                 "a subscription has to be a static partial extension method of a top level, non generic class "
@@ -86,17 +79,18 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
                 extra.Length == 0
                     ? "no other parameters"
                     : string.Join(", ", extra.Select(p => $"{p.Type.ToDisplayString()} {p.Name}"));
-            return Result.Error(Diagnostics.MethodNotFound, location, self.Name, methodName, parameters);
+            return GeneratorResult.Error(Diagnostics.MethodNotFound, location, self.Name, methodName, parameters);
         }
 
         IMethodSymbol listenerMethod = subscribe.ListenerMethod;
+        VectorDiffShape? conversion = null;
         if (!MatchesValueType(listenerMethod, valueType))
         {
-            string expected =
-                listenerMethod.Parameters.Length == 1
-                    ? listenerMethod.Parameters[0].Type.ToDisplayString()
-                    : "(" + string.Join(", ", listenerMethod.Parameters.Select(p => p.Type.ToDisplayString())) + ")";
-            return Result.Error(Diagnostics.ValueTypeMismatch, location, methodName, expected);
+            conversion = DiffConversion(listenerMethod, valueType, out string received, out string expected);
+            if (conversion is null)
+            {
+                return GeneratorResult.Error(Diagnostics.ValueTypeMismatch, location, methodName, received, expected);
+            }
         }
 
         IMethodSymbol? current = null;
@@ -105,7 +99,7 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
             current = FindCurrentMethod(self, currentName, extra, valueType);
             if (current is null)
             {
-                return Result.Error(
+                return GeneratorResult.Error(
                     Diagnostics.CurrentNotFound,
                     location,
                     self.Name,
@@ -123,10 +117,11 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
             BufferExpression(bufferType, bufferValue),
             current,
             NamedArgument(attribute, "ThrowWhenFinished") is true,
+            conversion,
             suffix
         );
         string hintName = $"{declaration.ContainingType.ToDisplayString()}.{declaration.Name}{suffix}.g.cs";
-        return new Result(hintName, Render(subscription), null);
+        return new GeneratorResult(hintName, Render(subscription), null);
     }
 
     /// <summary>
@@ -253,6 +248,10 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
             listenerMethod.Parameters.Length == 1
                 ? Identifier(listenerMethod.Parameters[0])
                 : "(" + string.Join(", ", listenerMethod.Parameters.Select(Identifier)) + ")";
+        if (subscription.Conversion is not null)
+        {
+            written = $"global::System.Array.ConvertAll({written}, {ConvertMethod})";
+        }
 
         CodeWriter code = new();
         code.Line("// <auto-generated/>");
@@ -311,6 +310,22 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
             $"public void {listenerMethod.Name}({string.Join(", ", listenerMethod.Parameters.Select(Parameter))}) =>"
         );
         code.Indented(new[] { $"{Writer}.Write({written});" });
+        if (subscription.Conversion is { } shape)
+        {
+            code.Line();
+            code.Line(
+                $"private static global::Matrix.RustSdk.VectorDiff<{shape.Item.ToDisplayString(TypeFormat)}> "
+                    + $"{ConvertMethod}({shape.Diff.ToDisplayString(TypeFormat)} diff) =>"
+            );
+            code.Indent();
+            foreach (string line in shape.RenderSwitch("diff", TypeFormat))
+            {
+                code.Line(line);
+            }
+            code.Outdent();
+            // the switch expression ends the expression body
+            code.AppendToLastLine(";");
+        }
         code.Close();
 
         code.Close();
@@ -389,6 +404,45 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
                 .All(matches => matches);
     }
 
+    /// <summary>
+    /// The diff enum the listener receives an array of, if the declaration yields arrays of the matching
+    /// <c>VectorDiff&lt;T&gt;</c>. Otherwise null, what the listener receives and the value type the declaration has to
+    /// return.
+    /// </summary>
+    private static VectorDiffShape? DiffConversion(
+        IMethodSymbol listenerMethod,
+        ITypeSymbol valueType,
+        out string received,
+        out string expected
+    )
+    {
+        ImmutableArray<IParameterSymbol> parameters = listenerMethod.Parameters;
+        received =
+            parameters.Length == 1
+                ? parameters[0].Type.ToDisplayString()
+                : "(" + string.Join(", ", parameters.Select(p => p.Type.ToDisplayString())) + ")";
+        expected = received;
+        if (parameters.Length != 1)
+        {
+            return null;
+        }
+        if (
+            parameters[0].Type is not IArrayTypeSymbol { ElementType: { } element }
+            || VectorDiffShape.Analyze(element, out _) is not { } shape
+        )
+        {
+            return null;
+        }
+        // diffs are yielded as VectorDiff<T>, that's what the error recommends
+        expected = $"Matrix.RustSdk.VectorDiff<{shape.Item.ToDisplayString()}>[]";
+        return
+            valueType is IArrayTypeSymbol { ElementType: { } yielded }
+            && VectorDiffShape.VectorDiffItem(yielded) is { } item
+            && SymbolEqualityComparer.IncludeNullability.Equals(item, shape.Item)
+            ? shape
+            : null;
+    }
+
     private static string OverloadSuffix(IMethodSymbol declaration)
     {
         IMethodSymbol[] overloads = declaration
@@ -404,16 +458,16 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
         return (index + 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
     }
 
-    private static bool IsNonNullableReference(IParameterSymbol parameter) =>
+    internal static bool IsNonNullableReference(IParameterSymbol parameter) =>
         parameter.Type.IsReferenceType && parameter.NullableAnnotation != NullableAnnotation.Annotated;
 
     // the bindings use keywords as parameter names (@event), escaping every identifier is always valid
-    private static string Identifier(IParameterSymbol parameter) => "@" + parameter.Name;
+    internal static string Identifier(IParameterSymbol parameter) => "@" + parameter.Name;
 
-    private static string Parameter(IParameterSymbol parameter) =>
+    internal static string Parameter(IParameterSymbol parameter) =>
         $"{parameter.Type.ToDisplayString(TypeFormat)} {Identifier(parameter)}";
 
-    private static string Accessibility(IMethodSymbol method) =>
+    internal static string Accessibility(IMethodSymbol method) =>
         method.DeclaredAccessibility switch
         {
             Microsoft.CodeAnalysis.Accessibility.Public => "public",
@@ -445,6 +499,7 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
         string buffer,
         IMethodSymbol? current,
         bool throwWhenFinished,
+        VectorDiffShape? conversion,
         string overloadSuffix
     )
     {
@@ -475,33 +530,14 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
         public bool ThrowWhenFinished { get; } = throwWhenFinished;
 
         /// <summary>
+        /// The diff enum the listener receives, if the values are converted to <c>VectorDiff&lt;T&gt;</c>.
+        /// </summary>
+        public VectorDiffShape? Conversion { get; } = conversion;
+
+        /// <summary>
         /// The name of the generated listener. It keeps the Async suffix of the method, without it AccountDataAsync
         /// would get a nested AccountDataListener hiding the listener interface of the bindings.
         /// </summary>
         public string ListenerClass { get; } = declaration.Name + "Listener" + overloadSuffix;
-    }
-
-    /// <summary>
-    /// The outcome for one declaration. The value equality lets the incremental pipeline skip the output step when an
-    /// edit doesn't change the generated source. A class because netstandard2.0 has no <c>IsExternalInit</c>.
-    /// </summary>
-    private sealed class Result(string hintName, string? source, Diagnostic? diagnostic)
-    {
-        public static readonly Result Empty = new("", null, null);
-
-        public string HintName { get; } = hintName;
-        public string? Source { get; } = source;
-        public Diagnostic? Diagnostic { get; } = diagnostic;
-
-        public static Result Error(DiagnosticDescriptor descriptor, Location? location, params object[] arguments) =>
-            new("", null, Diagnostic.Create(descriptor, location, arguments));
-
-        public override bool Equals(object? obj) =>
-            obj is Result other
-            && HintName == other.HintName
-            && Source == other.Source
-            && Equals(Diagnostic, other.Diagnostic);
-
-        public override int GetHashCode() => (HintName.GetHashCode() * 31) ^ (Source?.GetHashCode() ?? 0);
     }
 }

@@ -22,10 +22,10 @@ public class SubscriptionTests(Homeserver homeserver)
         bool received = false;
 
         // Act
-        await foreach (TimelineDiff[] diffs in timeline.WatchItemDiffsAsync(timeout.Token))
+        await foreach (VectorDiff<TimelineItem>[] diffs in timeline.WatchItemDiffsAsync(timeout.Token))
         {
             received = diffs.SelectMany(Items).Any(item => IsText(item, body));
-            foreach (TimelineDiff diff in diffs)
+            foreach (VectorDiff<TimelineItem> diff in diffs)
             {
                 diff.Dispose();
             }
@@ -152,15 +152,15 @@ public class SubscriptionTests(Homeserver homeserver)
         return client.GetRoom(roomId) ?? throw new InvalidOperationException($"{roomId} is unknown after creating it.");
     }
 
-    private static IEnumerable<TimelineItem> Items(TimelineDiff diff) =>
+    private static IEnumerable<TimelineItem> Items(VectorDiff<TimelineItem> diff) =>
         diff switch
         {
-            TimelineDiff.Append append => append.Values,
-            TimelineDiff.Reset reset => reset.Values,
-            TimelineDiff.PushBack pushBack => [pushBack.Value],
-            TimelineDiff.PushFront pushFront => [pushFront.Value],
-            TimelineDiff.Insert insert => [insert.Value],
-            TimelineDiff.Set set => [set.Value],
+            VectorDiff<TimelineItem>.Append append => append.Values,
+            VectorDiff<TimelineItem>.Reset reset => reset.Values,
+            VectorDiff<TimelineItem>.PushBack pushBack => [pushBack.Value],
+            VectorDiff<TimelineItem>.PushFront pushFront => [pushFront.Value],
+            VectorDiff<TimelineItem>.Insert insert => [insert.Value],
+            VectorDiff<TimelineItem>.Set set => [set.Value],
             _ => [],
         };
 

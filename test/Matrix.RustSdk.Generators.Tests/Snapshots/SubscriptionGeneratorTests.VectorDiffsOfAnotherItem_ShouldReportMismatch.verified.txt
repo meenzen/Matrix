@@ -1,0 +1,2 @@
+// ----- MRSG003 Error at 8:64 -----
+The listener of 'AddListener' receives Matrix.RustSdk.Bindings.TimelineDiff[], the declaration has to return IAsyncEnumerable<Matrix.RustSdk.VectorDiff<Matrix.RustSdk.Bindings.TimelineItem>[]>

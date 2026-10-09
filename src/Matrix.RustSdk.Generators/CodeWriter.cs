@@ -39,6 +39,11 @@ internal sealed class CodeWriter
         Outdent();
     }
 
+    /// <summary>
+    /// Appends <paramref name="text"/> to the last line written.
+    /// </summary>
+    public void AppendToLastLine(string text) => _builder.Insert(_builder.Length - 1, text);
+
     public void Indent() => _depth++;
 
     public void Outdent() => _depth--;

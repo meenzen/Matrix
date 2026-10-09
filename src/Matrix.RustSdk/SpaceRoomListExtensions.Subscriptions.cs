@@ -22,13 +22,14 @@ public static partial class SpaceRoomListExtensions
 
     /// <summary>
     /// Watches the child rooms of the space. Yields the changes in batches, starting with a
-    /// <see cref="SpaceListUpdate.Reset"/>.
+    /// <see cref="VectorDiff{T}.Reset"/>.
     /// </summary>
     /// <param name="spaceRoomList">The room list of the space.</param>
     /// <include file="Subscriptions/Subscriptions.xml" path="docs/cancellationToken/*"/>
     /// <remarks><include file="Subscriptions/Subscriptions.xml" path="docs/stream/*"/></remarks>
+    /// <remarks><include file="Subscriptions/Subscriptions.xml" path="docs/diffs/*"/></remarks>
     [Subscription(nameof(SpaceRoomList.SubscribeToRoomUpdate), SubscriptionBuffer.All)]
-    public static partial IAsyncEnumerable<SpaceListUpdate[]> WatchRoomDiffsAsync(
+    public static partial IAsyncEnumerable<VectorDiff<SpaceRoom>[]> WatchRoomDiffsAsync(
         this SpaceRoomList spaceRoomList,
         CancellationToken cancellationToken = default
     );

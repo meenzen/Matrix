@@ -2,8 +2,8 @@
 
 Design notes for `src/Matrix.RustSdk`, the helpers on top of the generated bindings. They should build on
 matrix-rust-sdk, not reimplement it, and make common tasks idiomatic in C#: `IAsyncEnumerable`, `await using`,
-cancellation, managed collections. Nothing here is implemented yet, the findings are from `matrix-sdk-ffi/20260909` and
-uniffi 0.31 and should be rechecked against the bindings before building on them.
+cancellation, managed collections. Helpers 1 and 2 are implemented, the findings for the others are from
+`matrix-sdk-ffi/20260909` and uniffi 0.31 and should be rechecked against the bindings before building on them.
 
 ## Pain points of the bindings
 
@@ -51,7 +51,7 @@ await foreach (string[] userIds in room.WatchTypingUsersAsync(cancellationToken)
 
 - All 37 subscriptions are wrapped, declared in `src/Matrix.RustSdk/*Extensions.Subscriptions.cs`, see AGENTS.md for
   the conventions. The room list (`RoomList.EntriesWithDynamicAdapters`, `RoomList.LoadingState`) passes its listener
-  differently and gets a hand written helper together with `LiveList<T>`.
+  differently and has hand written helpers, see helper 2.
 - The enumeration subscribes when it starts and disposes the `TaskHandle` when it ends (`break`, exception,
   cancellation). The SDK doesn't notify listeners when it ends a subscription on its own (owner disposed, lagging
   behind, sync errors), the runtime checks `TaskHandle.IsFinished()` once per second while idle and ends the
@@ -66,15 +66,32 @@ await foreach (string[] userIds in room.WatchTypingUsersAsync(cancellationToken)
   send queue subscriptions spin when the client is dropped while they run, `SubscribeToSendQueueStatus` doesn't send
   the initial status it documents, and cancelling `SubscribeToKnockRequests` leaks a cleanup task.
 
-### 2. `VectorDiff<T>` and `LiveList<T>`
+### 2. `VectorDiff<T>` and `LiveList<T>` (implemented)
 
-- A generic `VectorDiff<T>` with a conversion from each of the 8 diff enums and one `ApplyTo(IList<T>)`.
-- `LiveList<TNative, TView>` keeps a managed list up to date from a diff stream with a projection
-  (`Func<TimelineItem, TView>`), exposes snapshots and `INotifyCollectionChanged` with an optional
-  `SynchronizationContext` (Avalonia, WPF, MAUI).
-- Open question, ownership: either project to managed values and dispose the native items right away (what the TUI
-  client does), or let the list own the native items and dispose them on `Remove`, `Set`, `Truncate`, `Clear` and
-  `Reset`.
+```csharp
+RoomListQuery query = new(pageSize: 50);
+await using LiveList<RoomItem> rooms = roomList
+    .WatchRoomDiffsAsync(query, cancellationToken)
+    .ToLiveList(room => new RoomItem(room.Id(), room.DisplayName()), (item, room) => item.Update(room));
+query.Filter = new RoomListEntriesDynamicFilterKind.Favourite();
+```
+
+- `VectorDiff<T>` replaces the 8 diff enums, which have the same variants: the `Watch…DiffsAsync` subscriptions yield
+  `VectorDiff<T>[]` (the generator converts in the listener), `ApplyTo(IList<T>, removed)` applies a diff.
+- `ToLiveList` keeps a `LiveList<T>` up to date from a diff stream: `IList`, `INotifyCollectionChanged` with single item
+  events (WPF throws for ranges), snapshots, `Changed` per batch, `Initialized` and `Completion`. It runs on the
+  current `SynchronizationContext` (like `Progress<T>`), so UI apps bind to it directly and console apps get the thread
+  pool.
+- Ownership, decided: the list owns what it stores and disposes items when they leave it. With a projection (sync or
+  async) the native value is disposed right after projecting, an optional `update` keeps view models on `Set` instead of
+  replacing them. The SDK replaces a room on every notable change, so lists of native rooms are only for short lived
+  use, UIs project.
+- Room list: `RoomList.WatchRoomDiffsAsync(RoomListQuery)` with a mutable query (filter, `AddOnePage`,
+  `ResetToOnePage`) bound to one running enumeration, and `RoomList.WatchLoadingStateAsync`. Like Element X Android
+  (`RoomListFilterMapper`, `RustDynamicRoomList`) the query always applies a base filter (rooms that weren't left and
+  aren't spaces, space invites, `DeduplicateVersions`), `Filter` narrows it, and changing it goes back to one page.
+- Follow-ups: an opt-out of disposing projections (`disposeItems: false`) if view models get cached across lists,
+  `GeneratorResult` keeps the `Diagnostic` (and its syntax tree) of failed declarations, so those don't cache.
 
 ### 3. Messages and timeline items
 
@@ -189,16 +206,12 @@ One pull request per step, each usable on its own. Public APIs get a design revi
 merged, like the subscriptions did.
 
 1. ~~Generator and all subscriptions (helper 1)~~: done in #143.
-2. **`VectorDiff<T>`, `LiveList<T>` and the room list (helper 2).** Generate the conversions of the 8 diff enums with
-   the same technique as the subscriptions (a declaration per enum, snapshot tests). Settle the open ownership question
-   first: `LiveList` projects to managed values and disposes the native items, or owns and disposes them on `Remove`,
-   `Set`, `Truncate`, `Clear` and `Reset` (disposing a diff disposes its items). Add the hand written room list
-   helper (`RoomList.EntriesWithDynamicAdapters` with its filter controller, `RoomList.LoadingState`), both are listed
-   in `SubscriptionCoverageTests`. Unit tests for applying diffs need no homeserver.
+2. ~~`VectorDiff<T>`, `LiveList<T>` and the room list (helper 2)~~: done in #148.
 3. **Message and timeline helpers, then the examples (helper 3).** `MessageContent.Text`/`Markdown`, `TryGetText`,
    `EventId`, `SenderDisplayName`, timestamps as `DateTimeOffset`, and `IncomingMessagesAsync` for bots (new events of
-   other users from sync, each once). Rewrite the echo bot and the TUI client with the helpers, their tests then cover
-   everything end to end and the duplicated diff switch disappears.
+   other users from sync, each once). Rewrite the echo bot with the helpers, its test then covers them end to end. The
+   TUI client already uses the subscriptions, `LiveList` and the room list since #148, the message helpers can replace
+   its `Format` and `SendAsync`.
 4. **Remaining helpers (4 and 5).** `IProgress<T>` overloads for the 7 progress listeners (generated, they are listed
    in `SubscriptionCoverageTests`), pagination as async enumerables, `LoginOrRestoreAsync` with a session store, and a
    run-once `MatrixSdk.Initialize`.

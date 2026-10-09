@@ -6,6 +6,6 @@
     <PackageReference Include="Terminal.Gui" Version="2.5.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Matrix.RustSdk.Bindings\Matrix.RustSdk.Bindings.csproj" />
+    <ProjectReference Include="..\..\src\Matrix.RustSdk\Matrix.RustSdk.csproj" />
   </ItemGroup>
 </Project>

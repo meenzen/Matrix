@@ -45,6 +45,14 @@
       Every value is kept until the consumer reads it, the buffer grows while the consumer is slower than the SDK.
     </para>
   </loop>
+  <!-- diff streams yielding VectorDiff<T>[] -->
+  <diffs>
+    <para>
+      <c>ToLiveList</c> (namespace <c>Matrix.RustSdk</c>) keeps a list up to date from the diffs, for binding to a UI or
+      reading snapshots, <see cref="M:Matrix.RustSdk.VectorDiff`1.ApplyTo(System.Collections.Generic.IList{`0},System.Action{`0})" />
+      applies a single diff to a list of your own.
+    </para>
+  </diffs>
   <!-- values containing native objects -->
   <disposable>
     <para>

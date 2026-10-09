@@ -1,15 +1,17 @@
 using System.Collections.Immutable;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Text;
 using Matrix.RustSdk.Bindings;
+using Matrix.RustSdk.Testing;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace Matrix.RustSdk.Generators.Tests;
 
 /// <summary>
-/// Runs <see cref="SubscriptionGenerator"/> on a compilation like <c>Matrix.RustSdk</c>: the runtime part of the
-/// subscriptions (copied from <c>src/Matrix.RustSdk/Subscriptions</c>), a source with declarations and references to
+/// Runs the generators on a compilation like <c>Matrix.RustSdk</c>: the runtime part of the generated code (copied
+/// from <c>src/Matrix.RustSdk/Subscriptions</c> and <c>VectorDiff.cs</c>), a source with declarations and references to
 /// the real bindings. Changes of the bindings show up in these tests as well.
 /// </summary>
 internal sealed class GeneratorRun
@@ -113,7 +115,7 @@ internal sealed class GeneratorRun
     public static GeneratorRun Run(Compilation compilation, GeneratorDriver? driver = null)
     {
         driver ??= CSharpGeneratorDriver.Create(
-            [new SubscriptionGenerator().AsSourceGenerator()],
+            [new SubscriptionGenerator().AsSourceGenerator(), new VectorDiffConversionGenerator().AsSourceGenerator()],
             parseOptions: ParseOptions,
             driverOptions: new GeneratorDriverOptions(
                 IncrementalGeneratorOutputKind.None,
@@ -134,4 +136,37 @@ internal sealed class GeneratorRun
                 nullableContextOptions: NullableContextOptions.Enable
             )
         );
+
+    /// <summary>
+    /// Checks that <paramref name="source"/> compiles without diagnostics of the generators and snapshots the output.
+    /// </summary>
+    public static async Task VerifyGeneratedAsync(
+        string source,
+        [CallerFilePath] string testFile = "",
+        [CallerMemberName] string test = ""
+    )
+    {
+        GeneratorRun run = Run(source);
+
+        await Assert.That(run.GeneratorDiagnostics).IsEmpty();
+        await Assert.That(run.CompilationErrors).IsEmpty();
+        await Snapshot.VerifyAsync(run.Render(), testFile, test);
+    }
+
+    /// <summary>
+    /// Snapshots the diagnostics and checks that the generators reported <paramref name="id"/> and generated nothing.
+    /// </summary>
+    public static async Task VerifyErrorAsync(
+        string id,
+        string source,
+        [CallerFilePath] string testFile = "",
+        [CallerMemberName] string test = ""
+    )
+    {
+        GeneratorRun run = Run(source);
+
+        await Assert.That(run.GeneratorDiagnostics.Select(diagnostic => diagnostic.Id)).IsEquivalentTo([id]);
+        await Assert.That(run.Driver.GetRunResult().GeneratedTrees).IsEmpty();
+        await Snapshot.VerifyAsync(run.Render(), testFile, test);
+    }
 }
