@@ -10,7 +10,7 @@ public static partial class ThreadListServiceExtensions
 {
     /// <summary>
     /// Watches the threads of the list. Yields the changes in batches, starting with a
-    /// <see cref="ThreadListUpdate.Reset"/> containing the loaded threads.
+    /// <see cref="VectorDiff{T}.Reset"/> containing the loaded threads.
     /// </summary>
     /// <param name="threadListService">The thread list service.</param>
     /// <include file="Subscriptions/Subscriptions.xml" path="docs/cancellationToken/*"/>
@@ -20,7 +20,7 @@ public static partial class ThreadListServiceExtensions
     /// <para>Disposing a diff disposes the threads it contains, don't dispose diffs whose threads you keep.</para>
     /// </remarks>
     [Subscription(nameof(ThreadListService.SubscribeToItemsUpdates), SubscriptionBuffer.All)]
-    public static partial IAsyncEnumerable<ThreadListUpdate[]> WatchItemDiffsAsync(
+    public static partial IAsyncEnumerable<VectorDiff<ThreadListItem>[]> WatchItemDiffsAsync(
         this ThreadListService threadListService,
         CancellationToken cancellationToken = default
     );

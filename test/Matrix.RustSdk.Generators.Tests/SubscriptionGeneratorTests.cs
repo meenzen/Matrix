@@ -55,6 +55,37 @@ public class SubscriptionGeneratorTests
         );
 
     [Test]
+    public Task DiffSubscription_ShouldYieldVectorDiffs() =>
+        VerifyGeneratedAsync(
+            """
+            public static partial class TimelineExtensions
+            {
+                [Subscription(nameof(Timeline.AddListener), SubscriptionBuffer.All)]
+                public static partial IAsyncEnumerable<VectorDiff<TimelineItem>[]> ItemDiffsAsync(
+                    this Timeline timeline,
+                    CancellationToken cancellationToken = default
+                );
+            }
+            """
+        );
+
+    [Test]
+    public Task VectorDiffsOfAnotherItem_ShouldReportMismatch() =>
+        VerifyErrorAsync(
+            ValueTypeMismatch,
+            """
+            public static partial class TimelineExtensions
+            {
+                [Subscription(nameof(Timeline.AddListener), SubscriptionBuffer.All)]
+                public static partial IAsyncEnumerable<VectorDiff<Room>[]> ItemDiffsAsync(
+                    this Timeline timeline,
+                    CancellationToken cancellationToken = default
+                );
+            }
+            """
+        );
+
+    [Test]
     public Task ExtraParameters_ShouldBePassedByName() =>
         VerifyGeneratedAsync(
             """
@@ -418,6 +449,9 @@ public class SubscriptionGeneratorTests
                         this Room room,
                         CancellationToken cancellationToken = default
                     );
+
+                    [VectorDiffConversion]
+                    internal static partial VectorDiff<Room> ToVectorDiff(this RoomListEntriesUpdate diff);
                 }
                 """
         );
@@ -436,8 +470,8 @@ public class SubscriptionGeneratorTests
         [
             .. second
                 .Driver.GetRunResult()
-                .Results.Single()
-                .TrackedOutputSteps.SelectMany(step => step.Value)
+                .Results.SelectMany(result => result.TrackedOutputSteps)
+                .SelectMany(step => step.Value)
                 .SelectMany(step => step.Outputs)
                 .Select(output => output.Reason),
         ];
@@ -445,37 +479,17 @@ public class SubscriptionGeneratorTests
         await Assert.That(reasons).All().Satisfy(reason => reason.IsEqualTo(IncrementalStepRunReason.Cached));
     }
 
-    /// <summary>
-    /// Snapshots the generated source and checks that it compiles.
-    /// </summary>
-    private static async Task VerifyGeneratedAsync(
+    private static Task VerifyGeneratedAsync(
         string declarations,
         bool usings = true,
         [CallerFilePath] string testFile = "",
         [CallerMemberName] string test = ""
-    )
-    {
-        GeneratorRun run = GeneratorRun.Run(usings ? Usings + declarations : declarations);
+    ) => GeneratorRun.VerifyGeneratedAsync(usings ? Usings + declarations : declarations, testFile, test);
 
-        await Assert.That(run.GeneratorDiagnostics).IsEmpty();
-        await Assert.That(run.CompilationErrors).IsEmpty();
-        await Snapshot.VerifyAsync(run.Render(), testFile, test);
-    }
-
-    /// <summary>
-    /// Snapshots the diagnostics and checks that the generator reported <paramref name="id"/> and generated nothing.
-    /// </summary>
-    private static async Task VerifyErrorAsync(
+    private static Task VerifyErrorAsync(
         string id,
         string declarations,
         [CallerFilePath] string testFile = "",
         [CallerMemberName] string test = ""
-    )
-    {
-        GeneratorRun run = GeneratorRun.Run(Usings + declarations);
-
-        await Assert.That(run.GeneratorDiagnostics.Select(diagnostic => diagnostic.Id)).IsEquivalentTo([id]);
-        await Assert.That(run.Driver.GetRunResult().GeneratedTrees).IsEmpty();
-        await Snapshot.VerifyAsync(run.Render(), testFile, test);
-    }
+    ) => GeneratorRun.VerifyErrorAsync(id, Usings + declarations, testFile, test);
 }

@@ -31,7 +31,7 @@ internal static class Diagnostics
     public static readonly DiagnosticDescriptor ValueTypeMismatch = new(
         "MRSG003",
         "Subscription value type mismatch",
-        "The listener of '{0}' receives {1}, the declaration has to return IAsyncEnumerable<{1}>",
+        "The listener of '{0}' receives {1}, the declaration has to return IAsyncEnumerable<{2}>",
         Category,
         DiagnosticSeverity.Error,
         isEnabledByDefault: true
@@ -42,6 +42,24 @@ internal static class Diagnostics
         "Current value method not found",
         "'{0}' has no instance method '{1}' returning {2} or a task of it that takes the extra parameters of the "
             + "subscription",
+        Category,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true
+    );
+
+    public static readonly DiagnosticDescriptor InvalidConversion = new(
+        "MRSG005",
+        "Invalid diff conversion declaration",
+        "Invalid diff conversion declaration: {0}",
+        Category,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true
+    );
+
+    public static readonly DiagnosticDescriptor NotADiff = new(
+        "MRSG006",
+        "Not a diff",
+        "'{0}' can't be converted to VectorDiff<{1}>: {2}",
         Category,
         DiagnosticSeverity.Error,
         isEnabledByDefault: true

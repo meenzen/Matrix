@@ -10,7 +10,7 @@ public static partial class TimelineExtensions
 {
     /// <summary>
     /// Watches the items of the timeline. Yields the changes in batches, starting with a
-    /// <see cref="TimelineDiff.Reset"/> containing the current items. Applying them to a list in order keeps a copy of
+    /// <see cref="VectorDiff{T}.Reset"/> containing the current items. Applying them to a list in order keeps a copy of
     /// the timeline.
     /// </summary>
     /// <param name="timeline">The timeline.</param>
@@ -21,7 +21,7 @@ public static partial class TimelineExtensions
     /// <para>Disposing a diff disposes the items it contains, don't dispose diffs whose items you keep.</para>
     /// </remarks>
     [Subscription(nameof(Timeline.AddListener), SubscriptionBuffer.All)]
-    public static partial IAsyncEnumerable<TimelineDiff[]> WatchItemDiffsAsync(
+    public static partial IAsyncEnumerable<VectorDiff<TimelineItem>[]> WatchItemDiffsAsync(
         this Timeline timeline,
         CancellationToken cancellationToken = default
     );
