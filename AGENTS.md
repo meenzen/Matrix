@@ -90,8 +90,9 @@ obvious:
   `IDisposable`s.
 - After a matrix-rust-sdk update `SubscriptionCoverageTests` fails for new subscriptions and listeners: declare them or
   list them with a reason. Changed subscriptions break the build (`MRSG002` not found, `MRSG003` value type).
-- The generator targets netstandard2.0 and Microsoft.CodeAnalysis 4.14 (the oldest compiler it has to run in). Its
-  tests compile declarations against the real bindings and compare the output with snapshots.
+- The generator targets netstandard2.0 and Microsoft.CodeAnalysis 4.14 (the oldest compiler it has to run in),
+  `renovate.json` keeps Renovate from updating it. Its tests compile declarations against the real bindings and compare
+  the output with snapshots.
 - `PublicApiTests` snapshots the public API of `Matrix.RustSdk` (PublicApiGenerator), every change of it shows up as a
   snapshot diff and has to be accepted on purpose.
 
