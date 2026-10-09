@@ -7,7 +7,7 @@ using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 namespace Matrix.RustSdk.Examples.EchoBot;
 
 /// <summary>
-/// Logs in, joins every room the bot is invited to and answers text messages of other users with the same text, see
+/// Logs in or restores the stored session, joins every room the bot is invited to and answers text messages of other users with the same text, see
 /// <see cref="RoomEcho"/>.
 /// </summary>
 public sealed partial class EchoBotWorker(IOptions<EchoBotOptions> options, ILogger<EchoBotWorker> logger)
@@ -22,20 +22,58 @@ public sealed partial class EchoBotWorker(IOptions<EchoBotOptions> options, ILog
     {
         EchoBotOptions settings = options.Value;
 
-        // the bindings don't support cancellation, WaitAsync stops waiting for the SDK when the host shuts down
-        using Client client = await new ClientBuilder()
-            .ServerNameOrHomeserverUrl(settings.Homeserver)
-            .InMemoryStore()
-            .Build()
-            .WaitAsync(stoppingToken);
-        await client
-            .Login(settings.Username, settings.Password, settings.DeviceName, deviceId: null)
-            .WaitAsync(stoppingToken);
-        LogLoggedIn(client.UserId());
+        // restores the session stored in the data directory, or logs in and stores it. The bindings don't support
+        // cancellation, the token only stops waiting for the SDK when the host shuts down
+        await using StoredClient stored = await StoredClient.LoginOrRestoreAsync(
+            new ClientStoreOptions
+            {
+                DataDirectory = settings.DataDirectory,
+                // the bot syncs with SyncOnceV2, it doesn't need a homeserver with simplified sliding sync
+                ConfigureClient = builder => builder.SlidingSyncVersionBuilder(SlidingSyncVersionBuilder.None),
+            },
+            new PasswordCredentials
+            {
+                Homeserver = settings.Homeserver,
+                Username = settings.Username,
+                Password = settings.Password,
+                DeviceName = settings.DeviceName,
+            },
+            stoppingToken
+        );
+        Client client = stored.Client;
+        if (stored.IsRestored)
+        {
+            LogRestored(client.UserId(), client.DeviceId());
+        }
+        else
+        {
+            LogLoggedIn(client.UserId(), client.DeviceId());
+        }
 
         try
         {
-            await SyncAsync(client, stoppingToken);
+            // a restored session syncs from where it stopped, rooms only show up in a response when something happens
+            // in them, and a timeline created after that response would treat its messages as history
+            foreach (string roomId in GetJoinedRoomIds(client))
+            {
+                await ListenAsync(client, roomId);
+            }
+
+            // the homeserver can end the session (logout in another client, password change), syncing is pointless then
+            using CancellationTokenSource running = CancellationTokenSource.CreateLinkedTokenSource(
+                stoppingToken,
+                stored.SessionEnded
+            );
+            await SyncAsync(client, running.Token);
+            // the sync loop also ends without an exception when it notices the cancellation
+            stored.SessionEnded.ThrowIfCancellationRequested();
+        }
+        catch (OperationCanceledException) when (stored.SessionEnded.IsCancellationRequested)
+        {
+            // stops the host, the next start logs in again
+            throw new InvalidOperationException(
+                "The homeserver ended the session of the bot, restart it to log in again."
+            );
         }
         finally
         {
@@ -83,6 +121,22 @@ public sealed partial class EchoBotWorker(IOptions<EchoBotOptions> options, ILog
                 LogLeft(roomId);
             }
         }
+    }
+
+    private static List<string> GetJoinedRoomIds(Client client)
+    {
+        List<string> roomIds = [];
+        foreach (Room room in client.Rooms())
+        {
+            using (room)
+            {
+                if (room.Membership() == Membership.Joined)
+                {
+                    roomIds.Add(room.Id());
+                }
+            }
+        }
+        return roomIds;
     }
 
     private async Task JoinAsync(Client client, string roomId)
@@ -138,8 +192,11 @@ public sealed partial class EchoBotWorker(IOptions<EchoBotOptions> options, ILog
         }
     }
 
-    [LoggerMessage(LogLevel.Information, "Logged in as {UserId}")]
-    private partial void LogLoggedIn(string userId);
+    [LoggerMessage(LogLevel.Information, "Logged in as {UserId} on device {DeviceId}")]
+    private partial void LogLoggedIn(string userId, string deviceId);
+
+    [LoggerMessage(LogLevel.Information, "Restored the session of {UserId} on device {DeviceId}")]
+    private partial void LogRestored(string userId, string deviceId);
 
     [LoggerMessage(LogLevel.Information, "Stopped")]
     private partial void LogStopped();

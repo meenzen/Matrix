@@ -5,7 +5,8 @@ using Terminal.Gui.Views;
 namespace Matrix.RustSdk.Examples.TuiClient;
 
 /// <summary>
-/// Asks for the homeserver, username and password and logs in. Logs in right away if the options are complete.
+/// Asks for the homeserver, username and password and logs in. Logs in right away if the options are complete and
+/// there is no <c>error</c> to show.
 /// </summary>
 public sealed class LoginWindow : Window
 {
@@ -13,10 +14,12 @@ public sealed class LoginWindow : Window
     private readonly TextField _username;
     private readonly TextField _password;
     private readonly Label _status;
+    private readonly string _dataDirectory;
     private bool _loggingIn;
 
-    public LoginWindow(LoginOptions options)
+    public LoginWindow(LoginOptions options, string? error = null)
     {
+        _dataDirectory = options.DataDirectory;
         Title = "Matrix TUI client - log in (Esc to quit)";
 
         _homeserver = AddField("Homeserver:", 1, options.Homeserver ?? "matrix.org");
@@ -38,6 +41,7 @@ public sealed class LoginWindow : Window
             X = 2,
             Y = 9,
             Width = Dim.Fill(2),
+            Text = error ?? "",
         };
         Add(login, _status);
 
@@ -46,7 +50,7 @@ public sealed class LoginWindow : Window
 
         IsRunningChanged += (_, e) =>
         {
-            if (e.Value && options.IsComplete)
+            if (e.Value && options.IsComplete && error is null)
             {
                 StartLogin();
             }
@@ -103,6 +107,7 @@ public sealed class LoginWindow : Window
         {
             // the continuation runs on the main loop again, Terminal.Gui installs a SynchronizationContext
             MatrixSession session = await MatrixSession.LoginAsync(
+                _dataDirectory,
                 _homeserver.Text.Trim(),
                 _username.Text.Trim(),
                 _password.Text

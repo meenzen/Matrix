@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using Terminal.Gui.App;
+using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 
@@ -26,7 +27,9 @@ public sealed class ChatWindow : Window, IAsyncDisposable
     private IReadOnlyList<RoomSummary> _rooms = [];
     private RoomTimeline? _timeline;
     private int _timelineGeneration;
-    private string _syncState = "starting";
+
+    // written by the session's thread, the status line shows the latest value
+    private volatile string _syncState = "starting";
 
     public ChatWindow(IApplication app, MatrixSession session)
     {
@@ -83,6 +86,16 @@ public sealed class ChatWindow : Window, IAsyncDisposable
         Add(roomsFrame, _timelineFrame, composerFrame, _status);
         _roomList.SetFocus();
 
+        KeyDown += (_, key) =>
+        {
+            if (key == Key.L.WithCtrl)
+            {
+                key.Handled = true;
+                IsLogoutRequested = true;
+                RequestStop();
+            }
+        };
+
         IsRunningChanged += (sender, e) =>
         {
             if (e.Value)
@@ -92,18 +105,24 @@ public sealed class ChatWindow : Window, IAsyncDisposable
         };
     }
 
+    /// <summary>
+    /// Whether the user closed the window with Ctrl+L to log out.
+    /// </summary>
+    public bool IsLogoutRequested { get; private set; }
+
     private async Task StartSyncAsync()
     {
         try
         {
+            // the main loop may run invocations that are queued at the same time out of order, so they don't pass
+            // the state but render the latest one
             await _session.StartAsync(
                 () => _app.Invoke(ShowRooms),
                 state =>
-                    _app.Invoke(() =>
-                    {
-                        _syncState = state.ToString().ToLowerInvariant();
-                        UpdateStatus();
-                    })
+                {
+                    _syncState = state.ToString().ToLowerInvariant();
+                    _app.Invoke(() => UpdateStatus());
+                }
             );
         }
         catch (Exception e)
@@ -215,7 +234,8 @@ public sealed class ChatWindow : Window, IAsyncDisposable
     }
 
     private void UpdateStatus(string? message = null) =>
-        _status.Text = message ?? $"Sync: {_syncState} | Enter: open room / send | Tab: next pane | Esc: quit";
+        _status.Text =
+            message ?? $"Sync: {_syncState} | Enter: open room / send | Tab: next pane | Ctrl+L: log out | Esc: quit";
 
     /// <summary>
     /// Closes the opened timeline and disposes the window.

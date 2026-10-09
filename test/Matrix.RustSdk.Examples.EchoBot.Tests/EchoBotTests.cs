@@ -20,7 +20,9 @@ public class EchoBotTests(Homeserver homeserver)
     private const string FirstMessage = "Hello, bot!";
     private const string SecondMessage = "Still there?";
     private const string MessageBeforeInvite = "Is anyone here?";
+    private const string MessageAfterRestart = "Back again?";
 
+    private static readonly TemporaryDirectory DataDirectory = new();
     private static IHost? _bot;
     private static TestUser? _botUser;
     private static string? _humanAccessToken;
@@ -39,6 +41,7 @@ public class EchoBotTests(Homeserver homeserver)
             _bot.Dispose();
             _bot = null;
         }
+        DataDirectory.Dispose();
     }
 
     [Test]
@@ -50,11 +53,7 @@ public class EchoBotTests(Homeserver homeserver)
         Client humanClient = await homeserver.LoginAsync(human);
         _humanAccessToken = humanClient.Session().AccessToken;
 
-        _bot = EchoBotHost.Create([
-            $"--EchoBot:Homeserver={homeserver.Url}",
-            $"--EchoBot:Username={_botUser.Username}",
-            $"--EchoBot:Password={_botUser.Password}",
-        ]);
+        _bot = CreateBot(password: _botUser.Password);
         await _bot.StartAsync();
 
         // Act: the message before the invite is history and must not be echoed, Bot_ShouldNotEchoItsOwnMessages checks
@@ -121,6 +120,61 @@ public class EchoBotTests(Homeserver homeserver)
         // Assert
         await Assert.That(execution.IsCompleted).IsTrue();
         await Assert.That(execution.IsFaulted).IsFalse();
+    }
+
+    [Test]
+    [DependsOn(nameof(Bot_ShouldStopGracefully))]
+    public async Task Bot_ShouldRestoreItsSession_WhenRestarted()
+    {
+        // Arrange: without the password, only the stored session can log the bot in
+        string[] devicesBefore = await GetBotDevicesAsync();
+        Bot.Dispose();
+        _bot = CreateBot(password: null);
+
+        // Act
+        await Bot.StartAsync();
+        await SendTextAsync(MessageAfterRestart);
+
+        // Assert: no new device (the registration created one too), and the messages from before the restart are
+        // history
+        await Poll.UntilAsync(
+            async () => (await GetBotMessagesAsync()).Contains(MessageAfterRestart),
+            "the restarted bot to echo the message"
+        );
+        await Assert.That(await GetBotDevicesAsync()).IsEquivalentTo(devicesBefore);
+        await Assert
+            .That(await GetBotMessagesAsync())
+            .IsEquivalentTo([FirstMessage, SecondMessage, MessageAfterRestart]);
+    }
+
+    private IHost CreateBot(string? password) =>
+        EchoBotHost.Create([
+            $"--EchoBot:Homeserver={homeserver.Url}",
+            $"--EchoBot:Username={BotUser.Username}",
+            .. password is null ? Array.Empty<string>() : [$"--EchoBot:Password={password}"],
+            $"--EchoBot:DataDirectory={DataDirectory.Path}",
+        ]);
+
+    /// <summary>
+    /// The device ids of the bot, with the access token the bot stored.
+    /// </summary>
+    private async Task<string[]> GetBotDevicesAsync()
+    {
+        string sessionJson = await File.ReadAllTextAsync(Path.Join(DataDirectory.Path, "session.json"));
+        using JsonDocument session = JsonDocument.Parse(sessionJson);
+        string accessToken = session.RootElement.GetProperty("session").GetProperty("accessToken").GetString()!;
+        using HttpRequestMessage request = new(HttpMethod.Get, "/_matrix/client/v3/devices");
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+        using HttpResponseMessage response = await homeserver.Http.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+        using JsonDocument json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        return
+        [
+            .. json
+                .RootElement.GetProperty("devices")
+                .EnumerateArray()
+                .Select(device => device.GetProperty("device_id").GetString()!),
+        ];
     }
 
     private async Task<HttpResponseMessage> SendAsync(HttpMethod method, string path, object? body = null)

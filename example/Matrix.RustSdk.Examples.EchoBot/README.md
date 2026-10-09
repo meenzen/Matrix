@@ -6,7 +6,8 @@ of other users back into the room.
 - `EchoBotHost.cs` builds the [Generic Host](https://learn.microsoft.com/dotnet/core/extensions/generic-host) and binds
   `EchoBotOptions` from the `EchoBot` configuration section, `Program.cs` sets up the SDK (`MatrixSdk.Initialize`, its
   logs go to `logs/` in the working directory) and runs the host.
-- `EchoBotWorker.cs` is the `BackgroundService`: it logs in, runs a `/sync` loop with `Client.SyncOnceV2`, joins
+- `EchoBotWorker.cs` is the `BackgroundService`: it logs in or restores its session with
+  `StoredClient.LoginOrRestoreAsync`, runs a `/sync` loop with `Client.SyncOnceV2`, joins
   invites and sends the messages back.
 - `RoomTimeline.cs` listens to the timeline of a joined room and picks out new text messages of other users.
 
@@ -26,20 +27,23 @@ dotnet run --project example/Matrix.RustSdk.Examples.EchoBot -- \
   --EchoBot:Username=my-echo-bot
 ```
 
-Invite the bot to a room and send a message, it answers with the same text. Stop it with `Ctrl+C`.
+Invite the bot to a room and send a message, it answers with the same text. Stop it with `Ctrl+C`. The bot stores its
+session and the stores of the SDK in `data/` in the working directory, later starts restore the session and don't need
+the password.
 
-| Setting               | Description                                                       |
-|-----------------------|-------------------------------------------------------------------|
-| `EchoBot:Homeserver`  | Server name (`matrix.org`) or homeserver URL                      |
-| `EchoBot:Username`    | Username of the bot                                               |
-| `EchoBot:Password`    | Password of the bot                                               |
-| `EchoBot:DeviceName`  | Name of the device created at login, defaults to `Echo Bot`       |
+| Setting                 | Description                                                 |
+|-------------------------|-------------------------------------------------------------|
+| `EchoBot:Homeserver`    | Server name (`matrix.org`) or homeserver URL                |
+| `EchoBot:Username`      | Username of the bot                                         |
+| `EchoBot:Password`      | Password of the bot, only needed for the first login        |
+| `EchoBot:DeviceName`    | Name of the device created at login, defaults to `Echo Bot` |
+| `EchoBot:DataDirectory` | Directory of the session and the stores, defaults to `data` |
 
 ## Limitations
 
-The bot keeps its state in memory: it logs in with a new device on every start and only answers messages that arrive
-while it is running. It can't read end-to-end encrypted rooms, a real bot would use `ClientBuilder.SqliteStore`,
-restore its session with `Client.RestoreSession` and verify its device.
+The bot only answers messages that arrive while it is running. It doesn't set up end-to-end encryption: its device
+isn't verified and has no key backup, so other users' clients may refuse to send it keys. A real bot would verify its
+device or use `Encryption.Recover` after the first login (`StoredClient.IsRestored` is `false`).
 
 ## Tests
 

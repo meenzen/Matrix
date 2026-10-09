@@ -12,8 +12,8 @@ public sealed record RoomSummary(string RoomId, string Name, bool IsInvite)
 }
 
 /// <summary>
-/// The SDK side of the client: a logged in <see cref="Client"/>, the <see cref="SyncService"/> that keeps it up to date
-/// and the room list. This class doesn't know anything about the UI, it reports changes on thread pool threads and the
+/// The SDK side of the client: a logged in <see cref="Client"/> with its session stored in the data directory
+/// (<see cref="StoredClient"/>), the <see cref="SyncService"/> that keeps it up to date and the room list. This class doesn't know anything about the UI, it reports changes on thread pool threads and the
 /// UI has to move them to its main loop.
 /// </summary>
 public sealed class MatrixSession : IAsyncDisposable
@@ -26,6 +26,7 @@ public sealed class MatrixSession : IAsyncDisposable
 
     private const int RoomListPageSize = 200;
 
+    private readonly StoredClient _stored;
     private readonly Client _client;
     private readonly SyncService _syncService;
     private readonly CancellationTokenSource _stopping = new();
@@ -34,11 +35,12 @@ public sealed class MatrixSession : IAsyncDisposable
     private LiveList<RoomSummary>? _rooms;
     private Task? _syncStateWatcher;
 
-    private MatrixSession(Client client, SyncService syncService)
+    private MatrixSession(StoredClient stored, SyncService syncService)
     {
-        _client = client;
+        _stored = stored;
+        _client = stored.Client;
         _syncService = syncService;
-        UserId = client.UserId();
+        UserId = _client.UserId();
     }
 
     public string UserId { get; }
@@ -49,28 +51,37 @@ public sealed class MatrixSession : IAsyncDisposable
     public IReadOnlyList<RoomSummary> Rooms => _rooms?.ToArray() ?? [];
 
     /// <summary>
-    /// Logs in with a password. The client uses an in-memory store, so every start is a new login (and a new device).
-    /// Real clients use <see cref="ClientBuilder.SqliteStore"/> and restore the session instead.
+    /// Restores the session stored in <paramref name="dataDirectory"/>, null if there is none and the user has to log
+    /// in.
     /// </summary>
-    public static async Task<MatrixSession> LoginAsync(string homeserver, string username, string password)
+    public static async Task<MatrixSession?> TryRestoreAsync(string dataDirectory)
     {
-        // the SyncService uses simplified sliding sync (MSC4186), DiscoverNative checks that the server supports it
-        Client client = await new ClientBuilder()
-            .ServerNameOrHomeserverUrl(homeserver)
-            .SlidingSyncVersionBuilder(SlidingSyncVersionBuilder.DiscoverNative)
-            .InMemoryStore()
-            .Build();
-        try
-        {
-            await client.Login(username, password, initialDeviceName: "Matrix.RustSdk TUI client", deviceId: null);
-            SyncService syncService = await client.SyncService().Finish();
-            return new MatrixSession(client, syncService);
-        }
-        catch
-        {
-            client.Dispose();
-            throw;
-        }
+        StoredClient? stored = await StoredClient.TryRestoreAsync(Store(dataDirectory));
+        return stored is null ? null : await CreateAsync(stored);
+    }
+
+    /// <summary>
+    /// Logs in with a password and stores the session in <paramref name="dataDirectory"/>, later starts restore it.
+    /// </summary>
+    public static async Task<MatrixSession> LoginAsync(
+        string dataDirectory,
+        string homeserver,
+        string username,
+        string password
+    )
+    {
+        // the login checks that the homeserver supports simplified sliding sync (MSC4186), the SyncService needs it
+        StoredClient stored = await StoredClient.LoginAsync(
+            Store(dataDirectory),
+            new PasswordCredentials
+            {
+                Homeserver = homeserver,
+                Username = username,
+                Password = password,
+                DeviceName = "Matrix.RustSdk TUI client",
+            }
+        );
+        return await CreateAsync(stored);
     }
 
     /// <summary>
@@ -101,7 +112,53 @@ public sealed class MatrixSession : IAsyncDisposable
     /// </summary>
     public Room? GetRoom(string roomId) => _client.GetRoom(roomId);
 
+    /// <summary>
+    /// Stops syncing and logs out: removes the device from the account and deletes the stored session.
+    /// </summary>
+    public async Task LogoutAsync()
+    {
+        await StopAsync();
+        try
+        {
+            await _stored.LogoutAsync();
+        }
+        finally
+        {
+            // a failed logout keeps the session, it is restored at the next start
+            await _stored.DisposeAsync();
+        }
+    }
+
+    /// <summary>
+    /// Stops syncing and closes the client, the session stays stored.
+    /// </summary>
     public async ValueTask DisposeAsync()
+    {
+        await StopAsync();
+        await _stored.DisposeAsync();
+    }
+
+    private static ClientStoreOptions Store(string dataDirectory) => new() { DataDirectory = dataDirectory };
+
+    private static async Task<MatrixSession> CreateAsync(StoredClient stored)
+    {
+        try
+        {
+            SyncService syncService = await stored.Client.SyncService().Finish();
+            return new MatrixSession(stored, syncService);
+        }
+        catch
+        {
+            await stored.DisposeAsync();
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Stops the sync and disposes everything created from the client, which the <see cref="StoredClient"/> expects
+    /// before it is disposed.
+    /// </summary>
+    private async Task StopAsync()
     {
         await _syncService.Stop();
         await _stopping.CancelAsync();
@@ -120,17 +177,6 @@ public sealed class MatrixSession : IAsyncDisposable
         _roomListService?.Dispose();
         _syncService.Dispose();
         _stopping.Dispose();
-
-        // the in-memory session can't be restored, remove the device from the account again
-        try
-        {
-            await _client.Logout();
-        }
-        catch (ClientException)
-        {
-            // the server may be gone already, there's nothing left to clean up then
-        }
-        _client.Dispose();
     }
 
     private async Task WatchSyncStateAsync(Action<SyncServiceState> onSyncStateChanged)

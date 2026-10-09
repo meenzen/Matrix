@@ -8,7 +8,7 @@ namespace Matrix.RustSdk.Examples.TuiClient.Tests;
 /// <summary>
 /// End-to-end tests of the TUI client against a tuwunel homeserver. The tests build on each other with
 /// <see cref="DependsOnAttribute"/> like a user session: log in, get invited to a room, open it and chat with another
-/// user, quit.
+/// user, quit, restore the session at the next start and log out.
 /// </summary>
 [Category(Homeserver.Category)]
 [ClassDataSource<Homeserver>(Shared = SharedType.PerTestSession)]
@@ -16,6 +16,7 @@ public class TuiClientTests(Homeserver homeserver)
 {
     private static readonly string RoomName = $"TUI test room {Guid.NewGuid().ToString("N")[..8]}";
 
+    private static readonly TemporaryDirectory DataDirectory = new();
     private static TuiClientRunner? _tui;
     private static TestUser? _tuiUser;
 
@@ -45,7 +46,9 @@ public class TuiClientTests(Homeserver homeserver)
         _tuiUser = await homeserver.CreateUserAsync("tui");
         _otherUser = await homeserver.CreateUserAsync("other");
         // the homeserver is passed like --homeserver, username and password are typed into the login form
-        _tui = await TuiClientRunner.StartAsync(new LoginOptions(homeserver.Url, Username: null, Password: null));
+        _tui = await TuiClientRunner.StartAsync(
+            new LoginOptions(homeserver.Url, Username: null, Password: null, DataDirectory.Path)
+        );
         await Tui.WaitForTextAsync("Username:");
 
         // Act
@@ -137,6 +140,35 @@ public class TuiClientTests(Homeserver homeserver)
         await Assert.That(Tui.Completion.IsCompletedSuccessfully).IsTrue();
     }
 
+    [Test]
+    [DependsOn(nameof(Esc_ShouldQuit))]
+    public async Task Restart_ShouldRestoreTheSession()
+    {
+        // Arrange
+        await Tui.DisposeAsync();
+
+        // Act: without credentials, only the stored session can log in
+        _tui = await TuiClientRunner.StartAsync(
+            new LoginOptions(Homeserver: null, Username: null, Password: null, DataDirectory.Path)
+        );
+
+        // Assert
+        await Tui.WaitForTextAsync($"Matrix TUI client - {TuiUser.UserId}");
+        await Tui.WaitForTextAsync(RoomName);
+    }
+
+    [Test]
+    [DependsOn(nameof(Restart_ShouldRestoreTheSession))]
+    public async Task CtrlL_ShouldLogOut()
+    {
+        // Act
+        await Tui.PressAsync(Key.L.WithCtrl);
+
+        // Assert: back to the login form, the session is gone
+        await Tui.WaitForTextAsync("Username:");
+        await Assert.That(File.Exists(Path.Join(DataDirectory.Path, "session.json"))).IsFalse();
+    }
+
     [After(Class)]
     public static async Task StopAsync()
     {
@@ -144,6 +176,7 @@ public class TuiClientTests(Homeserver homeserver)
         {
             await _tui.DisposeAsync();
         }
+        DataDirectory.Dispose();
         _otherTimelineHandle?.Cancel();
         _otherTimelineHandle?.Dispose();
         _otherTimeline?.Dispose();

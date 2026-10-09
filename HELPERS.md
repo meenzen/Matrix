@@ -2,7 +2,7 @@
 
 Design notes for `src/Matrix.RustSdk`, the helpers on top of the generated bindings. They should build on
 matrix-rust-sdk, not reimplement it, and make common tasks idiomatic in C#: `IAsyncEnumerable`, `await using`,
-cancellation, managed collections. Helpers 1 to 4 are implemented, the findings for the others are from
+cancellation, managed collections. Helpers 1 to 5 are implemented, the findings for the others are from
 `matrix-sdk-ffi/20260909` and uniffi 0.31 and should be rechecked against the bindings before building on them.
 
 ## Pain points of the bindings
@@ -173,25 +173,55 @@ RoomMember[] members = await room.GetMembersAsync();
   diff subscription), the room directory as an async enumerable (its results only arrive in the diff subscription, from
   a separate task, there is no way to tell when a page was delivered).
 
-### 5. Client setup and sessions
+### 5. Stored sessions (implemented)
 
-`LoginOrRestoreAsync` for bots: restore the stored session or log in with a password and store it. The design reviews
-of step 4 showed it needs more than a restore-or-login:
+```csharp
+ClientStoreOptions store = new() { DataDirectory = "data/echo-bot" };
+await using StoredClient stored = await StoredClient.LoginOrRestoreAsync(store, credentials, cancellationToken);
+// apps that ask for the password
+StoredClient? restored = await StoredClient.TryRestoreAsync(store) ?? await ShowLoginFormAsync(store);
+```
 
-- A data directory per account holding the session and the sqlite store, locked exclusively for the lifetime of the
-  client: two processes on one store diverge the Olm account (`CrossProcessLockConfig` defaults to single process). The
-  helper returns an owner object (`IAsyncDisposable`, client and lock) instead of a bare `Client`.
-- A session file of its own (session, username, homeserver), written atomically and readable by the owner only, it
-  contains the access token. The SDK never stores tokens, `RestoreSession` ignores `Session.HomeserverUrl` (build with
-  `HomeserverUrl`), password logins don't request refresh tokens.
-- Never wipe a store on its own: a store belongs to one device (`MismatchedAccount` otherwise), a missing or unreadable
-  session file must not delete the crypto identity. A device id generated before the login, stored with the pending
-  login, lets a login that crashed before the session was written reuse its device and store.
-- A fresh `Client` per attempt, a failed restore leaves the client unusable (`set_session` panics the second time).
-- `SlidingSyncVersionBuilder.DiscoverNative` by default, the session stores the version and `SyncService` needs
-  native sliding sync. User settings first, then the helper's server and store.
-- Revoked tokens only show at the first sync (`RestoreSession` makes no request), document the recovery.
-- `ISessionStore` and `ClientSessionDelegate` only matter for OAuth sessions (refresh), together with OAuth and QR login.
+- `StoredClient` owns the `Client` and an exclusive lock on a data directory per account (decided name, `IAsyncDisposable`
+  and `IDisposable`): `session.json`, `store` (state and crypto store, the keys of the device), `cache` (event cache,
+  media) and a lock file. Two processes on one store diverge the Olm account, the SDK's `CrossProcessLockConfig` is set
+  to single process. The lock is a `FileStream` with `FileShare.None` (an `flock` on Unix, advisory, not on network file
+  systems), a second client gets `DataDirectoryLockedException`. The lock file is never deleted.
+- `TryRestoreAsync` (null without a session, for apps that only show a login form when needed), `LoginAsync` and
+  `LoginOrRestoreAsync` for bots (decided split). `ClientStoreOptions` and `PasswordCredentials` are bindable from
+  configuration (`get; set;`), the password is only needed when there is no session. A stored session has to belong to
+  the credentials (user id, the homeserver of the session wins).
+- `session.json` is the helper's own format (the SDK never stores tokens), written atomically (temporary file, flush to
+  disk, rename) and created with mode 0600, the directory with 0700 on Unix. States: `Pending` (device id generated
+  before the login, so a login that reached the server but crashed reuses its device and store), `Active`,
+  `SoftLoggedOut`, `LoggedOut`. `DeviceMayExist` is set right before the first login request and stays set unless the
+  homeserver rejected every request (`M_FORBIDDEN`, ..., not rate limits: the SDK retries the login): only then may
+  another account log in, a failed discovery (typo in the homeserver) sends no request. Restoring a session without its
+  store throws, a new store would create new keys for a device that published others.
+- Never wipe a store on its own: a store without `session.json` or an unreadable one throws. Only `LogoutAsync`
+  deletes it, and the next start after the homeserver deleted the device (`DidReceiveAuthError(false)`): the device is
+  gone, logging in with its id again would create one without keys (the account counts as uploaded already).
+- Restores make no request: built with the stored homeserver URL and `SlidingSyncVersionBuilder.None`,
+  `RestoreSession` sets the stored version. Logins use `DiscoverNative` unless `ConfigureClient` sets another version,
+  `SyncService` needs simplified sliding sync. `ConfigureClient` runs first, the helper sets server, store and lock
+  config afterwards. A fresh `Client` per attempt, a failed restore leaves the client unusable (`set_session` panics
+  the second time).
+- `StoredClient` sets the client's delegate (only one per client) before the login or restore to track the session: a
+  soft logout keeps the device and store for the next login with the same device id, a hard one marks the session
+  logged out. Both cancel `StoredClient.SessionEnded` (on the thread pool, not on the SDK's thread), the echo bot stops
+  then. The app's delegate goes into `ClientStoreOptions.ClientDelegate`, exceptions are swallowed (panics otherwise).
+- Disposing calls `Client.Pause` before releasing the lock: the Rust client lives on in `SyncService`, the e2ee task and
+  objects the app didn't dispose, `Pause` closes the stores so nothing writes after another process took the lock.
+  `Pause` doesn't wait for reads forever, so this is best effort. Cancellation stops waiting, the attempt (on the
+  thread pool, it works with files) continues and disposes its client when it finished. `LogoutAsync` takes no token:
+  logout, `M_UNKNOWN_TOKEN` counts as done, pause, mark `LoggedOut`, delete store and session. `DisposeAsync` waits for
+  a running logout. `store` and `cache` are created owner only before the SDK creates them with the default umask.
+- Password logins don't request refresh tokens, the session file doesn't change after the login. OAuth and QR login
+  need `ClientSessionDelegate` for refreshed tokens, together with the follow-up below. `StorePassphrase` encrypts the
+  sqlite stores, not `session.json`.
+- The echo bot showed a pitfall of persistent stores: after a restore the first sync is incremental, a room shows up
+  only when something happens in it and a timeline created after that response treats the message as history. Bots
+  start their timelines for the joined rooms before syncing.
 
 ### 6. Hosting
 
@@ -285,7 +315,7 @@ merged, like the subscriptions did.
 2. ~~`VectorDiff<T>`, `LiveList<T>` and the room list (helper 2)~~: done in #148.
 3. ~~Message and timeline helpers, the echo bot and the TUI client on top of them (helper 3)~~: done.
 4. ~~Progress, room members and `MatrixSdk.Initialize` (helper 4)~~: done.
-5. **Sessions (helper 5).** `LoginOrRestoreAsync` with an owner object, see helper 5, with its own design review.
+5. ~~Stored sessions (helper 5), the echo bot and the TUI client restore their sessions~~: done.
 6. **First release of `Matrix.RustSdk`.** Set `IsPackable`, check the packaged XML docs, see RELEASING.md.
 
 Smaller follow-ups, whenever convenient:
@@ -306,3 +336,7 @@ Smaller follow-ups, whenever convenient:
 - Filling gaps in `WatchIncomingMessagesAsync`, see helper 3.
 - QR code login as an `IAsyncEnumerable` of the progress, see helper 4, once there is an OAuth capable test server.
 - The hosting package (helper 6) once the rest is published.
+- `StoredClient`: OAuth login and refreshed tokens (`ClientSessionDelegate`), a cache directory of its own
+  (`XDG_CACHE_HOME`), moving the session to another homeserver URL. From the final API review, not done yet: the stored
+  account for prefilling login forms after a soft logout, a dedicated exception for directory conflicts instead of
+  `InvalidOperationException`, binding `PasswordCredentials` and `ClientStoreOptions` directly in the echo bot.
