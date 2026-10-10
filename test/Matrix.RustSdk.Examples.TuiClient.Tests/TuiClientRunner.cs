@@ -63,6 +63,14 @@ public sealed class TuiClientRunner : IAsyncDisposable
     public Task PressAsync(Key key) => OnMainLoopAsync(() => _app.InjectKey(key));
 
     /// <summary>
+    /// Double clicks the left mouse button at a position on the screen.
+    /// </summary>
+    public Task DoubleClickAsync(int x, int y) =>
+        OnMainLoopAsync(() =>
+            _app.InjectSequence(InputInjectionExtensions.LeftButtonDoubleClick(new System.Drawing.Point(x, y)))
+        );
+
+    /// <summary>
     /// Types <paramref name="text"/> key by key.
     /// </summary>
     public async Task TypeAsync(string text)

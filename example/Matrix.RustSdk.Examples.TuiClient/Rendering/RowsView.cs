@@ -1,4 +1,5 @@
 using Terminal.Gui.Drawing;
+using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 using Attribute = Terminal.Gui.Drawing.Attribute;
 
@@ -54,6 +55,16 @@ public sealed class RowsView : View
     /// Raised after the selection moved.
     /// </summary>
     public event EventHandler? SelectionChanged;
+
+    /// <summary>
+    /// Raised when an item was clicked, after it was selected.
+    /// </summary>
+    public event EventHandler? ItemClicked;
+
+    /// <summary>
+    /// Raised when an item was double clicked, after it was selected.
+    /// </summary>
+    public event EventHandler? ItemActivated;
 
     /// <summary>
     /// The visible rows as text, for tests.
@@ -189,6 +200,41 @@ public sealed class RowsView : View
             _top = last - first + 1 > height ? first : last - height + 1;
         }
         _top = Math.Clamp(_top, 0, Math.Max(0, _rows.Count - height));
+    }
+
+    /// <summary>
+    /// The wheel scrolls three lines, a click selects the item under the mouse, a double click activates it.
+    /// </summary>
+    protected override bool OnMouseEvent(Mouse mouse)
+    {
+        if (mouse.Flags.HasFlag(MouseFlags.WheeledDown))
+        {
+            MoveByRows(3);
+            return true;
+        }
+        if (mouse.Flags.HasFlag(MouseFlags.WheeledUp))
+        {
+            MoveByRows(-3);
+            return true;
+        }
+        if (mouse.IsSingleDoubleOrTripleClicked && mouse.Position is { } position)
+        {
+            int row = _top + position.Y;
+            if (row >= 0 && row < _rows.Count)
+            {
+                Select(_rows[row].Item);
+            }
+            if (mouse.IsDoubleClicked)
+            {
+                ItemActivated?.Invoke(this, EventArgs.Empty);
+            }
+            else
+            {
+                ItemClicked?.Invoke(this, EventArgs.Empty);
+            }
+            return true;
+        }
+        return base.OnMouseEvent(mouse);
     }
 
     protected override bool OnDrawingContent(DrawContext? context)

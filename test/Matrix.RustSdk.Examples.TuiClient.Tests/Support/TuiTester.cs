@@ -78,6 +78,8 @@ public sealed class TuiTester : IAsyncDisposable
 
     public Task PressAsync(char key) => Tui.PressAsync(new Key(key));
 
+    public Task DoubleClickAsync(int x, int y) => Tui.DoubleClickAsync(x, y);
+
     /// <summary>
     /// Presses the keys of <paramref name="keys"/> one by one, like typing them.
     /// </summary>

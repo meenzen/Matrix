@@ -79,6 +79,12 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
             Placeholder = "No rooms yet, :join or :create one.",
         };
         _roomsFrame.Add(_roomsView);
+        _roomsView.ItemClicked += (_, _) => OnClicked(Pane.Rooms);
+        _roomsView.ItemActivated += (_, _) =>
+        {
+            OnClicked(Pane.Rooms);
+            OpenSelectedRoom();
+        };
 
         _mainFrame = new FrameView
         {
@@ -96,6 +102,12 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
             Placeholder = "Select a room and press Enter to open it, ? shows the keys.",
         };
         _timelineView.SelectionChanged += (_, _) => OnTimelineSelectionChanged();
+        _timelineView.ItemClicked += (_, _) => OnClicked(Pane.Timeline);
+        _timelineView.ItemActivated += (_, _) =>
+        {
+            OnClicked(Pane.Timeline);
+            OpenSelectedMedia();
+        };
         _pageView = new RowsView
         {
             Width = Dim.Fill(),
@@ -119,6 +131,12 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
         // the focused view is hidden
         _composer.CanFocus = false;
         _composer.ContentsChanged += (_, _) => OnComposerChanged();
+        _pageView.ItemClicked += (_, _) => OnClicked(Pane.Page);
+        _pageView.ItemActivated += (_, _) =>
+        {
+            OnClicked(Pane.Page);
+            Open();
+        };
         _mainFrame.Add(_timelineView, _pageView, _rule, _composer);
 
         _status = new Label { Y = Pos.AnchorEnd(1), Width = Dim.Fill() };

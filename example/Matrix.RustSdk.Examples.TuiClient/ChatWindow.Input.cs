@@ -236,6 +236,18 @@ public sealed partial class ChatWindow
         UpdateStatus();
     }
 
+    /// <summary>
+    /// A click into a list focuses it in normal mode, like moving there with h and l.
+    /// </summary>
+    private void OnClicked(Pane pane)
+    {
+        if (Mode != InputMode.Normal)
+        {
+            SetMode(InputMode.Normal);
+        }
+        FocusPane(pane);
+    }
+
     private void FocusPane(Pane pane)
     {
         _pane = pane;

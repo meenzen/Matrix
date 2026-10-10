@@ -113,5 +113,12 @@ public class ModerationTests(Homeserver homeserver)
 
         // Assert
         await tui.WaitForTextAsync($"┤Newer {suffix}");
+
+        // Act: a double click on the second line of the room list opens the room there
+        await tui.PressAsync(Key.Esc);
+        await tui.DoubleClickAsync(6, 3);
+
+        // Assert
+        await tui.WaitForTextAsync($"┤Older {suffix}");
     }
 }
