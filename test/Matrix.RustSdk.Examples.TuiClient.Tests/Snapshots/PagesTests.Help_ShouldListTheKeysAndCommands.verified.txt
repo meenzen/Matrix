@@ -1,0 +1,54 @@
+Help
+ Keys
+
+ j k ↓ ↑      move down / up (a count like 5j moves further)
+ gg G         first / last
+ C-d C-u      half a page down / up, C-f C-b a page
+ h l ← →      focus the room list / the timeline, Tab switches
+ J K C-n C-p  next / previous room
+ U            next unread room
+ Enter        open the room, or what is selected on a page
+ i a          write a message (insert mode), Esc goes back to normal mode
+ Enter        in insert mode: send, Alt+Enter adds a line break
+ r            reply to the selected message
+ e            edit the selected message
+ dd           delete the selected message
+ +            react to the selected message
+ yy           copy the selected message
+ o            open the attachment of the selected message
+ m            members of the room
+ /            filter the room list by name, Esc clears the filter
+ :            command line, Tab completes, ↑ ↓ history
+ ?            this help, q or Esc closes pages
+ ZZ :q C-q    quit
+
+ Commands
+
+ :q[uit]                                    quit, the session stays stored
+ :logout                                    log out and delete the stored session
+ :h[elp]                                    show the keys and commands
+ :join <#alias|!id>                         join a room
+ :leave                                     leave the open room
+ :accept                                    accept the invite to the open room
+ :decline                                   decline the invite to the open room
+ :invite <@user>                            invite a user to the open room
+ :kick <@user> [reason]                     remove a user from the open room
+ :ban <@user> [reason]                      ban a user from the open room
+ :unban <@user>                             lift a ban
+ :create <name> [--public] [--unencrypted]  create a room and open it
+ :dm <@user>                                open the direct chat with a user, creating it if needed
+ :members                                   show the members of the open room
+ :topic [text]                              show or set the topic of the open room
+ :name <name>                               rename the open room
+ :me <text>                                 send an emote
+ :react <emoji>                             react to the selected message
+ :upload <path>                             send a file
+ :open                                      open the attachment of the selected message
+ :save [path]                               save the attachment of the selected message
+ :read                                      mark the open room as read
+ :ignore <@user>                            ignore a user
+ :unignore <@user>                          stop ignoring a user
+ :verify [@user]                            verify this session with another one, or verify a user
+ :recovery [enable|reset|<key>]             show the key backup status, enable recovery or recover
+ :notifications [on|off]                    toggle desktop notifications
+ :search [text]                             filter the room list, like /

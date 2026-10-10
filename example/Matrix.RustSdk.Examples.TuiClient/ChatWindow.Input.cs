@@ -212,6 +212,7 @@ public sealed partial class ChatWindow
         }
         Mode = mode;
         _keymap.Reset();
+        _composer.CanFocus = mode == InputMode.Insert;
         bool line = mode is InputMode.Command or InputMode.Filter;
         _commandLine.Visible = line;
         _commandPrefix.Visible = line;
@@ -219,6 +220,8 @@ public sealed partial class ChatWindow
         switch (mode)
         {
             case InputMode.Insert:
+                // leaving insert mode goes back to the timeline
+                _pane = Pane.Timeline;
                 _composer.SetFocus();
                 break;
             case InputMode.Command:
@@ -677,8 +680,14 @@ public sealed partial class ChatWindow
             }.Where(p => !string.IsNullOrEmpty(p))
         );
         int width = Math.Max(_status.Viewport.Width, Viewport.Width);
-        int space = width - TextLayout.Width(left) - TextLayout.Width(right);
-        _status.Text =
-            space >= 1 ? left + new string(' ', space) + right : TextLayout.Truncate(left, Math.Max(10, width));
+        // the state on the right always stays visible, long messages are cut, but a question gets the whole line
+        int rightWidth = TextLayout.Width(right);
+        if (_prompt is not null || width - rightWidth < 20)
+        {
+            _status.Text = TextLayout.Truncate(left, width);
+            return;
+        }
+        left = TextLayout.Truncate(left, width - rightWidth - 1);
+        _status.Text = left + new string(' ', width - TextLayout.Width(left) - rightWidth) + right;
     }
 }

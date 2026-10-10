@@ -115,15 +115,10 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
             WordWrap = true,
             TabKeyAddsTab = false,
         };
+        // the composer only takes the focus in insert mode, otherwise Terminal.Gui would move the focus there when
+        // the focused view is hidden
+        _composer.CanFocus = false;
         _composer.ContentsChanged += (_, _) => OnComposerChanged();
-        _composer.HasFocusChanged += (_, e) =>
-        {
-            // a click into the composer starts insert mode
-            if (e.NewValue && Mode == InputMode.Normal)
-            {
-                SetMode(InputMode.Insert);
-            }
-        };
         _mainFrame.Add(_timelineView, _pageView, _rule, _composer);
 
         _status = new Label { Y = Pos.AnchorEnd(1), Width = Dim.Fill() };
@@ -375,7 +370,7 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
     {
         string? selectedKey = _timelineView.SelectedItem is int i && i < _entries.Count ? _entries[i].Key : null;
         bool following = IsFollowingTimeline;
-        IReadOnlyList<TimelineEntry> entries = _room?.Entries ?? [];
+        IReadOnlyList<TimelineEntry> entries = TimelineRenderer.VisibleEntries(_room?.Entries ?? []);
         _entries = entries;
 
         int? selected = null;

@@ -236,6 +236,8 @@ public sealed class VimKeymap
             "o" => InputAction.OpenMedia,
             "m" => InputAction.Members,
             "?" => InputAction.Help,
+            // closes pages like Esc, as in the help of vim
+            "q" => InputAction.Cancel,
             "ZZ" or "ZQ" => InputAction.Quit,
             _ => null,
         };

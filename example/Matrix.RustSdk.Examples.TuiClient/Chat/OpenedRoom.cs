@@ -73,6 +73,7 @@ public sealed class OpenedRoom : IAsyncDisposable
     /// </summary>
     public static async Task<OpenedRoom> OpenAsync(Client client, Room room, string ownUserId)
     {
+        await ThreadPoolHop.Yield();
         OpenedRoom opened;
         try
         {
@@ -110,6 +111,7 @@ public sealed class OpenedRoom : IAsyncDisposable
     /// </summary>
     public async Task AcceptInviteAsync()
     {
+        await ThreadPoolHop.Yield();
         await _room.Join();
         Summary = Summary with { Membership = Membership.Joined };
         await OpenTimelineAsync();
@@ -119,17 +121,25 @@ public sealed class OpenedRoom : IAsyncDisposable
     /// <summary>
     /// Declines the invite or leaves the room.
     /// </summary>
-    public Task LeaveAsync() => _room.Leave();
+    public async Task LeaveAsync()
+    {
+        await ThreadPoolHop.Yield();
+        await _room.Leave();
+    }
 
     /// <summary>
     /// Sends a text message, markdown is converted to HTML. A reply refers to <paramref name="replyTo"/>. The message
     /// shows up in the timeline right away as a local echo and is updated once the server confirms it.
     /// </summary>
-    public Task SendAsync(string text, TimelineEntry? replyTo = null) =>
-        Timeline.SendMarkdownAsync(text, replyTo?.EventId);
+    public async Task SendAsync(string text, TimelineEntry? replyTo = null)
+    {
+        await ThreadPoolHop.Yield();
+        await Timeline.SendMarkdownAsync(text, replyTo?.EventId);
+    }
 
     public async Task SendEmoteAsync(string text)
     {
+        await ThreadPoolHop.Yield();
         using RoomMessageEventContentWithoutRelation content =
             MatrixSdkFfiMethods.MessageEventContentFromMarkdownAsEmote(text);
         using SendHandle handle = await Timeline.Send(content);
@@ -140,6 +150,7 @@ public sealed class OpenedRoom : IAsyncDisposable
     /// </summary>
     public async Task EditAsync(TimelineEntry entry, string text)
     {
+        await ThreadPoolHop.Yield();
         if (!entry.IsEditable || entry.Id is null)
         {
             throw new InvalidOperationException("Only your own text messages can be edited.");
@@ -153,20 +164,33 @@ public sealed class OpenedRoom : IAsyncDisposable
     /// <summary>
     /// Deletes a message (redacts it), a message that wasn't sent yet is cancelled.
     /// </summary>
-    public Task RedactAsync(TimelineEntry entry, string? reason = null) =>
-        Timeline.RedactEvent(entry.Id ?? throw new InvalidOperationException("This entry can't be deleted."), reason);
+    public async Task RedactAsync(TimelineEntry entry, string? reason = null)
+    {
+        await ThreadPoolHop.Yield();
+        await Timeline.RedactEvent(
+            entry.Id ?? throw new InvalidOperationException("This entry can't be deleted."),
+            reason
+        );
+    }
 
     /// <summary>
     /// Adds the reaction, or removes it if the user reacted with it already. Returns whether it was added.
     /// </summary>
-    public Task<bool> ToggleReactionAsync(TimelineEntry entry, string key) =>
-        Timeline.ToggleReaction(entry.Id ?? throw new InvalidOperationException("You can't react to this."), key);
+    public async Task<bool> ToggleReactionAsync(TimelineEntry entry, string key)
+    {
+        await ThreadPoolHop.Yield();
+        return await Timeline.ToggleReaction(
+            entry.Id ?? throw new InvalidOperationException("You can't react to this."),
+            key
+        );
+    }
 
     /// <summary>
     /// Loads older messages. Does nothing while loading or when the start of the room was reached.
     /// </summary>
     public async Task PaginateBackwardsAsync()
     {
+        await ThreadPoolHop.Yield();
         if (_timeline is null || ReachedStart || Interlocked.Exchange(ref _paginating, 1) == 1)
         {
             return;
@@ -186,6 +210,7 @@ public sealed class OpenedRoom : IAsyncDisposable
     /// </summary>
     public async Task MarkAsReadAsync()
     {
+        await ThreadPoolHop.Yield();
         if (_timeline is null)
         {
             return;
@@ -200,13 +225,21 @@ public sealed class OpenedRoom : IAsyncDisposable
     /// <summary>
     /// Tells the others that the user is typing. The SDK throttles the notices, this can be called for every key.
     /// </summary>
-    public Task SetTypingAsync(bool isTyping) => IsInvite ? Task.CompletedTask : _room.TypingNotice(isTyping);
+    public async Task SetTypingAsync(bool isTyping)
+    {
+        await ThreadPoolHop.Yield();
+        if (!IsInvite)
+        {
+            await _room.TypingNotice(isTyping);
+        }
+    }
 
     /// <summary>
     /// Sends a file, images, videos and audio files are sent as such so other clients show them inline.
     /// </summary>
     public async Task UploadAsync(string path, TimelineEntry? replyTo = null)
     {
+        await ThreadPoolHop.Yield();
         System.IO.FileInfo file = new(path);
         if (!file.Exists)
         {
@@ -245,6 +278,7 @@ public sealed class OpenedRoom : IAsyncDisposable
     /// </summary>
     public async Task<string> DownloadAsync(MediaAttachment media, string? path, string directory)
     {
+        await ThreadPoolHop.Yield();
         string target = path ?? UniquePath(directory, media.Filename);
         if (Directory.Exists(target))
         {
@@ -259,6 +293,7 @@ public sealed class OpenedRoom : IAsyncDisposable
 
     public async Task<IReadOnlyList<MemberSummary>> GetMembersAsync()
     {
+        await ThreadPoolHop.Yield();
         RoomMember[] members = await _room.GetMembersAsync();
         IReadOnlyList<MemberSummary> summaries = MemberSummary.From(members);
         foreach (MemberSummary member in summaries)
@@ -268,20 +303,45 @@ public sealed class OpenedRoom : IAsyncDisposable
         return summaries;
     }
 
-    public Task InviteAsync(string userId) => _room.InviteUserById(userId);
+    public async Task InviteAsync(string userId)
+    {
+        await ThreadPoolHop.Yield();
+        await _room.InviteUserById(userId);
+    }
 
-    public Task KickAsync(string userId, string? reason) => _room.KickUser(userId, reason);
+    public async Task KickAsync(string userId, string? reason)
+    {
+        await ThreadPoolHop.Yield();
+        await _room.KickUser(userId, reason);
+    }
 
-    public Task BanAsync(string userId, string? reason) => _room.BanUser(userId, reason);
+    public async Task BanAsync(string userId, string? reason)
+    {
+        await ThreadPoolHop.Yield();
+        await _room.BanUser(userId, reason);
+    }
 
-    public Task UnbanAsync(string userId) => _room.UnbanUser(userId, null);
+    public async Task UnbanAsync(string userId)
+    {
+        await ThreadPoolHop.Yield();
+        await _room.UnbanUser(userId, null);
+    }
 
-    public Task SetTopicAsync(string topic) => _room.SetTopic(topic);
+    public async Task SetTopicAsync(string topic)
+    {
+        await ThreadPoolHop.Yield();
+        await _room.SetTopic(topic);
+    }
 
-    public Task SetNameAsync(string name) => _room.SetName(name);
+    public async Task SetNameAsync(string name)
+    {
+        await ThreadPoolHop.Yield();
+        await _room.SetName(name);
+    }
 
     public async ValueTask DisposeAsync()
     {
+        await ThreadPoolHop.Yield();
         await _closing.CancelAsync();
 #pragma warning disable VSTHRD003 // started by this class, they end with the cancellation
         await Task.WhenAll(_watchers);

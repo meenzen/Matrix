@@ -110,6 +110,7 @@ public sealed class MatrixSession : IAsyncDisposable
     /// </summary>
     public static async Task<MatrixSession?> TryRestoreAsync(string dataDirectory)
     {
+        await ThreadPoolHop.Yield();
         StoredClient? stored = await StoredClient.TryRestoreAsync(Store(dataDirectory));
         return stored is null ? null : await CreateAsync(stored);
     }
@@ -124,6 +125,7 @@ public sealed class MatrixSession : IAsyncDisposable
         string password
     )
     {
+        await ThreadPoolHop.Yield();
         // the login checks that the homeserver supports simplified sliding sync (MSC4186), the SyncService needs it
         StoredClient stored = await StoredClient.LoginAsync(
             Store(dataDirectory),
@@ -143,6 +145,7 @@ public sealed class MatrixSession : IAsyncDisposable
     /// </summary>
     public async Task StartAsync()
     {
+        await ThreadPoolHop.Yield();
         _watchers.Add(
             WatchAsync(_syncService.WatchStateAsync(_stopping.Token), s => SyncStateChanged?.Invoke(this, s))
         );
@@ -178,6 +181,7 @@ public sealed class MatrixSession : IAsyncDisposable
     /// </summary>
     public async Task<string> JoinAsync(string roomIdOrAlias)
     {
+        await ThreadPoolHop.Yield();
         using Room room = await _client.JoinRoomByIdOrAlias(roomIdOrAlias, []);
         return room.Id();
     }
@@ -187,6 +191,7 @@ public sealed class MatrixSession : IAsyncDisposable
     /// </summary>
     public async Task<string> CreateRoomAsync(string name, bool isEncrypted, bool isPublic)
     {
+        await ThreadPoolHop.Yield();
         string roomId = await _client.CreateRoom(
             new CreateRoomParameters(
                 Name: name,
@@ -206,6 +211,7 @@ public sealed class MatrixSession : IAsyncDisposable
     /// </summary>
     public async Task<string> GetOrCreateDirectMessageAsync(string userId)
     {
+        await ThreadPoolHop.Yield();
         using (Room? existing = _client.GetDmRoom(userId))
         {
             if (existing is not null)
@@ -227,15 +233,24 @@ public sealed class MatrixSession : IAsyncDisposable
         return roomId;
     }
 
-    public Task IgnoreAsync(string userId) => _client.IgnoreUser(userId);
+    public async Task IgnoreAsync(string userId)
+    {
+        await ThreadPoolHop.Yield();
+        await _client.IgnoreUser(userId);
+    }
 
-    public Task UnignoreAsync(string userId) => _client.UnignoreUser(userId);
+    public async Task UnignoreAsync(string userId)
+    {
+        await ThreadPoolHop.Yield();
+        await _client.UnignoreUser(userId);
+    }
 
     /// <summary>
     /// Stops syncing and logs out: removes the device from the account and deletes the stored session.
     /// </summary>
     public async Task LogoutAsync()
     {
+        await ThreadPoolHop.Yield();
         await StopAsync();
         try
         {
@@ -253,6 +268,7 @@ public sealed class MatrixSession : IAsyncDisposable
     /// </summary>
     public async ValueTask DisposeAsync()
     {
+        await ThreadPoolHop.Yield();
         await StopAsync();
         await _stored.DisposeAsync();
     }

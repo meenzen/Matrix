@@ -124,6 +124,7 @@ public sealed class VerificationFlow(Client client) : SessionVerificationControl
     /// </summary>
     public async Task RequestDeviceVerificationAsync()
     {
+        await ThreadPoolHop.Yield();
         SessionVerificationController controller = Controller;
         _isInitiator = true;
         Update(new VerificationStatus(VerificationStep.Requested) { Partner = "another session" });
@@ -143,6 +144,7 @@ public sealed class VerificationFlow(Client client) : SessionVerificationControl
     /// </summary>
     public async Task RequestUserVerificationAsync(string userId)
     {
+        await ThreadPoolHop.Yield();
         SessionVerificationController controller = Controller;
         _isInitiator = true;
         Update(new VerificationStatus(VerificationStep.Requested) { Partner = userId });
@@ -162,6 +164,7 @@ public sealed class VerificationFlow(Client client) : SessionVerificationControl
     /// </summary>
     public async Task AcceptAsync()
     {
+        await ThreadPoolHop.Yield();
         SessionVerificationController controller = Controller;
         SessionVerificationRequestDetails details =
             _incoming ?? throw new InvalidOperationException("There is no verification request to accept.");
@@ -175,17 +178,24 @@ public sealed class VerificationFlow(Client client) : SessionVerificationControl
     /// </summary>
     public async Task ConfirmAsync()
     {
+        await ThreadPoolHop.Yield();
         await Controller.ApproveVerification();
-        Update(Status with { Step = VerificationStep.Confirmed });
+        // the other side may have confirmed first, the verification is done then
+        UpdateIf(VerificationStep.Comparing, status => status with { Step = VerificationStep.Confirmed });
     }
 
     /// <summary>
     /// Tells the other side that the emojis don't match, which cancels the verification.
     /// </summary>
-    public Task MismatchAsync() => Controller.DeclineVerification();
+    public async Task MismatchAsync()
+    {
+        await ThreadPoolHop.Yield();
+        await Controller.DeclineVerification();
+    }
 
     public async Task CancelAsync()
     {
+        await ThreadPoolHop.Yield();
         if (Status.Step == VerificationStep.Incoming)
         {
             // not acknowledged yet, there is nothing to cancel in the SDK
@@ -297,7 +307,27 @@ public sealed class VerificationFlow(Client client) : SessionVerificationControl
 
     private void Update(VerificationStatus status)
     {
-        Status = status;
+        lock (_lock)
+        {
+            Status = status;
+        }
+        Changed?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// Updates the status only if it is still at <paramref name="step"/>, the callbacks of the SDK run on other
+    /// threads and may have moved it on.
+    /// </summary>
+    private void UpdateIf(VerificationStep step, Func<VerificationStatus, VerificationStatus> update)
+    {
+        lock (_lock)
+        {
+            if (Status.Step != step)
+            {
+                return;
+            }
+            Status = update(Status);
+        }
         Changed?.Invoke(this, EventArgs.Empty);
     }
 

@@ -55,6 +55,32 @@ public static class TimelineRenderer
         return rows;
     }
 
+    /// <summary>
+    /// The entries worth showing: the read marker only if messages of others follow it, the SDK also puts it at the
+    /// start of rooms without unread messages.
+    /// </summary>
+    public static IReadOnlyList<TimelineEntry> VisibleEntries(IReadOnlyList<TimelineEntry> entries)
+    {
+        int marker = -1;
+        for (int i = 0; i < entries.Count; i++)
+        {
+            if (entries[i].Kind == EntryKind.ReadMarker)
+            {
+                marker = i;
+            }
+        }
+        if (marker < 0)
+        {
+            return entries;
+        }
+        bool unread = false;
+        for (int i = marker + 1; i < entries.Count && !unread; i++)
+        {
+            unread = entries[i] is { IsOwn: false, Kind: not (EntryKind.Event or EntryKind.DayDivider) };
+        }
+        return unread ? entries : [.. entries.Where((_, i) => i != marker)];
+    }
+
     public static string DayLabel(DateTimeOffset day, DateTimeOffset now)
     {
         DateTime date = day.ToOffset(now.Offset).Date;

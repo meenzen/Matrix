@@ -120,6 +120,57 @@ public sealed class TuiClientRunner : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Waits until a part of the screen matches <paramref name="pattern"/>.
+    /// </summary>
+    public async Task WaitForMatchAsync(string pattern)
+    {
+        System.Text.RegularExpressions.Regex regex = new(
+            pattern,
+            System.Text.RegularExpressions.RegexOptions.None,
+            TimeSpan.FromSeconds(1)
+        );
+        string screen = "";
+        try
+        {
+            await Poll.UntilAsync(
+                async () =>
+                {
+                    screen = await GetScreenAsync();
+                    return regex.IsMatch(screen);
+                },
+                $"/{pattern}/ to show up"
+            );
+        }
+        catch (TimeoutException e)
+        {
+            throw new TimeoutException($"{e.Message} The screen was:\n{screen}", e);
+        }
+    }
+
+    /// <summary>
+    /// Waits until the screen no longer shows <paramref name="text"/>.
+    /// </summary>
+    public async Task WaitForTextGoneAsync(string text)
+    {
+        string screen = "";
+        try
+        {
+            await Poll.UntilAsync(
+                async () =>
+                {
+                    screen = await GetScreenAsync();
+                    return !screen.Contains(text, StringComparison.Ordinal);
+                },
+                $"\"{text}\" to disappear"
+            );
+        }
+        catch (TimeoutException e)
+        {
+            throw new TimeoutException($"{e.Message} The screen was:\n{screen}", e);
+        }
+    }
+
     public async ValueTask DisposeAsync()
     {
         await _stop.CancelAsync();

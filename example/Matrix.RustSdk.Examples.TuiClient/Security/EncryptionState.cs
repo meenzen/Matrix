@@ -59,25 +59,45 @@ public sealed class EncryptionState(Client client)
 
     /// <summary>
     /// Sets up recovery: creates a key backup if there is none and stores the cross-signing and backup keys on the
-    /// server, encrypted with a new recovery key, which is returned. The user has to keep it.
+    /// server, encrypted with a new recovery key, which is returned once the room keys are backed up. The user has to
+    /// keep it.
     /// </summary>
-    public Task<string> EnableRecoveryAsync(IProgress<EnableRecoveryProgress>? progress = null) =>
-        _encryption.EnableRecoveryAsync(progress: progress);
+    public async Task<string> EnableRecoveryAsync(IProgress<EnableRecoveryProgress>? progress = null)
+    {
+        await ThreadPoolHop.Yield();
+        return await _encryption.EnableRecoveryAsync(waitForBackupsToUpload: true, progress: progress);
+    }
 
     /// <summary>
     /// Gets the keys from the server with the recovery key: this session is verified afterwards and old messages can
     /// be decrypted with the keys from the backup.
     /// </summary>
-    public Task RecoverAsync(string recoveryKey) => _encryption.Recover(recoveryKey.Trim());
+    public async Task RecoverAsync(string recoveryKey)
+    {
+        await ThreadPoolHop.Yield();
+        await _encryption.Recover(recoveryKey.Trim());
+    }
 
     /// <summary>
     /// Replaces the recovery key, the old one stops working. Returns the new key.
     /// </summary>
-    public Task<string> ResetRecoveryKeyAsync() => _encryption.ResetRecoveryKey();
+    public async Task<string> ResetRecoveryKeyAsync()
+    {
+        await ThreadPoolHop.Yield();
+        return await _encryption.ResetRecoveryKey();
+    }
 
-    public Task<bool> BackupExistsOnServerAsync() => _encryption.BackupExistsOnServer();
+    public async Task<bool> BackupExistsOnServerAsync()
+    {
+        await ThreadPoolHop.Yield();
+        return await _encryption.BackupExistsOnServer();
+    }
 
-    public Task<bool> HasDevicesToVerifyAgainstAsync() => _encryption.HasDevicesToVerifyAgainst();
+    public async Task<bool> HasDevicesToVerifyAgainstAsync()
+    {
+        await ThreadPoolHop.Yield();
+        return await _encryption.HasDevicesToVerifyAgainst();
+    }
 
     private async Task WatchAsync<T>(IAsyncEnumerable<T> states, Action<T> apply)
     {
