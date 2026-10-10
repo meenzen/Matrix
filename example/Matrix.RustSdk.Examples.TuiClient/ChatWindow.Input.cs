@@ -23,7 +23,21 @@ public sealed partial class ChatWindow
     private TimelineEntry? _editing;
     private string? _message;
     private bool _messageIsError;
-    private (string Question, Action<bool> Answer)? _prompt;
+    private const string InviteTag = "invite";
+    private const string VerificationTag = "verification";
+    private const int MaxHistory = 500;
+
+    // yes/no questions, answered one after the other with y or n in normal mode, Esc dismisses one
+    private readonly List<Prompt> _prompts = [];
+
+    // a page that waits for normal mode, shown when the user stops writing
+    private Page? _pendingPage;
+    private bool _historyLoaded;
+
+    // counts the key presses, a background action only changes the mode if the user didn't press keys meanwhile
+    private long _keyPresses;
+
+    private sealed record Prompt(string Question, System.Action OnYes, System.Action? OnNo, string? Tag);
 
     private InputMode Mode { get; set; } = InputMode.Normal;
 
@@ -52,20 +66,12 @@ public sealed partial class ChatWindow
         {
             return;
         }
+        _keyPresses++;
 
-        if (_prompt is { } prompt && Mode == InputMode.Normal)
+        if (_prompts.Count > 0 && Mode == InputMode.Normal && AnswerPrompt(key))
         {
             key.Handled = true;
-            if (key == new Key('y') || key == new Key('Y'))
-            {
-                ClearPrompt();
-                prompt.Answer(true);
-            }
-            else if (key == new Key('n') || key == new Key('N') || key == Key.Esc)
-            {
-                ClearPrompt();
-                prompt.Answer(false);
-            }
+            UpdateStatus();
             return;
         }
 
@@ -76,6 +82,11 @@ public sealed partial class ChatWindow
                 return;
             case KeyResultKind.Action:
                 key.Handled = true;
+                // like vim, the next command clears the message of the previous one
+                if (Mode == InputMode.Normal)
+                {
+                    _message = null;
+                }
                 Dispatch(result.Action);
                 break;
             default:
@@ -95,9 +106,15 @@ public sealed partial class ChatWindow
                 break;
             case InputAction.MoveUp:
                 FocusedList.MoveBy(-count);
+                LoadOlderAtTheTop();
                 break;
             case InputAction.MoveFirst:
                 FocusedList.MoveFirst();
+                LoadOlderAtTheTop();
+                break;
+            case InputAction.MoveLast when keyAction.HasCount:
+                // 5G goes to the fifth item, like the fifth line in vim
+                FocusedList.Select(count - 1);
                 break;
             case InputAction.MoveLast:
                 FocusedList.MoveLast();
@@ -127,12 +144,14 @@ public sealed partial class ChatWindow
                 Open();
                 break;
             case InputAction.NextRoom:
+                SelectOpenRoom();
                 _roomsView.MoveBy(count);
-                OpenSelectedRoom(startInsert: false);
+                OpenSelectedRoom();
                 break;
             case InputAction.PreviousRoom:
+                SelectOpenRoom();
                 _roomsView.MoveBy(-count);
-                OpenSelectedRoom(startInsert: false);
+                OpenSelectedRoom();
                 break;
             case InputAction.NextUnreadRoom:
                 OpenNextUnreadRoom();
@@ -201,6 +220,124 @@ public sealed partial class ChatWindow
             case InputAction.Cancel:
                 Cancel();
                 break;
+            case InputAction.Resend:
+                ResendSelected();
+                break;
+            case InputAction.JumpToUnread:
+                JumpToUnread();
+                break;
+            case InputAction.DeleteBack:
+                DeleteBack();
+                break;
+            case InputAction.DeleteWord:
+                DeleteBeforeCursor(wholeLine: false);
+                break;
+            case InputAction.DeleteLine:
+                DeleteBeforeCursor(wholeLine: true);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Moving to the top of the timeline loads older messages, also when the selection is there already.
+    /// </summary>
+    private void LoadOlderAtTheTop()
+    {
+        if (_pane == Pane.Timeline && _timelineView.SelectedItem is 0 && _room is { ReachedStart: false } room)
+        {
+            Run(null, room.PaginateBackwardsAsync);
+        }
+    }
+
+    /// <summary>
+    /// J and K move from the open room, not from wherever the selection of the room list is.
+    /// </summary>
+    private void SelectOpenRoom()
+    {
+        if (_room is { } room && IndexOfRoom(room.RoomId) is >= 0 and var index)
+        {
+            _roomsView.Select(index);
+        }
+    }
+
+    private void JumpToUnread()
+    {
+        int marker = IndexOf(_entries, e => e.Kind == EntryKind.ReadMarker);
+        if (marker < 0)
+        {
+            ShowMessage("There are no unread messages.");
+            return;
+        }
+        FocusPane(Pane.Timeline);
+        _timelineView.Select(marker);
+    }
+
+    private void ResendSelected()
+    {
+        if (SelectedEntry("send again") is not { } entry || _room is not { } room)
+        {
+            return;
+        }
+        if (entry.Status != SendStatus.Failed)
+        {
+            ShowError("Only messages that failed to send can be sent again.");
+            return;
+        }
+        Run("Sending again…", () => room.ResendAsync(entry), failure: "Sending failed");
+    }
+
+    /// <summary>
+    /// Backspace deletes the character before the cursor, on an empty command line it goes back to normal mode.
+    /// </summary>
+    private void DeleteBack()
+    {
+        string text = _commandLine.Text;
+        if (text.Length == 0)
+        {
+            Cancel();
+            return;
+        }
+        int cursor = Math.Clamp(_commandLine.InsertionPoint, 0, text.Length);
+        if (cursor > 0)
+        {
+            _commandLine.Text = text.Remove(cursor - 1, 1);
+            _commandLine.InsertionPoint = cursor - 1;
+        }
+    }
+
+    /// <summary>
+    /// C-w deletes the word before the cursor, C-u everything before it on the line, in the composer and the command
+    /// line.
+    /// </summary>
+    private void DeleteBeforeCursor(bool wholeLine)
+    {
+        if (Mode == InputMode.Insert)
+        {
+            List<string> lines = [.. _composer.Text.ReplaceLineEndings("\n").Split('\n')];
+            int row = Math.Clamp(_composer.CurrentRow, 0, lines.Count - 1);
+            int column = Math.Clamp(_composer.CurrentColumn, 0, lines[row].Length);
+            int start = wholeLine ? 0 : TextEditing.WordStart(lines[row], column);
+            lines[row] = lines[row].Remove(start, column - start);
+            _composer.Text = string.Join('\n', lines);
+            _composer.InsertionPoint = new System.Drawing.Point(start, row);
+            return;
+        }
+        string text = _commandLine.Text;
+        int cursor = Math.Clamp(_commandLine.InsertionPoint, 0, text.Length);
+        int from = wholeLine ? 0 : TextEditing.WordStart(text, cursor);
+        _commandLine.Text = text.Remove(from, cursor - from);
+        _commandLine.InsertionPoint = from;
+    }
+
+    /// <summary>
+    /// Starts insert mode at the end of a background action that started at <paramref name="keyPresses"/>, unless the
+    /// user pressed keys in the meantime: they would end up in the composer.
+    /// </summary>
+    private void StartInsertAfter(long keyPresses)
+    {
+        if (keyPresses == _keyPresses && Mode == InputMode.Normal)
+        {
+            SetMode(InputMode.Insert);
         }
     }
 
@@ -231,6 +368,11 @@ public sealed partial class ChatWindow
                 break;
             default:
                 FocusPane(_pane == Pane.Page && _page is null ? Pane.Timeline : _pane);
+                if (_pendingPage is { } pending)
+                {
+                    _pendingPage = null;
+                    ShowPage(pending);
+                }
                 break;
         }
         UpdateStatus();
@@ -264,7 +406,9 @@ public sealed partial class ChatWindow
         switch (_pane)
         {
             case Pane.Rooms:
-                OpenSelectedRoom();
+                // Enter opens the room to read it, i starts writing
+                OpenSelectedRoom(askInvite: true);
+                FocusPane(Pane.Timeline);
                 break;
             case Pane.Page when _page?.Open is { } open && _pageView.SelectedItem is int item:
                 Run(null, () => open(item));
@@ -284,7 +428,7 @@ public sealed partial class ChatWindow
             if (_rooms[index].IsUnread && _rooms[index].RoomId != _room?.RoomId)
             {
                 _roomsView.Select(index);
-                OpenRoom(_rooms[index].RoomId, startInsert: false);
+                OpenRoom(_rooms[index].RoomId);
                 return;
             }
         }
@@ -449,16 +593,7 @@ public sealed partial class ChatWindow
             ShowError("This can't be deleted.");
             return;
         }
-        Ask(
-            $"Delete \"{Preview(entry)}\"? (y/n)",
-            delete =>
-            {
-                if (delete)
-                {
-                    Run("Deleting…", () => room.RedactAsync(entry), "Deleted.");
-                }
-            }
-        );
+        Ask($"Delete \"{Preview(entry)}\"? (y/n)", () => Run("Deleting…", () => room.RedactAsync(entry), "Deleted."));
     }
 
     private void YankSelected()
@@ -480,6 +615,7 @@ public sealed partial class ChatWindow
 
     private void StartCommandLine(InputMode mode, string text)
     {
+        LoadHistory();
         _historyIndex = _history.Count;
         SetMode(mode);
         _commandLine.Text = text;
@@ -500,12 +636,18 @@ public sealed partial class ChatWindow
         string text = _commandLine.Text;
         if (Mode == InputMode.Filter)
         {
+            // like a quick switcher: the best match is opened and the filter cleared
+            string? match = _rooms.Count > 0 ? _rooms[0].RoomId : null;
+            _session.RoomFilter = "";
             SetMode(InputMode.Normal);
-            FocusPane(Pane.Rooms);
-            if (_rooms.Count > 0)
+            if (match is null)
             {
-                _roomsView.MoveFirst();
+                FocusPane(Pane.Rooms);
+                ShowError($"No room matches \"{text}\".");
+                return;
             }
+            OpenRoom(match, askInvite: true);
+            FocusPane(Pane.Timeline);
             return;
         }
         SetMode(InputMode.Normal);
@@ -516,6 +658,7 @@ public sealed partial class ChatWindow
         if (_history.Count == 0 || _history[^1] != text)
         {
             _history.Add(text);
+            SaveHistory();
         }
         ParsedCommand parsed = CommandParser.Parse(text);
         if (parsed.Command is { } command)
@@ -525,6 +668,43 @@ public sealed partial class ChatWindow
         else
         {
             ShowError(parsed.Error ?? "Invalid command.");
+        }
+    }
+
+    private string HistoryPath => Path.Join(_session.DataDirectory, "command-history");
+
+    /// <summary>
+    /// Loads the history of the command line, it is kept in the data directory across starts.
+    /// </summary>
+    private void LoadHistory()
+    {
+        if (_historyLoaded)
+        {
+            return;
+        }
+        _historyLoaded = true;
+        try
+        {
+            if (File.Exists(HistoryPath))
+            {
+                _history.InsertRange(0, File.ReadAllLines(HistoryPath).Where(l => l.Length > 0).TakeLast(MaxHistory));
+            }
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            // the history starts empty
+        }
+    }
+
+    private void SaveHistory()
+    {
+        try
+        {
+            File.WriteAllLines(HistoryPath, _history.TakeLast(MaxHistory));
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            // the history is only kept for this run
         }
     }
 
@@ -544,7 +724,8 @@ public sealed partial class ChatWindow
     {
         if (Mode == InputMode.Command)
         {
-            if (CommandParser.Complete(_commandLine.Text) is { } completed)
+            IEnumerable<string> users = (_room?.KnownUsers.Keys ?? []).Where(u => u != _session.UserId);
+            if (CommandParser.Complete(_commandLine.Text, users) is { } completed)
             {
                 _commandLine.Text = completed;
                 _commandLine.InsertionPoint = completed.Length;
@@ -569,11 +750,17 @@ public sealed partial class ChatWindow
         {
             return;
         }
-        string? name = _entries
+        // recent senders first, then the other members
+        IEnumerable<string> names = _entries
             .Where(e => e.SenderName is not null && !e.IsOwn)
             .Reverse()
             .Select(e => e.SenderName!)
-            .FirstOrDefault(n => n.StartsWith(prefix, StringComparison.CurrentCultureIgnoreCase));
+            .Concat(
+                (_room?.KnownUsers ?? new Dictionary<string, string>())
+                    .Where(u => u.Key != _session.UserId)
+                    .Select(u => u.Value)
+            );
+        string? name = names.FirstOrDefault(n => n.StartsWith(prefix, StringComparison.CurrentCultureIgnoreCase));
         if (name is null)
         {
             return;
@@ -583,22 +770,45 @@ public sealed partial class ChatWindow
     }
 
     /// <summary>
-    /// Asks a yes/no question in the status line, the next y or n (or Esc) in normal mode answers it.
+    /// Asks a yes/no question in the status line. It is answered with y or n in normal mode, Esc dismisses it without
+    /// doing anything. It never takes the user out of insert or command mode, questions wait one after the other.
     /// </summary>
-    private void Ask(string question, Action<bool> answer)
+    private void Ask(string question, System.Action onYes, System.Action? onNo = null, string? tag = null)
     {
-        if (Mode != InputMode.Normal)
-        {
-            SetMode(InputMode.Normal);
-        }
-        _prompt = (question, answer);
+        _prompts.Add(new Prompt(question, onYes, onNo, tag));
         UpdateStatus();
     }
 
-    private void ClearPrompt()
+    /// <summary>
+    /// Removes the questions with <paramref name="tag"/>, for example when what they ask about is over.
+    /// </summary>
+    private void ClearPrompts(string tag)
     {
-        _prompt = null;
+        _prompts.RemoveAll(p => p.Tag == tag);
         UpdateStatus();
+    }
+
+    private bool AnswerPrompt(Key key)
+    {
+        Prompt prompt = _prompts[0];
+        if (key == new Key('y') || key == new Key('Y'))
+        {
+            _prompts.RemoveAt(0);
+            prompt.OnYes();
+            return true;
+        }
+        if (key == new Key('n') || key == new Key('N'))
+        {
+            _prompts.RemoveAt(0);
+            prompt.OnNo?.Invoke();
+            return true;
+        }
+        if (key == Key.Esc)
+        {
+            _prompts.RemoveAt(0);
+            return true;
+        }
+        return false;
     }
 
     /// <summary>
@@ -678,7 +888,12 @@ public sealed partial class ChatWindow
             _ => "",
         };
         string message = _messageIsError && _message is not null ? $"E: {_message}" : _message ?? "";
-        string left = _prompt?.Question ?? string.Join(" ", new[] { mode, message }.Where(p => p.Length > 0));
+        string? question = _prompts.Count > 0 ? _prompts[0].Question : null;
+        if (question is not null && Mode != InputMode.Normal)
+        {
+            question = $"{mode} (a question waits for normal mode: {question})";
+        }
+        string left = question ?? string.Join(" ", new[] { mode, message }.Where(p => p.Length > 0));
         string pending = _keymap.PendingKeys;
         string right = string.Join(
             " │ ",
@@ -694,7 +909,7 @@ public sealed partial class ChatWindow
         int width = Math.Max(_status.Viewport.Width, Viewport.Width);
         // the state on the right always stays visible, long messages are cut, but a question gets the whole line
         int rightWidth = TextLayout.Width(right);
-        if (_prompt is not null || width - rightWidth < 20)
+        if (_prompts.Count > 0 || width - rightWidth < 20)
         {
             _status.Text = TextLayout.Truncate(left, width);
             return;

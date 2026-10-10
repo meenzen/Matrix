@@ -24,6 +24,13 @@ public sealed class OpenedRoom : IAsyncDisposable
     // the replies whose details were requested, so they are only requested once
     private readonly ConcurrentDictionary<string, bool> _fetchedReplies = new();
     private readonly ConcurrentDictionary<string, string> _names = new();
+
+    // the send handles of messages that failed to send, by the key of their entry, to send them again
+    private readonly ConcurrentDictionary<string, SendHandle> _failedSends = new();
+
+    // protects the start of the timeline against closing the room at the same time
+    private readonly Lock _lock = new();
+    private bool _closed;
     private Timeline? _timeline;
     private LiveList<TimelineEntry>? _entries;
     private volatile string[] _typing = [];
@@ -61,6 +68,16 @@ public sealed class OpenedRoom : IAsyncDisposable
     /// Whether the timeline reached the start of the room, there is nothing left to load.
     /// </summary>
     public bool ReachedStart { get; private set; }
+
+    /// <summary>
+    /// Whether older messages are being loaded.
+    /// </summary>
+    public bool IsPaginating => Volatile.Read(ref _paginating) == 1;
+
+    /// <summary>
+    /// The user ids and names of the members and senders seen so far, for completion.
+    /// </summary>
+    public IReadOnlyDictionary<string, string> KnownUsers => _names;
 
     public event EventHandler? EntriesChanged;
 
@@ -114,7 +131,15 @@ public sealed class OpenedRoom : IAsyncDisposable
         await ThreadPoolHop.Yield();
         await _room.Join();
         Summary = Summary with { Membership = Membership.Joined };
-        await OpenTimelineAsync();
+        try
+        {
+            await OpenTimelineAsync();
+        }
+        catch (Exception e) when (e is ObjectDisposedException or OperationCanceledException && _closed)
+        {
+            // another room was opened while joining, the join worked
+            return;
+        }
         SummaryChanged?.Invoke(this, EventArgs.Empty);
     }
 
@@ -191,18 +216,36 @@ public sealed class OpenedRoom : IAsyncDisposable
     public async Task PaginateBackwardsAsync()
     {
         await ThreadPoolHop.Yield();
-        if (_timeline is null || ReachedStart || Interlocked.Exchange(ref _paginating, 1) == 1)
+        if (_timeline is not { } timeline || ReachedStart || Interlocked.Exchange(ref _paginating, 1) == 1)
         {
             return;
         }
+        // the timeline shows that older messages are loading
+        EntriesChanged?.Invoke(this, EventArgs.Empty);
         try
         {
-            ReachedStart = await _timeline.PaginateBackwards(PageEvents);
+            ReachedStart = await timeline.PaginateBackwards(PageEvents);
         }
         finally
         {
             Volatile.Write(ref _paginating, 0);
+            EntriesChanged?.Invoke(this, EventArgs.Empty);
         }
+    }
+
+    /// <summary>
+    /// Sends a message that failed to send again.
+    /// </summary>
+    public async Task ResendAsync(TimelineEntry entry)
+    {
+        await ThreadPoolHop.Yield();
+        if (!_failedSends.TryGetValue(entry.Key, out SendHandle? handle))
+        {
+            throw new InvalidOperationException("Only messages that failed to send can be sent again.");
+        }
+        // the send queue of the room stops after an error
+        _room.EnableSendQueue(true);
+        await handle.TryResend();
     }
 
     /// <summary>
@@ -342,13 +385,27 @@ public sealed class OpenedRoom : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await ThreadPoolHop.Yield();
+        Task[] watchers;
+        lock (_lock)
+        {
+            if (_closed)
+            {
+                return;
+            }
+            _closed = true;
+            watchers = [.. _watchers];
+        }
         await _closing.CancelAsync();
 #pragma warning disable VSTHRD003 // started by this class, they end with the cancellation
-        await Task.WhenAll(_watchers);
+        await Task.WhenAll(watchers).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
 #pragma warning restore VSTHRD003
         if (_entries is not null)
         {
             await _entries.DisposeAsync();
+        }
+        foreach (SendHandle handle in _failedSends.Values)
+        {
+            handle.Dispose();
         }
         _timeline?.Dispose();
         _room.Dispose();
@@ -360,26 +417,63 @@ public sealed class OpenedRoom : IAsyncDisposable
     private async Task OpenTimelineAsync()
     {
         Timeline timeline = await _room.Timeline();
-        _timeline = timeline;
-        // the diffs start with the current items, every timeline item is converted when it arrives and disposed
-        // right after
-        _entries = timeline
-            .WatchItemDiffsAsync(_closing.Token)
-            .ToLiveList(ToEntry, synchronizationContext: MatrixSession.ThreadPool);
-        _entries.Changed += (_, _) => EntriesChanged?.Invoke(this, EventArgs.Empty);
+        lock (_lock)
+        {
+            if (_closed)
+            {
+                timeline.Dispose();
+                throw new ObjectDisposedException(nameof(OpenedRoom));
+            }
+            _timeline = timeline;
+            // the diffs start with the current items, every timeline item is converted when it arrives and disposed
+            // right after
+            _entries = timeline
+                .WatchItemDiffsAsync(_closing.Token)
+                .ToLiveList(ToEntry, synchronizationContext: MatrixSession.ThreadPool);
+            _entries.Changed += (_, _) => EntriesChanged?.Invoke(this, EventArgs.Empty);
+            _watchers.Add(WatchTypingAsync());
+            // the room shows right away, older messages and the members follow
+            _watchers.Add(LoadHistoryAndMembersAsync(timeline, _closing.Token));
+        }
         // the list may have changed before the handler was attached
         EntriesChanged?.Invoke(this, EventArgs.Empty);
-        _watchers.Add(WatchTypingAsync());
-
-        // the timeline only contains what the sync loaded so far, fetch some history and the members for the display
-        // names of the senders
-        ReachedStart = await timeline.PaginateBackwards(PageEvents);
-        await timeline.FetchMembers();
     }
 
+    /// <summary>
+    /// The timeline only contains what the sync loaded so far: loads some history, and the members for the display
+    /// names of the senders and completion. Closing the room stops waiting, the SDK calls can't be cancelled.
+    /// </summary>
+    private async Task LoadHistoryAndMembersAsync(Timeline timeline, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await PaginateBackwardsAsync().WaitAsync(cancellationToken);
+            await timeline.FetchMembers().WaitAsync(cancellationToken);
+            await GetMembersAsync().WaitAsync(cancellationToken);
+        }
+        catch (Exception e) when (e is OperationCanceledException or ClientException or ObjectDisposedException)
+        {
+            // closed, or the next pagination tries again; completion falls back to the senders
+        }
+    }
+
+    /// <summary>
+    /// Converts a timeline item. It must not throw, that would stop the timeline.
+    /// </summary>
     private TimelineEntry ToEntry(TimelineItem item)
     {
-        TimelineEntry entry = TimelineEntries.From(item, _ownUserId);
+        TimelineEntry entry;
+        try
+        {
+            entry = TimelineEntries.From(item, _ownUserId);
+        }
+#pragma warning disable CA1031 // whatever an event contains, the timeline keeps going
+        catch (Exception)
+#pragma warning restore CA1031
+        {
+            return new TimelineEntry(item.UniqueId().Id, EntryKind.Event, "(an event that can't be shown)");
+        }
+        TrackSendHandle(item, entry);
         if (entry.SenderId is { } senderId && entry.SenderName is { } name)
         {
             _names[senderId] = name;
@@ -390,6 +484,34 @@ public sealed class OpenedRoom : IAsyncDisposable
             _ = FetchReplyAsync(eventId);
         }
         return entry;
+    }
+
+    /// <summary>
+    /// Keeps the send handle of a message that failed to send, so it can be sent again.
+    /// </summary>
+    private void TrackSendHandle(TimelineItem item, TimelineEntry entry)
+    {
+        if (entry.Status != SendStatus.Failed)
+        {
+            if (_failedSends.TryRemove(entry.Key, out SendHandle? sent))
+            {
+                sent.Dispose();
+            }
+            return;
+        }
+        using EventTimelineItem? eventItem = item.AsEvent();
+        if (eventItem?.LazyProvider.GetSendHandle() is { } handle)
+        {
+            _failedSends.AddOrUpdate(
+                entry.Key,
+                handle,
+                (_, previous) =>
+                {
+                    previous.Dispose();
+                    return handle;
+                }
+            );
+        }
     }
 
     private async Task FetchReplyAsync(string eventId)
@@ -417,9 +539,9 @@ public sealed class OpenedRoom : IAsyncDisposable
                 TypingChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        catch (OperationCanceledException)
+        catch (Exception e) when (e is OperationCanceledException or ClientException or ObjectDisposedException)
         {
-            // closed
+            // closed, or the subscription failed
         }
     }
 
@@ -436,9 +558,9 @@ public sealed class OpenedRoom : IAsyncDisposable
                 SummaryChanged?.Invoke(this, EventArgs.Empty);
             }
         }
-        catch (OperationCanceledException)
+        catch (Exception e) when (e is OperationCanceledException or ClientException or ObjectDisposedException)
         {
-            // closed
+            // closed, or the subscription failed
         }
     }
 

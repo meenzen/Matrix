@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using Matrix.RustSdk.Bindings;
 using Matrix.RustSdk.Examples.TuiClient.Chat;
 using Matrix.RustSdk.Examples.TuiClient.Input;
@@ -25,6 +26,7 @@ namespace Matrix.RustSdk.Examples.TuiClient;
 public sealed partial class ChatWindow : Window, IAsyncDisposable
 {
     private const int MaxComposerLines = 6;
+    private static readonly TimeSpan RoomTasksTimeout = TimeSpan.FromSeconds(5);
 
     private readonly IApplication _app;
     private readonly MatrixSession _session;
@@ -50,7 +52,16 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
     private int _roomGeneration;
     private Page? _page;
     private string? _lastReadKey;
-    private bool _disposed;
+    private volatile bool _disposed;
+
+    // opening and closing rooms runs in the background, disposing the window waits for it
+    private readonly ConcurrentDictionary<Task, bool> _roomTasks = new();
+
+    // what was typed in other rooms, by room id
+    private readonly Dictionary<string, string> _drafts = [];
+
+    // the next timeline of an opened room selects the first unread message
+    private bool _selectUnread;
     private bool _notificationsEnabled;
     private int _composerLines = 1;
 
@@ -83,7 +94,7 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
         _roomsView.ItemActivated += (_, _) =>
         {
             OnClicked(Pane.Rooms);
-            OpenSelectedRoom();
+            OpenSelectedRoom(askInvite: true);
         };
 
         _mainFrame = new FrameView
@@ -197,11 +208,18 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
         _session.Encryption.Changed += (_, _) => Post(OnEncryptionChanged);
         _session.Verification.Changed += (_, _) => Post(OnVerificationChanged);
         _session.NotificationReceived += (_, notification) => Post(() => OnNotification(notification));
+        _session.SendFailed += (_, failure) => Post(() => OnSendFailed(failure.RoomId, failure.Error));
         try
         {
             await _session.StartAsync();
         }
-        catch (Exception e) when (e is ClientException or InvalidOperationException)
+        catch (OperationCanceledException)
+        {
+            // closed while starting
+        }
+#pragma warning disable CA1031 // whatever went wrong, the user has to see it
+        catch (Exception e)
+#pragma warning restore CA1031
         {
             ShowError($"Starting the sync failed: {e.Message}");
         }
@@ -232,6 +250,10 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
         }
         string? openId = _room?.RoomId;
         _roomsView.SetItems(rooms.Count, width => RoomListRenderer.Layout(rooms, width, openId), selected);
+        if (_room is not null)
+        {
+            ShowRoomSummary();
+        }
         int unread = rooms.Count(r => r.IsUnread);
         string title = unread > 0 ? $"Rooms ({unread} unread)" : "Rooms";
         _roomsFrame.Title = string.IsNullOrEmpty(_session.RoomFilter) ? title : $"Rooms /{_session.RoomFilter}";
@@ -250,33 +272,66 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
     }
 
     /// <summary>
-    /// Opens the room selected in the room list, <paramref name="startInsert"/> starts insert mode afterwards.
+    /// Opens the room selected in the room list. <paramref name="askInvite"/> asks whether to accept an invite, which
+    /// only happens when the user opened the room on purpose, not while moving through the rooms.
     /// </summary>
-    private void OpenSelectedRoom(bool startInsert = true)
+    private void OpenSelectedRoom(bool askInvite = false)
     {
         if (_roomsView.SelectedItem is int index && index < _rooms.Count)
         {
-            OpenRoom(_rooms[index].RoomId, startInsert);
+            OpenRoom(_rooms[index].RoomId, askInvite: askInvite);
         }
     }
 
-    private void OpenRoom(string roomId, bool startInsert = true)
+    private void OpenRoom(string roomId, bool startInsert = false, bool askInvite = false) =>
+        _ = OpenRoomAsync(roomId, startInsert, askInvite);
+
+    /// <summary>
+    /// Opens a room, replacing the open one. <paramref name="startInsert"/> starts insert mode once it is open, for
+    /// commands like <c>:dm</c> after which the user writes.
+    /// </summary>
+    private Task OpenRoomAsync(
+        string roomId,
+        bool startInsert = false,
+        bool askInvite = false,
+        long? keyPresses = null
+    ) => TrackAsync(OpenRoomCoreAsync(roomId, startInsert, askInvite, keyPresses ?? _keyPresses));
+
+    /// <summary>
+    /// Remembers a task that holds native objects of the client, the window waits for it when it is disposed.
+    /// </summary>
+    private Task TrackAsync(Task task)
     {
-        _ = OpenRoomAsync(roomId, startInsert);
+        _roomTasks[task] = true;
+        _ = task.ContinueWith(t => _roomTasks.TryRemove(t, out _), TaskScheduler.Default);
+#pragma warning disable VSTHRD003 // the task was started by this class
+        return task;
+#pragma warning restore VSTHRD003
     }
 
     /// <summary>
-    /// Opens a room, replacing the open one. <paramref name="startInsert"/> starts insert mode once it is open, moving
-    /// between rooms with J and K stays in normal mode.
+    /// Keeps the text of the composer for the room that is closed, an edit is dropped.
     /// </summary>
-    private async Task OpenRoomAsync(string roomId, bool startInsert = true)
+    private void SwitchDraft(string? roomId)
+    {
+        if (_room is { } previous && _editing is null && _composer.Text.Length > 0)
+        {
+            _drafts[previous.RoomId] = _composer.Text;
+        }
+        CancelReplyAndEdit();
+        _composer.Text = roomId is not null && _drafts.Remove(roomId, out string? draft) ? draft : "";
+        _composer.MoveEnd();
+    }
+
+    private async Task OpenRoomCoreAsync(string roomId, bool startInsert, bool askInvite, long keyPresses)
     {
         // updates of a previously opened room can still be queued, they are ignored
         int generation = ++_roomGeneration;
+        SwitchDraft(roomId);
         OpenedRoom? previous = _room;
         _room = null;
         _entries = [];
-        CancelReplyAndEdit();
+        _selectUnread = true;
         ClosePage();
         string name = _rooms.FirstOrDefault(r => r.RoomId == roomId)?.Name ?? roomId;
         _mainFrame.Title = name;
@@ -311,24 +366,14 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
             if (opened.IsInvite)
             {
                 ShowPage(Pages.Invite(opened.Summary));
-                Ask(
-                    $"Accept the invite to {opened.Summary.Name}? (y/n)",
-                    accept =>
-                    {
-                        if (accept)
-                        {
-                            AcceptInvite();
-                        }
-                        else
-                        {
-                            DeclineInvite();
-                        }
-                    }
-                );
+                if (askInvite)
+                {
+                    Ask($"Accept the invite to {opened.Summary.Name}? (y/n)", AcceptInvite, DeclineInvite, InviteTag);
+                }
             }
-            else if (startInsert && Mode == InputMode.Normal)
+            else if (startInsert)
             {
-                SetMode(InputMode.Insert);
+                StartInsertAfter(keyPresses);
             }
         }
         catch (Exception e) when (e is ClientException or InvalidOperationException or ObjectDisposedException)
@@ -350,13 +395,16 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
         }
     }
 
-    private async Task CloseRoomAsync()
+    private Task CloseRoomAsync() => TrackAsync(CloseRoomCoreAsync());
+
+    private async Task CloseRoomCoreAsync()
     {
         _roomGeneration++;
+        SwitchDraft(null);
+        ClearPrompts(InviteTag);
         OpenedRoom? room = _room;
         _room = null;
         _entries = [];
-        CancelReplyAndEdit();
         ClosePage();
         _mainFrame.Title = "Timeline";
         _timelineView.Placeholder = "Select a room and press Enter to open it, ? shows the keys.";
@@ -384,7 +432,15 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
                 summary.Topic?.ReplaceLineEndings(" "),
             }.OfType<string>()
         );
-        _mainFrame.Title = details.Length > 0 ? $"{summary.Name} │ {details}" : summary.Name;
+        // a new room has no name until the sync computed it, the room list may know it already
+        string name =
+            summary.Name == summary.RoomId && _rooms.FirstOrDefault(r => r.RoomId == summary.RoomId) is { } listed
+                ? listed.Name
+                : summary.Name;
+        if (_page is null)
+        {
+            _mainFrame.Title = details.Length > 0 ? $"{name} │ {details}" : name;
+        }
         if (_page?.Kind == PageKind.Invite && !summary.IsInvite)
         {
             ClosePage();
@@ -396,10 +452,31 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
         string? selectedKey = _timelineView.SelectedItem is int i && i < _entries.Count ? _entries[i].Key : null;
         bool following = IsFollowingTimeline;
         IReadOnlyList<TimelineEntry> entries = TimelineRenderer.VisibleEntries(_room?.Entries ?? []);
+        if (_room is { IsInvite: false } room && entries.Count > 0)
+        {
+            // the top shows whether there is more to load
+            string? info = room switch
+            {
+                { IsPaginating: true } => "loading older messages…",
+                { ReachedStart: true } => "the start of the room",
+                _ => null,
+            };
+            if (info is not null)
+            {
+                entries = [new TimelineEntry("info", EntryKind.Info, info), .. entries];
+            }
+        }
         _entries = entries;
 
         int? selected = null;
-        if (!following && selectedKey is not null)
+        if (_selectUnread && entries.Count > 0)
+        {
+            // an opened room starts at the first unread message, the read receipt follows once the user reaches the end
+            _selectUnread = false;
+            int marker = IndexOf(entries, e => e.Kind == EntryKind.ReadMarker);
+            selected = marker >= 0 ? marker : null;
+        }
+        else if (!following && selectedKey is not null)
         {
             for (int index = 0; index < entries.Count; index++)
             {
@@ -413,6 +490,18 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
         DateTimeOffset now = _settings.Clock.GetLocalNow();
         _timelineView.SetItems(entries.Count, width => TimelineRenderer.Layout(entries, width, now), selected);
         MarkAsReadIfFollowing();
+    }
+
+    private static int IndexOf(IReadOnlyList<TimelineEntry> entries, Func<TimelineEntry, bool> predicate)
+    {
+        for (int i = 0; i < entries.Count; i++)
+        {
+            if (predicate(entries[i]))
+            {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /// <summary>
@@ -573,7 +662,15 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
     private void OnEncryptionChanged()
     {
         UpdateStatus();
-        RefreshPage(Pages.Encryption(_session.Encryption, _session.UserId, _session.DeviceId, _shownRecoveryKey));
+        RefreshPage(
+            Pages.Encryption(
+                _session.Encryption,
+                _session.UserId,
+                _session.DeviceId,
+                _shownRecoveryKey,
+                _session.Verification.IsReady
+            )
+        );
     }
 
     private void OnVerificationChanged()
@@ -582,48 +679,35 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
         Page page = Pages.Verification(status);
         switch (status.Step)
         {
+            // the questions wait for normal mode, they never take over what the user is typing
             case VerificationStep.Incoming:
-                ShowPage(page);
+                ShowPageUnlessTyping(page);
+                ClearPrompts(VerificationTag);
                 Ask(
                     $"{status.Partner} wants to verify. Accept? (y/n)",
-                    accept =>
-                    {
-                        if (accept)
-                        {
-                            Run("Accepting the verification…", _session.Verification.AcceptAsync);
-                        }
-                        else
-                        {
-                            Run(null, _session.Verification.CancelAsync);
-                        }
-                    }
+                    () => Run("Accepting the verification…", _session.Verification.AcceptAsync),
+                    () => Run("Declining the verification…", _session.Verification.CancelAsync),
+                    VerificationTag
                 );
                 break;
             case VerificationStep.Comparing:
-                ShowPage(page);
+                ShowPageUnlessTyping(page);
+                ClearPrompts(VerificationTag);
                 Ask(
                     "Do the emojis match? (y/n)",
-                    match =>
-                    {
-                        if (match)
-                        {
-                            Run("Confirming…", _session.Verification.ConfirmAsync);
-                        }
-                        else
-                        {
-                            Run("Cancelling the verification…", _session.Verification.MismatchAsync);
-                        }
-                    }
+                    () => Run("Confirming…", _session.Verification.ConfirmAsync),
+                    () => Run("Cancelling the verification…", _session.Verification.MismatchAsync),
+                    VerificationTag
                 );
                 break;
             case VerificationStep.Done:
-                ClearPrompt();
+                ClearPrompts(VerificationTag);
                 RefreshPage(page);
                 ShowMessage($"Verified with {status.Partner}.");
                 break;
             case VerificationStep.Cancelled:
             case VerificationStep.Failed:
-                ClearPrompt();
+                ClearPrompts(VerificationTag);
                 RefreshPage(page);
                 ShowError(
                     status.Step == VerificationStep.Failed
@@ -635,6 +719,28 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
                 RefreshPage(page);
                 break;
         }
+        OnEncryptionChanged();
+    }
+
+    /// <summary>
+    /// Shows a page, unless the user is writing: then it waits until the question about it is answered.
+    /// </summary>
+    private void ShowPageUnlessTyping(Page page)
+    {
+        if (Mode == InputMode.Normal)
+        {
+            ShowPage(page);
+        }
+        else
+        {
+            _pendingPage = page;
+        }
+    }
+
+    private void OnSendFailed(string roomId, string error)
+    {
+        string room = _rooms.FirstOrDefault(r => r.RoomId == roomId)?.Name ?? roomId;
+        ShowError($"Sending in {room} failed ({error}), it is tried again soon, :retry tries now.");
     }
 
     private void OnNotification(IncomingNotification notification)
@@ -658,6 +764,13 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
     {
         _disposed = true;
         _app.Keyboard.KeyDown -= OnKeyDown;
+        // rooms that are being opened or closed hold native objects, which have to be gone before the client
+        // a task waiting for the main loop, which stopped, never finishes: the wait is limited
+#pragma warning disable VSTHRD003 // started by this class
+        await Task.WhenAll(_roomTasks.Keys)
+            .WaitAsync(RoomTasksTimeout)
+            .ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing | ConfigureAwaitOptions.ContinueOnCapturedContext);
+#pragma warning restore VSTHRD003
         if (_room is not null)
         {
             await _room.DisposeAsync();

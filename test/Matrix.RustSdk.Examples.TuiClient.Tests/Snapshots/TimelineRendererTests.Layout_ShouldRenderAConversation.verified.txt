@@ -10,5 +10,9 @@
 6|             👍 2  🎉|
 6|             ✓ carol|
 7|─────────────────────── new messages ───────────────────────|
-8|17:59     me on my way (sending…)|
-9|18:00  carol [image] cat.png (image/png, 120.6 KB)|
+8|17:59     me lost (failed to send, R sends it again)|
+9|17:59        on my way (sending…)|
+10|18:00  carol shall we discuss?|
+10|             ↪ 2 replies in the thread|
+11|18:00    bob in the thread (in a thread)|
+12|18:00  carol [image] cat.png (image/png, 120.6 KB)|

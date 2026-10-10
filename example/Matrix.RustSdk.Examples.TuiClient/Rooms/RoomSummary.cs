@@ -44,8 +44,10 @@ public sealed record RoomSummary(string RoomId, string Name)
             IsFavourite = info.IsFavourite,
             Topic = info.Topic,
             Inviter = info.Inviter is { } inviter ? inviter.DisplayName ?? inviter.UserId : null,
-            UnreadMessages = info.NumUnreadMessages,
-            UnreadMentions = info.NumUnreadMentions,
+            // the counts of the client miss messages of rooms the sliding sync only sends the latest event of, the counts
+            // of the server miss what it can't evaluate in encrypted rooms: the larger one is right
+            UnreadMessages = Math.Max(info.NumUnreadMessages, info.NotificationCount),
+            UnreadMentions = Math.Max(info.NumUnreadMentions, info.HighlightCount),
             UnreadNotifications = info.NumUnreadNotifications,
             IsMarkedUnread = info.IsMarkedUnread,
             JoinedMembers = info.JoinedMembersCount,

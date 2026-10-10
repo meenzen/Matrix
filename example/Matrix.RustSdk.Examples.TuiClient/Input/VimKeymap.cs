@@ -58,12 +58,18 @@ public enum InputAction
     Help,
     Quit,
     Cancel,
+    Resend,
+    JumpToUnread,
+    DeleteBack,
+    DeleteWord,
+    DeleteLine,
 }
 
 /// <summary>
 /// An <see cref="InputAction"/> with the count typed before it (<c>5j</c>), 1 if there was none.
+/// <see cref="HasCount"/> tells <c>G</c> (the last item) from <c>1G</c> (the first one).
 /// </summary>
-public readonly record struct KeyAction(InputAction Action, int Count = 1);
+public readonly record struct KeyAction(InputAction Action, int Count = 1, bool HasCount = false);
 
 /// <summary>
 /// How the keymap handled a key.
@@ -129,9 +135,17 @@ public sealed class VimKeymap
 
     private static KeyResult MapInsert(Key key)
     {
-        if (key == Key.Esc)
+        if (key == Key.Esc || key == Key.C.WithCtrl)
         {
             return new KeyAction(InputAction.Normal);
+        }
+        if (EditingKey(key) is { } editing)
+        {
+            return editing;
+        }
+        if (key == Key.Tab)
+        {
+            return new KeyAction(InputAction.Complete);
         }
         if (key == Key.Enter)
         {
@@ -147,9 +161,18 @@ public sealed class VimKeymap
 
     private static KeyResult MapLine(Key key)
     {
-        if (key == Key.Esc)
+        if (key == Key.Esc || key == Key.C.WithCtrl)
         {
             return new KeyAction(InputAction.Cancel);
+        }
+        if (key == Key.Backspace)
+        {
+            // cancels the line when it is empty, like vim
+            return new KeyAction(InputAction.DeleteBack);
+        }
+        if (EditingKey(key) is { } editing)
+        {
+            return editing;
         }
         if (key == Key.Enter)
         {
@@ -168,6 +191,22 @@ public sealed class VimKeymap
             return new KeyAction(InputAction.Complete);
         }
         return KeyResult.PassThrough;
+    }
+
+    /// <summary>
+    /// The readline keys of insert mode and the command line: C-w deletes the word before the cursor, C-u the line.
+    /// </summary>
+    private static KeyAction? EditingKey(Key key)
+    {
+        if (key == Key.W.WithCtrl)
+        {
+            return new KeyAction(InputAction.DeleteWord);
+        }
+        if (key == Key.U.WithCtrl)
+        {
+            return new KeyAction(InputAction.DeleteLine);
+        }
+        return null;
     }
 
     private KeyResult MapNormal(Key key)
@@ -231,6 +270,8 @@ public sealed class VimKeymap
             "r" => InputAction.Reply,
             "e" => InputAction.Edit,
             "dd" => InputAction.Delete,
+            "R" => InputAction.Resend,
+            "gu" => InputAction.JumpToUnread,
             "+" => InputAction.React,
             "yy" => InputAction.Yank,
             "o" => InputAction.OpenMedia,
@@ -296,7 +337,8 @@ public sealed class VimKeymap
     private KeyResult Finish(InputAction? action)
     {
         int count = Math.Max(_count, 1);
+        bool hasCount = _count > 0;
         Reset();
-        return action is { } a ? new KeyAction(a, count) : KeyResult.Ignored;
+        return action is { } a ? new KeyAction(a, count, hasCount) : KeyResult.Ignored;
     }
 }

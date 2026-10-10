@@ -20,6 +20,9 @@ public class NotificationPolicyTests
         await Assert.That(NotificationPolicy.ShouldNotify(Notification(hasMention: true), null, Start)).IsTrue();
         await Assert.That(NotificationPolicy.ShouldNotify(Notification(isDirect: true), null, Start)).IsTrue();
         await Assert.That(NotificationPolicy.ShouldNotify(Notification(), null, Start)).IsFalse();
+        await Assert
+            .That(NotificationPolicy.ShouldNotify(Notification() with { IsNoisy = true }, null, Start))
+            .IsTrue();
     }
 
     [Test]

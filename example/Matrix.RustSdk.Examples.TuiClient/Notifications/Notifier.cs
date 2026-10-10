@@ -19,6 +19,19 @@ public sealed class DesktopNotifier : INotifier
 {
     private const int MaxBodyLength = 300;
 
+    /// <summary>
+    /// Reads the output of a started tool so it never blocks on a full pipe, and disposes the process when it exits.
+    /// </summary>
+    internal static void DrainAndDispose(Process process)
+    {
+        process.OutputDataReceived += (_, _) => { };
+        process.ErrorDataReceived += (_, _) => { };
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+        process.EnableRaisingEvents = true;
+        process.Exited += (_, _) => process.Dispose();
+    }
+
     public void Notify(string title, string body)
     {
         if (body.Length > MaxBodyLength)
@@ -30,7 +43,10 @@ public sealed class DesktopNotifier : INotifier
 #pragma warning disable S4036
         if (OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD())
         {
-            start = new ProcessStartInfo("notify-send") { ArgumentList = { "--app-name=Matrix TUI", title, body } };
+            start = new ProcessStartInfo("notify-send")
+            {
+                ArgumentList = { "--app-name=Matrix TUI", "--", title, body },
+            };
         }
         else if (OperatingSystem.IsMacOS())
         {
@@ -59,8 +75,7 @@ public sealed class DesktopNotifier : INotifier
             Process? process = Process.Start(start);
             if (process is not null)
             {
-                process.EnableRaisingEvents = true;
-                process.Exited += (_, _) => process.Dispose();
+                DrainAndDispose(process);
             }
         }
         catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException)
@@ -71,7 +86,7 @@ public sealed class DesktopNotifier : INotifier
 }
 
 /// <summary>
-/// Decides which notifications are shown: mentions and direct messages, not the room the user is reading, not
+/// Decides which notifications are shown: mentions, direct messages and what the push rules make noisy, not the room the user is reading, not
 /// messages older than the start of the client (the first sync delivers what was missed while the client wasn't
 /// running).
 /// </summary>
@@ -84,7 +99,7 @@ public static class NotificationPolicy
         string? readingRoomId,
         DateTimeOffset startedAt
     ) =>
-        (notification.HasMention || notification.IsDirect)
+        (notification.HasMention || notification.IsDirect || notification.IsNoisy)
         && notification.RoomId != readingRoomId
         && notification.Time >= startedAt - ClockSkew;
 

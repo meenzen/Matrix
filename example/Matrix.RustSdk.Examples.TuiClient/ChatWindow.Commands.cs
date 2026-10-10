@@ -11,6 +11,8 @@ public sealed partial class ChatWindow
 
     private void Execute(Command command)
     {
+        // rooms opened by a command start insert mode, unless the user pressed keys while waiting for the server
+        long keyPresses = _keyPresses;
         switch (command)
         {
             case Command.Quit:
@@ -19,13 +21,10 @@ public sealed partial class ChatWindow
             case Command.Logout:
                 Ask(
                     "Log out? This session and its keys are deleted, set up recovery first to keep the history. (y/n)",
-                    logout =>
+                    () =>
                     {
-                        if (logout)
-                        {
-                            IsLogoutRequested = true;
-                            RequestStop();
-                        }
+                        IsLogoutRequested = true;
+                        RequestStop();
                     }
                 );
                 break;
@@ -35,7 +34,12 @@ public sealed partial class ChatWindow
             case Command.Join join:
                 Run(
                     $"Joining {join.RoomIdOrAlias}…",
-                    async () => await OpenRoomAsync(await _session.JoinAsync(join.RoomIdOrAlias)),
+                    async () =>
+                        await OpenRoomAsync(
+                            await _session.JoinAsync(join.RoomIdOrAlias),
+                            startInsert: true,
+                            keyPresses: keyPresses
+                        ),
                     failure: "Joining failed"
                 );
                 break;
@@ -43,21 +47,16 @@ public sealed partial class ChatWindow
                 WithRoom(room =>
                     Ask(
                         $"Leave {room.Summary.Name}? (y/n)",
-                        leave =>
-                        {
-                            if (leave)
-                            {
-                                Run(
-                                    "Leaving…",
-                                    async () =>
-                                    {
-                                        await room.LeaveAsync();
-                                        await CloseRoomAsync();
-                                    },
-                                    "Left the room."
-                                );
-                            }
-                        }
+                        () =>
+                            Run(
+                                "Leaving…",
+                                async () =>
+                                {
+                                    await room.LeaveAsync();
+                                    await CloseIfOpenAsync(room);
+                                },
+                                "Left the room."
+                            )
                     )
                 );
                 break;
@@ -100,7 +99,9 @@ public sealed partial class ChatWindow
                     $"Creating {create.Name}…",
                     async () =>
                         await OpenRoomAsync(
-                            await _session.CreateRoomAsync(create.Name, create.IsEncrypted, create.IsPublic)
+                            await _session.CreateRoomAsync(create.Name, create.IsEncrypted, create.IsPublic),
+                            startInsert: true,
+                            keyPresses: keyPresses
                         ),
                     failure: "Creating the room failed"
                 );
@@ -108,7 +109,12 @@ public sealed partial class ChatWindow
             case Command.DirectMessage dm:
                 Run(
                     $"Opening the chat with {dm.UserId}…",
-                    async () => await OpenRoomAsync(await _session.GetOrCreateDirectMessageAsync(dm.UserId)),
+                    async () =>
+                        await OpenRoomAsync(
+                            await _session.GetOrCreateDirectMessageAsync(dm.UserId),
+                            startInsert: true,
+                            keyPresses: keyPresses
+                        ),
                     failure: "Opening the chat failed"
                 );
                 break;
@@ -149,8 +155,26 @@ public sealed partial class ChatWindow
                     );
                 });
                 break;
+            case Command.Open { Link: { } link }:
+                OpenLink(link);
+                break;
             case Command.Open:
                 OpenSelectedMedia();
+                break;
+            case Command.Retry:
+                if (
+                    _pane == Pane.Timeline
+                    && _timelineView.SelectedItem is int index
+                    && index < _entries.Count
+                    && _entries[index].Status == Chat.SendStatus.Failed
+                )
+                {
+                    ResendSelected();
+                }
+                else
+                {
+                    Run("Sending the waiting messages…", _session.RetrySendingAsync, "Sending again.");
+                }
                 break;
             case Command.Save save:
                 SaveSelectedMedia(save.Path);
@@ -199,22 +223,17 @@ public sealed partial class ChatWindow
             case Command.ResetRecoveryKey:
                 Ask(
                     "Replace the recovery key? The old one stops working. (y/n)",
-                    reset =>
-                    {
-                        if (reset)
-                        {
-                            Run(
-                                "Creating a new recovery key…",
-                                async () =>
-                                {
-                                    _shownRecoveryKey = await _session.Encryption.ResetRecoveryKeyAsync();
-                                    ShowEncryptionPage();
-                                },
-                                "Created a new recovery key, store it.",
-                                "Resetting the recovery key failed"
-                            );
-                        }
-                    }
+                    () =>
+                        Run(
+                            "Creating a new recovery key…",
+                            async () =>
+                            {
+                                _shownRecoveryKey = await _session.Encryption.ResetRecoveryKeyAsync();
+                                ShowEncryptionPage();
+                            },
+                            "Created a new recovery key, store it.",
+                            "Resetting the recovery key failed"
+                        )
                 );
                 break;
             case Command.Recover recover:
@@ -270,8 +289,9 @@ public sealed partial class ChatWindow
                 ShowError("There is no invite to accept.");
                 return;
             }
-            ClearPrompt();
+            ClearPrompts(InviteTag);
             int generation = _roomGeneration;
+            long keyPresses = _keyPresses;
             Run(
                 $"Joining {room.Summary.Name}…",
                 async () =>
@@ -281,7 +301,7 @@ public sealed partial class ChatWindow
                     {
                         ClosePage();
                         ShowTimeline();
-                        SetMode(InputMode.Insert);
+                        StartInsertAfter(keyPresses);
                     }
                 },
                 $"Joined {room.Summary.Name}.",
@@ -297,18 +317,29 @@ public sealed partial class ChatWindow
                 ShowError("There is no invite to decline.");
                 return;
             }
-            ClearPrompt();
+            ClearPrompts(InviteTag);
             Run(
                 "Declining the invite…",
                 async () =>
                 {
                     await room.LeaveAsync();
-                    await CloseRoomAsync();
+                    await CloseIfOpenAsync(room);
                 },
                 "Declined the invite.",
                 "Declining failed"
             );
         });
+
+    /// <summary>
+    /// Closes <paramref name="room"/> if it is still the open one, the user may have moved on while leaving it.
+    /// </summary>
+    private async Task CloseIfOpenAsync(OpenedRoom room)
+    {
+        if (_room == room)
+        {
+            await CloseRoomAsync();
+        }
+    }
 
     private void ShowMembers()
     {
@@ -345,7 +376,13 @@ public sealed partial class ChatWindow
 
     private void ShowEncryptionPage()
     {
-        Page page = Pages.Encryption(_session.Encryption, _session.UserId, _session.DeviceId, _shownRecoveryKey);
+        Page page = Pages.Encryption(
+            _session.Encryption,
+            _session.UserId,
+            _session.DeviceId,
+            _shownRecoveryKey,
+            _session.Verification.IsReady
+        );
         if (_page?.Kind == PageKind.Encryption)
         {
             RefreshPage(page);
@@ -383,8 +420,53 @@ public sealed partial class ChatWindow
         return entry.Media;
     }
 
+    private void OpenLink(int number)
+    {
+        if (SelectedEntry("open") is not { } entry)
+        {
+            return;
+        }
+        IReadOnlyList<string> links = TextEditing.Links(entry.Body);
+        if (number > links.Count)
+        {
+            ShowError(
+                links.Count == 0
+                    ? "The selected message has no links."
+                    : $"The selected message has {links.Count} links."
+            );
+            return;
+        }
+        string link = links[number - 1];
+        if (_settings.Opener(link))
+        {
+            ShowMessage($"Opened {link}.");
+        }
+        else
+        {
+            ShowError($"There is no application to open {link}.");
+        }
+    }
+
     private void OpenSelectedMedia()
     {
+        // o on a message without an attachment opens its link
+        if (
+            _pane == Pane.Timeline
+            && _timelineView.SelectedItem is int index
+            && index < _entries.Count
+            && _entries[index] is { Media: null } entry
+            && TextEditing.Links(entry.Body).Count > 0
+        )
+        {
+            if (TextEditing.Links(entry.Body).Count > 1)
+            {
+                ShowMessage(
+                    $"The message has {TextEditing.Links(entry.Body).Count} links, :open <n> opens another one."
+                );
+            }
+            OpenLink(1);
+            return;
+        }
         if (SelectedMedia() is not { } media || _room is not { } room)
         {
             return;

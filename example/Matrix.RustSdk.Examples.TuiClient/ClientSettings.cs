@@ -63,8 +63,7 @@ public sealed record ClientSettings
             {
                 return false;
             }
-            process.EnableRaisingEvents = true;
-            process.Exited += (_, _) => process.Dispose();
+            DesktopNotifier.DrainAndDispose(process);
             return true;
         }
         catch (Exception e) when (e is System.ComponentModel.Win32Exception or InvalidOperationException)

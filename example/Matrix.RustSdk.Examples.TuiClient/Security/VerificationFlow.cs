@@ -64,7 +64,8 @@ public sealed record VerificationStatus(VerificationStep Step)
 /// </summary>
 public sealed class VerificationFlow(Client client) : SessionVerificationControllerDelegate, IDisposable
 {
-    private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(3);
+    // requests that arrive before the controller exists are lost, so it is created as soon as possible
+    private static readonly TimeSpan RetryDelay = TimeSpan.FromMilliseconds(500);
 
     private readonly Lock _lock = new();
     private SessionVerificationController? _controller;
@@ -87,12 +88,15 @@ public sealed class VerificationFlow(Client client) : SessionVerificationControl
         try
         {
             using Encryption encryption = client.Encryption();
-            await encryption.WaitForE2eeInitializationTasks();
+            // the SDK calls can't be cancelled, the session doesn't wait for them when it closes
+            await encryption.WaitForE2eeInitializationTasks().WaitAsync(cancellationToken);
             while (true)
             {
                 try
                 {
-                    SessionVerificationController controller = await client.GetSessionVerificationController();
+                    SessionVerificationController controller = await client
+                        .GetSessionVerificationController()
+                        .WaitAsync(cancellationToken);
                     lock (_lock)
                     {
                         if (_disposed)
@@ -113,9 +117,9 @@ public sealed class VerificationFlow(Client client) : SessionVerificationControl
                 }
             }
         }
-        catch (OperationCanceledException)
+        catch (Exception e) when (e is OperationCanceledException or ClientException or ObjectDisposedException)
         {
-            // the session is disposed
+            // the session is disposed, or encryption can't be set up: verification isn't available
         }
     }
 
@@ -196,12 +200,10 @@ public sealed class VerificationFlow(Client client) : SessionVerificationControl
     public async Task CancelAsync()
     {
         await ThreadPoolHop.Yield();
-        if (Status.Step == VerificationStep.Incoming)
+        if (Status.Step == VerificationStep.Incoming && _incoming is { } incoming)
         {
-            // not acknowledged yet, there is nothing to cancel in the SDK
-            _incoming = null;
-            Update(new VerificationStatus(VerificationStep.Cancelled) { Partner = Status.Partner });
-            return;
+            // the request has to be acknowledged before it can be cancelled, which tells the other side
+            await Controller.AcknowledgeVerificationRequest(incoming.SenderProfile.UserId, incoming.FlowId);
         }
         await Controller.CancelVerification();
     }
@@ -220,6 +222,11 @@ public sealed class VerificationFlow(Client client) : SessionVerificationControl
     public void DidReceiveVerificationRequest(SessionVerificationRequestDetails details) =>
         Callback(() =>
         {
+            if (Status.IsActive)
+            {
+                // one verification at a time, the other side times out
+                return;
+            }
             _incoming = details;
             string device = details.DeviceDisplayName is { Length: > 0 } name
                 ? $"{name} ({details.DeviceId})"

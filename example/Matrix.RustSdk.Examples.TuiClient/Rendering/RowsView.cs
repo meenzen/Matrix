@@ -16,6 +16,7 @@ public sealed class RowsView : View
     private int _itemCount;
     private int _top;
     private int _laidOutWidth = -1;
+    private int _laidOutHeight = -1;
     private Func<int, IReadOnlyList<Row>> _layout = _ => [];
 
     public RowsView()
@@ -26,6 +27,13 @@ public sealed class RowsView : View
             if (Viewport.Width != _laidOutWidth)
             {
                 Relayout();
+            }
+            else if (Viewport.Height != _laidOutHeight)
+            {
+                // a smaller view (a growing composer) keeps the selection, and the newest message, visible
+                _laidOutHeight = Viewport.Height;
+                EnsureSelectionVisible();
+                SetNeedsDraw();
             }
         };
     }
@@ -149,6 +157,7 @@ public sealed class RowsView : View
     private void Relayout()
     {
         _laidOutWidth = Viewport.Width;
+        _laidOutHeight = Viewport.Height;
         _rows = _laidOutWidth > 0 ? _layout(_laidOutWidth) : [];
         EnsureSelectionVisible();
         SetNeedsDraw();
@@ -220,10 +229,12 @@ public sealed class RowsView : View
         if (mouse.IsSingleDoubleOrTripleClicked && mouse.Position is { } position)
         {
             int row = _top + position.Y;
-            if (row >= 0 && row < _rows.Count)
+            if (row < 0 || row >= _rows.Count)
             {
-                Select(_rows[row].Item);
+                // a click below the last row doesn't act on the selected item
+                return true;
             }
+            Select(_rows[row].Item);
             if (mouse.IsDoubleClicked)
             {
                 ItemActivated?.Invoke(this, EventArgs.Empty);

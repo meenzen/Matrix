@@ -14,22 +14,26 @@ public static class Pages
     private static readonly (string Keys, string Description)[] Keys =
     [
         ("j k ↓ ↑", "move down / up (a count like 5j moves further)"),
-        ("gg G", "first / last"),
+        ("gg G", "first / last, 5G the fifth"),
+        ("gu", "the first unread message"),
         ("C-d C-u", "half a page down / up, C-f C-b a page"),
         ("h l ← →", "focus the room list / the timeline, Tab switches"),
         ("J K C-n C-p", "next / previous room"),
         ("U", "next unread room"),
-        ("Enter", "open the room, or what is selected on a page"),
-        ("i a", "write a message (insert mode), Esc goes back to normal mode"),
-        ("Enter", "in insert mode: send, Alt+Enter adds a line break"),
+        ("Enter", "open the room, the attachment or link, or what is selected on a page"),
+        ("i a", "write a message (insert mode), Esc or C-c goes back to normal mode"),
+        ("Enter", "in insert mode: send, Alt+Enter adds a line break, Tab completes names"),
+        ("C-w C-u", "in insert mode and on the command line: delete the word / the line before the cursor"),
         ("r", "reply to the selected message"),
         ("e", "edit the selected message"),
         ("dd", "delete the selected message"),
         ("+", "react to the selected message"),
         ("yy", "copy the selected message"),
-        ("o", "open the attachment of the selected message"),
+        ("o", "open the attachment or the link of the selected message"),
+        ("R", "send a message that failed again"),
+        ("y n", "answer the question in the status line, Esc dismisses it"),
         ("m", "members of the room"),
-        ("/", "filter the room list by name, Esc clears the filter"),
+        ("/", "jump to a room by name, Enter opens the best match"),
         (":", "command line, Tab completes, ↑ ↓ history"),
         ("?", "this help, q or Esc closes pages"),
         ("ZZ :q C-q", "quit"),
@@ -143,7 +147,13 @@ public static class Pages
         return new Page(PageKind.Verification, "Verification", lines);
     }
 
-    public static Page Encryption(EncryptionState state, string userId, string deviceId, string? recoveryKey = null)
+    public static Page Encryption(
+        EncryptionState state,
+        string userId,
+        string deviceId,
+        string? recoveryKey = null,
+        bool canVerify = false
+    )
     {
         List<PageLine> lines =
         [
@@ -170,6 +180,10 @@ public static class Pages
                     _ => "not enabled",
                 },
                 Label: "Backup    "
+            ),
+            new PageLine(
+                canVerify ? "ready, :verify verifies with another session" : "not available yet",
+                Label: "Verifying "
             ),
             new PageLine(
                 state.Recovery switch

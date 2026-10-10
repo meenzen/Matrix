@@ -58,7 +58,7 @@ public class VimKeymapTests
         KeyResult result = keymap.Map(InputMode.Normal, new Key('j'));
 
         // Assert
-        await Assert.That(result).IsEqualTo(new KeyAction(InputAction.MoveDown, 12));
+        await Assert.That(result).IsEqualTo(new KeyAction(InputAction.MoveDown, 12, HasCount: true));
     }
 
     [Test]

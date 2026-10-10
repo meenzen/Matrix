@@ -47,6 +47,9 @@ public static class TimelineRenderer
                 case EntryKind.ReadMarker:
                     rows.Add(Divider(i, entry.Body, width, Role.Unread));
                     break;
+                case EntryKind.Info:
+                    rows.Add(Divider(i, entry.Body, width, Role.Dim));
+                    break;
                 default:
                     LayoutEvent(rows, i, entry, previous, now, senderWidth, indent, bodyWidth);
                     break;
@@ -178,8 +181,9 @@ public static class TimelineRenderer
         Span? suffix = entry.Status switch
         {
             SendStatus.Sending => new Span(" (sending…)", Role.Dim),
-            SendStatus.Failed => new Span(" (failed to send)", Role.Error),
+            SendStatus.Failed => new Span(" (failed to send, R sends it again)", Role.Error),
             _ when entry.IsEdited => new Span(" (edited)", Role.Dim),
+            _ when entry.ThreadRoot is not null => new Span(" (in a thread)", Role.Dim),
             _ => null,
         };
         if (suffix is { } s)
@@ -196,6 +200,15 @@ public static class TimelineRenderer
             }
         }
 
+        if (entry.ThreadReplies > 0)
+        {
+            lines.Add([
+                new Span(
+                    $"↪ {entry.ThreadReplies} {(entry.ThreadReplies == 1 ? "reply" : "replies")} in the thread",
+                    Role.Dim
+                ),
+            ]);
+        }
         if (entry.Reactions.Count > 0)
         {
             List<Span> reactions = [];
@@ -228,7 +241,16 @@ public static class TimelineRenderer
     /// Whether the message continues the previous one of the same sender, so the name isn't repeated.
     /// </summary>
     private static bool IsFollowUp(TimelineEntry entry, TimelineEntry? previous) =>
-        previous is { Kind: not (EntryKind.Event or EntryKind.Emote or EntryKind.DayDivider or EntryKind.ReadMarker) }
+        previous
+            is {
+                Kind: not (
+                    EntryKind.Event
+                    or EntryKind.Emote
+                    or EntryKind.DayDivider
+                    or EntryKind.ReadMarker
+                    or EntryKind.Info
+                ),
+            }
         && previous.SenderId == entry.SenderId
         && entry.Time is { } time
         && previous.Time is { } previousTime

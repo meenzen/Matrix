@@ -166,7 +166,7 @@ public class RoomTests(Homeserver homeserver)
     }
 
     [Test]
-    public async Task Filter_ShouldShowMatchingRoomsOnly()
+    public async Task Filter_ShouldJumpToTheBestMatch()
     {
         // Arrange
         await using TuiTester tui = await TuiTester.StartAsync(homeserver);
@@ -177,22 +177,35 @@ public class RoomTests(Homeserver homeserver)
         await tui.WaitForTextAsync($"Alpha {suffix}");
         await tui.WaitForTextAsync($"Beta {suffix}");
 
-        // Act
+        // Act: the list is filtered while typing
         await tui.PressAsync('/');
         await tui.TypeAsync("Alpha");
-        await tui.PressAsync(Key.Enter);
 
         // Assert
         await tui.WaitForTextGoneAsync($"Beta {suffix}");
-        await tui.WaitForTextAsync($"Alpha {suffix}");
         await tui.WaitForTextAsync("Rooms /Alpha");
 
-        // Act: Esc in the filter clears it
+        // Act: Enter opens the best match and clears the filter
+        await tui.PressAsync(Key.Enter);
+
+        // Assert
+        await tui.WaitForTextAsync($"Accept the invite to Alpha {suffix}? (y/n)");
+        await tui.WaitForTextAsync($"Beta {suffix}");
+
+        // Act: Esc dismisses the question, the invite stays
+        await tui.PressAsync(Key.Esc);
+        await tui.WaitForTextGoneAsync("Accept the invite to");
+        await tui.WaitForTextAsync($"+ Alpha {suffix}");
+
+        // Act: Esc in the filter clears it without opening a room
         await tui.PressAsync('/');
+        await tui.TypeAsync("Beta");
+        await tui.WaitForTextGoneAsync($"+ Alpha {suffix}");
         await tui.PressAsync(Key.Esc);
 
         // Assert
-        await tui.WaitForTextAsync($"Beta {suffix}");
+        await tui.WaitForTextAsync($"+ Alpha {suffix}");
+        await tui.WaitForTextGoneAsync("Accept the invite to Beta");
     }
 
     [Test]
@@ -218,12 +231,14 @@ public class RoomTests(Homeserver homeserver)
         await tui.WaitForMatchAsync($@"{System.Text.RegularExpressions.Regex.Escape(name)}\s+2│");
         await tui.WaitForTextAsync("Rooms (1 unread)");
 
-        // Act: U opens the next unread room, which marks it as read
+        // Act: U opens the next unread room at the first unread message, reading to the end marks it as read
         await tui.NormalModeAsync();
         await tui.PressAsync('U');
+        await tui.WaitForTextAsync("second");
+        await tui.WaitForTextAsync("Rooms (1 unread)");
+        await tui.PressAsync('G');
 
         // Assert
-        await tui.WaitForTextAsync("second");
         await tui.WaitForTextGoneAsync("unread)");
     }
 

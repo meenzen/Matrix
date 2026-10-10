@@ -6,7 +6,7 @@ namespace Matrix.RustSdk.Examples.TuiClient.Security;
 /// The encryption state of the session: whether it is verified, the state of the key backup and of recovery (secret
 /// storage with a recovery key). Changes are reported with <see cref="Changed"/> on a thread pool thread.
 /// </summary>
-public sealed class EncryptionState(Client client)
+public sealed class EncryptionState(Client client) : IDisposable
 {
     private readonly Encryption _encryption = client.Encryption();
 
@@ -99,6 +99,8 @@ public sealed class EncryptionState(Client client)
         return await _encryption.HasDevicesToVerifyAgainst();
     }
 
+    public void Dispose() => _encryption.Dispose();
+
     private async Task WatchAsync<T>(IAsyncEnumerable<T> states, Action<T> apply)
     {
         try
@@ -109,9 +111,9 @@ public sealed class EncryptionState(Client client)
                 Changed?.Invoke(this, EventArgs.Empty);
             }
         }
-        catch (OperationCanceledException)
+        catch (Exception e) when (e is OperationCanceledException or ClientException or ObjectDisposedException)
         {
-            // the session is disposed
+            // the session is disposed, or the subscription failed
         }
     }
 }

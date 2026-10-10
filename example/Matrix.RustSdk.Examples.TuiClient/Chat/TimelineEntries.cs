@@ -20,11 +20,19 @@ public static class TimelineEntries
         {
             VirtualTimelineItem.DateDivider divider => new TimelineEntry(key, EntryKind.DayDivider, "")
             {
-                Time = DateTimeOffset.FromUnixTimeMilliseconds((long)divider.Ts),
+                Time = FromTimestamp(divider.Ts),
             },
             _ => new TimelineEntry(key, EntryKind.ReadMarker, "new messages"),
         };
     }
+
+    /// <summary>
+    /// A timestamp of the SDK, which remote servers choose: clamped to the range <see cref="DateTimeOffset"/> supports.
+    /// </summary>
+    public static DateTimeOffset FromTimestamp(ulong milliseconds) =>
+        DateTimeOffset.FromUnixTimeMilliseconds(
+            (long)Math.Min(milliseconds, (ulong)DateTimeOffset.MaxValue.ToUnixTimeMilliseconds())
+        );
 
     private static TimelineEntry FromEvent(string key, EventTimelineItem item, string ownUserId)
     {
@@ -58,6 +66,8 @@ public static class TimelineEntries
                 _ => SendStatus.Sent,
             },
             ReplyTo = msgLike?.InReplyTo is { } inReplyTo ? Reply(inReplyTo) : null,
+            ThreadRoot = msgLike?.ThreadRoot,
+            ThreadReplies = msgLike?.ThreadSummary?.NumReplies() ?? 0,
             Media = media,
             Reactions =
             [

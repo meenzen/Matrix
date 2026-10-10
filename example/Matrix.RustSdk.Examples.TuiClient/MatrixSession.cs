@@ -14,7 +14,8 @@ public sealed record IncomingNotification(
     string Body,
     bool IsDirect,
     bool HasMention,
-    DateTimeOffset Time
+    DateTimeOffset Time,
+    bool IsNoisy = false
 );
 
 /// <summary>
@@ -32,6 +33,9 @@ public sealed class MatrixSession : IAsyncDisposable
     internal static readonly SynchronizationContext ThreadPool = new();
 
     private const int RoomListPageSize = 500;
+    private static readonly TimeSpan SyncStopTimeout = TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan SyncRestartDelay = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan SendRetryDelay = TimeSpan.FromSeconds(10);
 
     private readonly StoredClient _stored;
     private readonly Client _client;
@@ -43,14 +47,18 @@ public sealed class MatrixSession : IAsyncDisposable
     private RoomList? _roomList;
     private LiveList<RoomSummary>? _rooms;
     private bool _stopped;
+    private Task _starting = Task.CompletedTask;
+    private SyncServiceState? _syncState;
+    private int _sendRetryScheduled;
 
-    private MatrixSession(StoredClient stored, SyncService syncService)
+    private MatrixSession(StoredClient stored, SyncService syncService, string dataDirectory)
     {
         _stored = stored;
         _client = stored.Client;
         _syncService = syncService;
         UserId = _client.UserId();
         DeviceId = _client.DeviceId();
+        DataDirectory = dataDirectory;
         Encryption = new EncryptionState(_client);
         Verification = new VerificationFlow(_client);
     }
@@ -58,6 +66,11 @@ public sealed class MatrixSession : IAsyncDisposable
     public string UserId { get; }
 
     public string DeviceId { get; }
+
+    /// <summary>
+    /// Where the session is stored, the client keeps its own files there too.
+    /// </summary>
+    public string DataDirectory { get; }
 
     public Client Client => _client;
 
@@ -89,6 +102,12 @@ public sealed class MatrixSession : IAsyncDisposable
     public event EventHandler<IncomingNotification>? NotificationReceived;
 
     /// <summary>
+    /// Raised when sending a message in a room failed: the room id and the error. Sending is retried on its own after
+    /// a while and when the connection comes back, <see cref="RetrySendingAsync"/> retries right away.
+    /// </summary>
+    public event EventHandler<(string RoomId, string Error)>? SendFailed;
+
+    /// <summary>
     /// Shows only the rooms whose name matches the value (fuzzy, like the search of Element X), all
     /// rooms if it is empty.
     /// </summary>
@@ -112,7 +131,7 @@ public sealed class MatrixSession : IAsyncDisposable
     {
         await ThreadPoolHop.Yield();
         StoredClient? stored = await StoredClient.TryRestoreAsync(Store(dataDirectory));
-        return stored is null ? null : await CreateAsync(stored);
+        return stored is null ? null : await CreateAsync(stored, dataDirectory);
     }
 
     /// <summary>
@@ -137,26 +156,44 @@ public sealed class MatrixSession : IAsyncDisposable
                 DeviceName = "Matrix.RustSdk TUI client",
             }
         );
-        return await CreateAsync(stored);
+        return await CreateAsync(stored, dataDirectory);
     }
 
     /// <summary>
     /// Starts syncing and watching the room list and the encryption state.
     /// </summary>
-    public async Task StartAsync()
+    public Task StartAsync()
+    {
+        // disposing waits for the start, so it doesn't race with it
+        _starting = StartCoreAsync();
+        return _starting;
+    }
+
+    private async Task StartCoreAsync()
     {
         await ThreadPoolHop.Yield();
+        CancellationToken stopping = _stopping.Token;
+        _watchers.Add(WatchAsync(_syncService.WatchStateAsync(_stopping.Token), OnSyncStateChanged));
         _watchers.Add(
-            WatchAsync(_syncService.WatchStateAsync(_stopping.Token), s => SyncStateChanged?.Invoke(this, s))
+            WatchAsync(
+                _client.WatchSendQueueErrorsAsync(_stopping.Token),
+                failure =>
+                {
+                    SendFailed?.Invoke(this, (failure.RoomId, failure.Error.Message));
+                    ScheduleSendRetry();
+                }
+            )
         );
 
         // notifications are evaluated while syncing, the handler has to be registered before the sync starts
         await _client.RegisterNotificationHandler(new NotificationListener(this));
+        stopping.ThrowIfCancellationRequested();
 
         // the room list service is driven by the sync service, it yields the rooms sorted by recency. The query hides
         // spaces, left rooms and old versions of upgraded rooms, like Element X does.
         _roomListService = _syncService.RoomListService();
         _roomList = await _roomListService.AllRooms();
+        stopping.ThrowIfCancellationRequested();
         _rooms = _roomList
             .WatchRoomDiffsAsync(_query, _stopping.Token)
             .ToLiveList<Room, RoomSummary>(SummarizeAsync, synchronizationContext: ThreadPool);
@@ -165,10 +202,83 @@ public sealed class MatrixSession : IAsyncDisposable
         _rooms.Changed += (_, _) => RoomsChanged?.Invoke(this, EventArgs.Empty);
         RoomsChanged?.Invoke(this, EventArgs.Empty);
 
+        stopping.ThrowIfCancellationRequested();
         await _syncService.Start();
 
-        _watchers.Add(Encryption.StartAsync(_stopping.Token));
-        _watchers.Add(Verification.StartAsync(_stopping.Token));
+        _watchers.Add(Encryption.StartAsync(stopping));
+        _watchers.Add(Verification.StartAsync(stopping));
+    }
+
+    /// <summary>
+    /// Sends the messages that are waiting because sending failed. The send queue of a room stops after an error until
+    /// it is enabled again; messages the server rejected for good stay failed.
+    /// </summary>
+    public async Task RetrySendingAsync()
+    {
+        await ThreadPoolHop.Yield();
+        await _client.EnableAllSendQueues(true);
+    }
+
+    private void OnSyncStateChanged(SyncServiceState state)
+    {
+        SyncServiceState? previous = _syncState;
+        _syncState = state;
+        SyncStateChanged?.Invoke(this, state);
+        switch (state)
+        {
+            // back online: the send queues stopped while the homeserver couldn't be reached
+            case SyncServiceState.Running when previous is SyncServiceState.Offline or SyncServiceState.Error:
+                _ = RunInBackgroundAsync(RetrySendingAsync);
+                break;
+            // the offline mode covers network errors, other errors stop the sync, which is started again
+            case SyncServiceState.Error:
+                _ = RunInBackgroundAsync(RestartSyncAsync);
+                break;
+        }
+    }
+
+    private async Task RestartSyncAsync()
+    {
+        await Task.Delay(SyncRestartDelay, _stopping.Token);
+        await _syncService.Start();
+    }
+
+    /// <summary>
+    /// Enables the send queues again a while after an error, once at a time.
+    /// </summary>
+    private void ScheduleSendRetry()
+    {
+        if (Interlocked.Exchange(ref _sendRetryScheduled, 1) == 1)
+        {
+            return;
+        }
+        _ = RunInBackgroundAsync(async () =>
+        {
+            try
+            {
+                await Task.Delay(SendRetryDelay, _stopping.Token);
+            }
+            finally
+            {
+                Volatile.Write(ref _sendRetryScheduled, 0);
+            }
+            await RetrySendingAsync();
+        });
+    }
+
+    /// <summary>
+    /// Runs a background task of the session, its errors are dropped: the next attempt or the user tries again.
+    /// </summary>
+    private static async Task RunInBackgroundAsync(Func<Task> action)
+    {
+        try
+        {
+            await action();
+        }
+        catch (Exception e) when (e is OperationCanceledException or ClientException or ObjectDisposedException)
+        {
+            // stopped, or the next attempt tries again
+        }
     }
 
     /// <summary>
@@ -286,12 +396,13 @@ public sealed class MatrixSession : IAsyncDisposable
                     .BackupDownloadStrategy(Bindings.Sdk.BackupDownloadStrategy.AfterDecryptionFailure),
         };
 
-    private static async Task<MatrixSession> CreateAsync(StoredClient stored)
+    private static async Task<MatrixSession> CreateAsync(StoredClient stored, string dataDirectory)
     {
         try
         {
-            SyncService syncService = await stored.Client.SyncService().Finish();
-            return new MatrixSession(stored, syncService);
+            // the offline mode waits for the homeserver to come back after network errors instead of stopping
+            SyncService syncService = await stored.Client.SyncService().WithOfflineMode().Finish();
+            return new MatrixSession(stored, syncService, dataDirectory);
         }
         catch
         {
@@ -311,21 +422,38 @@ public sealed class MatrixSession : IAsyncDisposable
             return;
         }
         _stopped = true;
-        await _syncService.Stop();
         await _stopping.CancelAsync();
-        // the watchers end with the cancellation
-#pragma warning disable VSTHRD003
-        await Task.WhenAll(_watchers);
-#pragma warning restore VSTHRD003
-        if (_rooms is not null)
+        try
         {
-            await _rooms.DisposeAsync();
+            // started by this class, they end with the cancellation, their errors don't matter anymore
+#pragma warning disable VSTHRD003
+            await _starting.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+            try
+            {
+                // a Stop right after the start can be lost and never return (matrix-rust-sdk race)
+                await _syncService.Stop().WaitAsync(SyncStopTimeout, CancellationToken.None);
+            }
+            catch (Exception e) when (e is TimeoutException or ClientException)
+            {
+                // the client is closed anyway
+            }
+            await Task.WhenAll(_watchers).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+#pragma warning restore VSTHRD003
         }
-        Verification.Dispose();
-        _roomList?.Dispose();
-        _roomListService?.Dispose();
-        _syncService.Dispose();
-        _stopping.Dispose();
+        finally
+        {
+            // everything created from the client is disposed before the StoredClient
+            if (_rooms is not null)
+            {
+                await _rooms.DisposeAsync();
+            }
+            Verification.Dispose();
+            Encryption.Dispose();
+            _roomList?.Dispose();
+            _roomListService?.Dispose();
+            _syncService.Dispose();
+            _stopping.Dispose();
+        }
     }
 
     private static async Task WatchAsync<T>(IAsyncEnumerable<T> values, Action<T> onValue)
@@ -337,17 +465,25 @@ public sealed class MatrixSession : IAsyncDisposable
                 onValue(value);
             }
         }
-        catch (OperationCanceledException)
+        catch (Exception e) when (e is OperationCanceledException or ClientException or ObjectDisposedException)
         {
-            // the session is disposed
+            // the session is disposed, or the subscription failed: there are no more values
         }
     }
 
-    // the room is disposed right after, only managed values may be kept
+    // the room is disposed right after, only managed values may be kept. It must not throw, that would stop the list.
     private static async ValueTask<RoomSummary> SummarizeAsync(Room room, CancellationToken cancellationToken)
     {
-        using RoomInfo info = await room.RoomInfo();
-        return RoomSummary.From(info);
+        try
+        {
+            using RoomInfo info = await room.RoomInfo();
+            return RoomSummary.From(info);
+        }
+        catch (ClientException)
+        {
+            string id = room.Id();
+            return new RoomSummary(id, room.DisplayName() ?? id);
+        }
     }
 
     /// <summary>
@@ -422,7 +558,10 @@ public sealed class MatrixSession : IAsyncDisposable
                             body,
                             isDirect,
                             hasMention,
-                            DateTimeOffset.FromUnixTimeMilliseconds((long)timelineEvent.Timestamp())
+                            Chat.TimelineEntries.FromTimestamp(timelineEvent.Timestamp()),
+                            // the push rules want a sound, like for direct messages
+                            notification.IsNoisy
+                                ?? false
                         );
                     }
                 default:

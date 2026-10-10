@@ -46,7 +46,12 @@ public abstract record Command
 
     public sealed record Upload(string Path) : Command;
 
-    public sealed record Open : Command;
+    /// <summary>
+    /// Opens the attachment of the selected message, or its link number <see cref="Link"/> (1 for the first).
+    /// </summary>
+    public sealed record Open(int? Link = null) : Command;
+
+    public sealed record Retry : Command;
 
     public sealed record Save(string? Path) : Command;
 
@@ -113,9 +118,10 @@ public static class CommandParser
         ("topic", "topic [text]", "show or set the topic of the open room"),
         ("name", "name <name>", "rename the open room"),
         ("me", "me <text>", "send an emote"),
-        ("react", "react <emoji>", "react to the selected message"),
+        ("react", "react <emoji>", "react to the selected message, shortcodes like +1 or :tada: work"),
         ("upload", "upload <path>", "send a file"),
-        ("open", "open", "open the attachment of the selected message"),
+        ("open", "open [n]", "open the attachment or the n-th link of the selected message"),
+        ("retry", "retry", "send the messages that failed again"),
         ("save", "save [path]", "save the attachment of the selected message"),
         ("read", "read", "mark the open room as read"),
         ("ignore", "ignore <@user>", "ignore a user"),
@@ -193,12 +199,22 @@ public static class CommandParser
             case "me":
                 return rest.Length == 0 ? Usage("me <text>") : new Command.Emote(rest);
             case "react":
-                return One(args, "react <emoji>", a => new Command.React(a));
+                return One(args, "react <emoji>", a => new Command.React(Shortcodes.Resolve(a)));
             case "upload":
             case "attach":
                 return rest.Length == 0 ? Usage("upload <path>") : new Command.Upload(ExpandHome(Unquote(rest)));
             case "open":
-                return new Command.Open();
+                return args.Count switch
+                {
+                    0 => new Command.Open(),
+                    1
+                        when int.TryParse(args[0], System.Globalization.CultureInfo.InvariantCulture, out int link)
+                            && link > 0 => new Command.Open(link),
+                    _ => Usage("open [n]"),
+                };
+            case "retry":
+            case "resend":
+                return new Command.Retry();
             case "save":
                 return new Command.Save(rest.Length == 0 ? null : ExpandHome(Unquote(rest)));
             case "read":
@@ -234,39 +250,117 @@ public static class CommandParser
         }
     }
 
+    private static readonly HashSet<string> UserCommands =
+    [
+        "invite",
+        "kick",
+        "remove",
+        "ban",
+        "unban",
+        "dm",
+        "query",
+        "msg",
+        "ignore",
+        "unignore",
+        "verify",
+    ];
+
+    private static readonly HashSet<string> PathCommands = ["upload", "attach", "save"];
+
     /// <summary>
-    /// Completes the command name at the start of <paramref name="line"/>, null if no command starts with it. Several
-    /// matches complete to their common prefix.
+    /// Completes the command line: the command name, user ids (<paramref name="userIds"/>) for commands about users,
+    /// file paths for <c>upload</c> and <c>save</c>, shortcodes for <c>react</c>. Returns the completed line, null if
+    /// nothing matches. Several matches complete to their common prefix.
     /// </summary>
-    public static string? Complete(string line)
+    public static string? Complete(string line, IEnumerable<string>? userIds = null)
     {
-        if (line.Contains(' ', StringComparison.Ordinal))
+        int space = line.IndexOf(' ', StringComparison.Ordinal);
+        if (space < 0)
+        {
+            string? name = CommonPrefix(Help.Select(h => h.Name), line, StringComparison.OrdinalIgnoreCase);
+            if (name is null)
+            {
+                return null;
+            }
+            // a complete command name is followed by the space for its arguments
+            return Help.Any(h => h.Name == name) ? name + " " : name;
+        }
+
+        string command = line[..space].ToLowerInvariant();
+        int argumentStart = line.LastIndexOf(' ') + 1;
+        string argument = line[argumentStart..];
+        string? completed;
+        if (UserCommands.Contains(command))
+        {
+            string prefix = argument.TrimStart('@');
+            // the localpart or the whole id
+            completed = CommonPrefix(
+                (userIds ?? [])
+                    .Distinct()
+                    .Where(u => u.TrimStart('@').StartsWith(prefix, StringComparison.OrdinalIgnoreCase)),
+                "",
+                StringComparison.Ordinal
+            );
+            if (completed is not null && userIds!.Contains(completed))
+            {
+                completed += " ";
+            }
+        }
+        else if (PathCommands.Contains(command))
+        {
+            completed = CompletePath(argument);
+        }
+        else if (command == "react")
+        {
+            completed = CommonPrefix(Shortcodes.Names, argument, StringComparison.OrdinalIgnoreCase);
+        }
+        else
+        {
+            completed = null;
+        }
+        return completed is null || completed.Length < argument.Length ? null : line[..argumentStart] + completed;
+    }
+
+    private static string? CompletePath(string argument)
+    {
+        string expanded = ExpandHome(argument);
+        string directory = expanded.EndsWith('/') ? expanded : Path.GetDirectoryName(expanded) ?? "";
+        string directoryPath = directory.Length == 0 ? "." : directory;
+        if (!Directory.Exists(directoryPath))
         {
             return null;
         }
-        string[] matches =
-        [
-            .. Help.Select(h => h.Name).Where(n => n.StartsWith(line, StringComparison.OrdinalIgnoreCase)),
-        ];
+        string typedDirectory = argument[..(argument.LastIndexOf('/') + 1)];
+        string filePrefix = argument[typedDirectory.Length..];
+        IEnumerable<string> entries = Directory
+            .EnumerateFileSystemEntries(directoryPath)
+            .Select(e => Path.GetFileName(e) + (Directory.Exists(e) ? "/" : ""))
+            .Where(e => filePrefix.StartsWith('.') || !e.StartsWith('.'));
+        string? name = CommonPrefix(entries, filePrefix, StringComparison.Ordinal);
+        return name is null ? null : typedDirectory + name;
+    }
+
+    /// <summary>
+    /// The longest common prefix of the <paramref name="candidates"/> starting with <paramref name="prefix"/>.
+    /// </summary>
+    private static string? CommonPrefix(IEnumerable<string> candidates, string prefix, StringComparison comparison)
+    {
+        string[] matches = [.. candidates.Where(c => c.StartsWith(prefix, comparison)).Order(StringComparer.Ordinal)];
         if (matches.Length == 0)
         {
             return null;
         }
-        if (matches.Length == 1)
-        {
-            return matches[0] + " ";
-        }
-        string prefix = matches[0];
+        string common = matches[0];
         foreach (string match in matches.Skip(1))
         {
             int length = 0;
-            while (length < prefix.Length && length < match.Length && prefix[length] == match[length])
+            while (length < common.Length && length < match.Length && common[length] == match[length])
             {
                 length++;
             }
-            prefix = prefix[..length];
+            common = common[..length];
         }
-        return prefix;
+        return common;
     }
 
     /// <summary>

@@ -55,6 +55,8 @@ public partial class EncryptionTests(Homeserver homeserver)
         RecordingVerificationDelegate recorder = new();
         controller.SetDelegate(recorder);
 
+        await WaitUntilVerificationIsReadyAsync(tui);
+
         // Act: the device asks, the TUI client accepts
         await controller.RequestDeviceVerification();
         await tui.WaitForTextAsync("wants to verify. Accept? (y/n)");
@@ -101,6 +103,7 @@ public partial class EncryptionTests(Homeserver homeserver)
         controller.SetDelegate(recorder);
 
         // Act: the TUI client asks, the device accepts
+        await WaitUntilVerificationIsReadyAsync(tui);
         await tui.CommandAsync("verify");
         await tui.WaitForTextAsync("Waiting for another session to accept");
         SessionVerificationRequestDetails request = await recorder.RequestAsync();
@@ -148,10 +151,21 @@ public partial class EncryptionTests(Homeserver homeserver)
     }
 
     /// <summary>
+    /// Waits until the TUI client receives verification requests, earlier ones are lost.
+    /// </summary>
+    internal static async Task WaitUntilVerificationIsReadyAsync(TuiTester tui)
+    {
+        await tui.NormalModeAsync();
+        await tui.CommandAsync("recovery");
+        await tui.WaitForTextAsync("ready, :verify verifies with another session");
+        await tui.PressAsync(Key.Esc);
+    }
+
+    /// <summary>
     /// The verification controller of a new session, which needs the identity of the user it downloads after the
     /// login.
     /// </summary>
-    private static Task<SessionVerificationController> GetControllerAsync(Client device) =>
+    internal static Task<SessionVerificationController> GetControllerAsync(Client device) =>
         Poll.UntilAsync(
             async () =>
             {
@@ -216,7 +230,7 @@ public partial class EncryptionTests(Homeserver homeserver)
     /// <summary>
     /// Keeps another session syncing, so it receives the verification messages.
     /// </summary>
-    private sealed class SyncingDevice : IAsyncDisposable
+    internal sealed class SyncingDevice : IAsyncDisposable
     {
         private readonly SyncService _syncService;
 
@@ -246,10 +260,12 @@ public partial class EncryptionTests(Homeserver homeserver)
     /// <summary>
     /// Records the callbacks of a verification on the SDK side.
     /// </summary>
-    private sealed class RecordingVerificationDelegate : SessionVerificationControllerDelegate
+    internal sealed class RecordingVerificationDelegate : SessionVerificationControllerDelegate
     {
         private readonly ConcurrentQueue<string> _events = new();
         private volatile string[]? _emojis;
+
+        public IReadOnlyCollection<string> Events => _events;
 
         private volatile SessionVerificationRequestDetails? _request;
 

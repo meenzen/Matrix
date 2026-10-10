@@ -48,10 +48,23 @@ public class TimelineRendererTests
                 IsEdited = true,
             },
             new("m", EntryKind.ReadMarker, "new messages"),
+            Message("f", "me", "lost", 1) with
+            {
+                IsOwn = true,
+                Status = SendStatus.Failed,
+            },
             Message("6", "me", "on my way", 1) with
             {
                 IsOwn = true,
                 Status = SendStatus.Sending,
+            },
+            Message("t1", "carol", "shall we discuss?", 0) with
+            {
+                ThreadReplies = 2,
+            },
+            Message("t2", "bob", "in the thread", 0) with
+            {
+                ThreadRoot = "$t1",
             },
             Message("7", "carol", "", 0, EntryKind.Media) with
             {

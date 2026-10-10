@@ -13,6 +13,9 @@ public enum EntryKind
     Event,
     DayDivider,
     ReadMarker,
+
+    /// <summary>A line of the client itself, like the start of the room.</summary>
+    Info,
 }
 
 public enum SendStatus
@@ -54,6 +57,16 @@ public sealed record TimelineEntry(string Key, EntryKind Kind, string Body)
     public bool MentionsMe { get; init; }
     public SendStatus Status { get; init; }
     public ReplyPreview? ReplyTo { get; init; }
+
+    /// <summary>
+    /// The event id of the thread the message is in, null if it isn't in a thread.
+    /// </summary>
+    public string? ThreadRoot { get; init; }
+
+    /// <summary>
+    /// The number of replies in the thread this message starts.
+    /// </summary>
+    public ulong ThreadReplies { get; init; }
     public MediaAttachment? Media { get; init; }
     public IReadOnlyList<ReactionSummary> Reactions { get; init; } = [];
 
@@ -65,5 +78,5 @@ public sealed record TimelineEntry(string Key, EntryKind Kind, string Body)
     /// <summary>
     /// Whether the entry is a message that can be selected for actions, as opposed to dividers.
     /// </summary>
-    public bool IsEvent => Kind is not (EntryKind.DayDivider or EntryKind.ReadMarker);
+    public bool IsEvent => Kind is not (EntryKind.DayDivider or EntryKind.ReadMarker or EntryKind.Info);
 }

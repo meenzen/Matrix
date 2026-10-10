@@ -25,21 +25,28 @@ The client starts in normal mode, where every key is a command. `?` shows all ke
 
 | Keys                    | What they do                                                    |
 | ----------------------- | --------------------------------------------------------------- |
-| `j` `k`, `gg` `G`       | move down / up, to the first / last item (`5j` moves five)      |
+| `j` `k`, `gg` `G`       | move down / up, to the first / last item (`5j`, `5G` work)      |
+| `gu`                    | jump to the first unread message                                |
 | `C-d` `C-u` `C-f` `C-b` | half a page / a page down and up                                |
 | `h` `l`, `Tab`          | focus the room list / the timeline                              |
-| `Enter`                 | open the room, the attachment or what is selected on a page     |
+| `Enter`                 | open the room, the attachment or link, or a page's selection    |
 | `J` `K`, `U`            | next / previous room, next unread room                          |
 | `i`                     | write a message, `Enter` sends, `Alt+Enter` adds a line break   |
-| `Esc`                   | back to normal mode, closes pages, cancels a reply or an edit   |
+| `Tab`, `C-w`, `C-u`     | while writing: complete a name, delete a word / the line        |
+| `Esc`, `C-c`            | back to normal mode, closes pages, cancels a reply or an edit   |
 | `r` `e` `dd` `+` `yy`   | reply to, edit, delete, react to, copy the selected message     |
-| `o`                     | open the attachment of the selected message                     |
+| `o`, `R`                | open the attachment or link, send a failed message again        |
+| `y` `n`                 | answer the question in the status line, `Esc` dismisses it      |
 | `m`                     | members of the room, `Enter` on a member opens the direct chat  |
-| `/`                     | filter the room list by name                                    |
+| `/`                     | jump to a room by name, `Enter` opens the best match            |
 | `:`                     | command line, `Tab` completes, `↑` `↓` go through the history   |
 | `ZZ`, `:q`, `C-q`       | quit                                                            |
 
 The mouse works too: the wheel scrolls, a click selects, a double click opens.
+
+Opening a room starts at the first unread message, the read receipt is sent once you reach the end. What you type
+stays with its room when you switch. Questions (an invite, a verification request) never take over while you write,
+they wait in the status line until you are back in normal mode.
 
 ## Commands
 
@@ -52,8 +59,10 @@ The mouse works too: the wheel scrolls, a click selects, a double click opens.
 | `:leave`                                    | leave the open room                                             |
 | `:invite`, `:kick`, `:ban`, `:unban`        | manage the members, kicks and bans take a reason                |
 | `:topic [text]`, `:name <name>`             | show or change the topic, rename the room                       |
-| `:me <text>`, `:react <emoji>`              | send an emote, react to the selected message                    |
+| `:me <text>`, `:react <emoji>`              | send an emote, react (shortcodes: `:react +1`, `:react tada`)   |
 | `:upload <path>`, `:save [path]`, `:open`   | send a file, save or open the attachment of the selected message |
+| `:open <n>`                                 | open the n-th link of the selected message                      |
+| `:retry`                                    | send the messages that failed again                             |
 | `:ignore`, `:unignore`                      | ignore a user                                                   |
 | `:verify [@user]`                           | verify this session with another one of yours, or another user  |
 | `:recovery`                                 | the state of the key backup and recovery                        |
@@ -69,10 +78,18 @@ on the server, protected by a recovery key: keep it, a new session needs it (or 
 `:verify`) to read the history of encrypted rooms. Sessions that ask to be verified show up as a question, the emojis
 to compare are shown in the timeline area.
 
+`Tab` completes commands, user ids and file paths on the command line, `↑` and `↓` go through the history, which is
+kept in the data directory.
+
+## Connection
+
+When the homeserver can't be reached the client waits for it to come back (`sync: offline` in the status line) and
+sends the messages that piled up meanwhile. A message the server rejects shows "failed to send", `R` tries again.
+
 ## Notifications
 
-Mentions and direct messages show a desktop notification (`notify-send` on Linux, `osascript` on macOS), except for
-the room you are reading. They follow the push rules of the account.
+Mentions, direct messages and whatever else the push rules of the account make noisy show a desktop notification
+(`notify-send` on Linux, `osascript` on macOS), except for the room you are reading.
 
 ## How it uses the SDK
 
