@@ -185,7 +185,10 @@ public sealed class VerificationFlow(Client client) : SessionVerificationControl
         await ThreadPoolHop.Yield();
         await Controller.ApproveVerification();
         // the other side may have confirmed first, the verification is done then
-        UpdateIf(VerificationStep.Comparing, status => status with { Step = VerificationStep.Confirmed });
+        UpdateIf(
+            step => step == VerificationStep.Comparing,
+            status => status with { Step = VerificationStep.Confirmed }
+        );
     }
 
     /// <summary>
@@ -238,7 +241,11 @@ public sealed class VerificationFlow(Client client) : SessionVerificationControl
     public void DidAcceptVerificationRequest() =>
         Callback(() =>
         {
-            Update(Status with { Step = VerificationStep.Accepted });
+            // the callbacks come on different threads, so they only move the verification forward
+            UpdateIf(
+                step => step is VerificationStep.Requested or VerificationStep.Incoming,
+                status => status with { Step = VerificationStep.Accepted }
+            );
             if (_isInitiator)
             {
                 // the side that asked starts the emoji comparison
@@ -246,7 +253,13 @@ public sealed class VerificationFlow(Client client) : SessionVerificationControl
             }
         });
 
-    public void DidStartSasVerification() => Callback(() => Update(Status with { Step = VerificationStep.Accepted }));
+    public void DidStartSasVerification() =>
+        Callback(() =>
+            UpdateIf(
+                step => step is VerificationStep.Requested or VerificationStep.Incoming,
+                status => status with { Step = VerificationStep.Accepted }
+            )
+        );
 
     public void DidReceiveVerificationData(SessionVerificationData data) =>
         Callback(() =>
@@ -322,14 +335,14 @@ public sealed class VerificationFlow(Client client) : SessionVerificationControl
     }
 
     /// <summary>
-    /// Updates the status only if it is still at <paramref name="step"/>, the callbacks of the SDK run on other
+    /// Updates the status only if its step is <paramref name="allowed"/>, the callbacks of the SDK run on different
     /// threads and may have moved it on.
     /// </summary>
-    private void UpdateIf(VerificationStep step, Func<VerificationStatus, VerificationStatus> update)
+    private void UpdateIf(Func<VerificationStep, bool> allowed, Func<VerificationStatus, VerificationStatus> update)
     {
         lock (_lock)
         {
-            if (Status.Step != step)
+            if (!allowed(Status.Step))
             {
                 return;
             }
