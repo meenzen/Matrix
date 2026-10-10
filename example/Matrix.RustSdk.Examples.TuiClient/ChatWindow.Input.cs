@@ -128,11 +128,11 @@ public sealed partial class ChatWindow
                 break;
             case InputAction.NextRoom:
                 _roomsView.MoveBy(count);
-                OpenSelectedRoom();
+                OpenSelectedRoom(startInsert: false);
                 break;
             case InputAction.PreviousRoom:
                 _roomsView.MoveBy(-count);
-                OpenSelectedRoom();
+                OpenSelectedRoom(startInsert: false);
                 break;
             case InputAction.NextUnreadRoom:
                 OpenNextUnreadRoom();
@@ -272,7 +272,7 @@ public sealed partial class ChatWindow
             if (_rooms[index].IsUnread && _rooms[index].RoomId != _room?.RoomId)
             {
                 _roomsView.Select(index);
-                OpenRoom(_rooms[index].RoomId);
+                OpenRoom(_rooms[index].RoomId, startInsert: false);
                 return;
             }
         }

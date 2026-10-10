@@ -231,20 +231,27 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
         return -1;
     }
 
-    private void OpenSelectedRoom()
+    /// <summary>
+    /// Opens the room selected in the room list, <paramref name="startInsert"/> starts insert mode afterwards.
+    /// </summary>
+    private void OpenSelectedRoom(bool startInsert = true)
     {
         if (_roomsView.SelectedItem is int index && index < _rooms.Count)
         {
-            OpenRoom(_rooms[index].RoomId);
+            OpenRoom(_rooms[index].RoomId, startInsert);
         }
     }
 
-    private void OpenRoom(string roomId)
+    private void OpenRoom(string roomId, bool startInsert = true)
     {
-        _ = OpenRoomAsync(roomId);
+        _ = OpenRoomAsync(roomId, startInsert);
     }
 
-    private async Task OpenRoomAsync(string roomId)
+    /// <summary>
+    /// Opens a room, replacing the open one. <paramref name="startInsert"/> starts insert mode once it is open, moving
+    /// between rooms with J and K stays in normal mode.
+    /// </summary>
+    private async Task OpenRoomAsync(string roomId, bool startInsert = true)
     {
         // updates of a previously opened room can still be queued, they are ignored
         int generation = ++_roomGeneration;
@@ -301,7 +308,7 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
                     }
                 );
             }
-            else if (FocusedPane != Pane.Rooms || Mode == InputMode.Normal)
+            else if (startInsert && Mode == InputMode.Normal)
             {
                 SetMode(InputMode.Insert);
             }

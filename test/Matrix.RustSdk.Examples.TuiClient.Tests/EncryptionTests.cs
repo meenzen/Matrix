@@ -87,6 +87,87 @@ public partial class EncryptionTests(Homeserver homeserver)
     }
 
     [Test]
+    public async Task OutgoingVerification_ShouldVerifyWithTheOtherSession()
+    {
+        // Arrange: a new session of the same user waits for requests
+        await using TuiTester tui = await TuiTester.StartAsync(homeserver);
+        await tui.WaitForTextAsync("verified backup:on");
+        Client device = await homeserver.LoginAsync(tui.User);
+        await using SyncingDevice syncing = await SyncingDevice.StartAsync(device);
+        using Encryption encryption = device.Encryption();
+        await encryption.WaitForE2eeInitializationTasks();
+        using SessionVerificationController controller = await GetControllerAsync(device);
+        RecordingVerificationDelegate recorder = new();
+        controller.SetDelegate(recorder);
+
+        // Act: the TUI client asks, the device accepts
+        await tui.CommandAsync("verify");
+        await tui.WaitForTextAsync("Waiting for another session to accept");
+        SessionVerificationRequestDetails request = await recorder.RequestAsync();
+        await controller.AcknowledgeVerificationRequest(request.SenderProfile.UserId, request.FlowId);
+        await controller.AcceptVerificationRequest();
+
+        // Assert: the TUI client starts the emoji comparison
+        string[] emojis = await recorder.EmojisAsync();
+        await tui.WaitForTextAsync("Do the emojis match? (y/n)");
+        string screen = await tui.GetScreenAsync();
+        foreach (string emoji in emojis)
+        {
+            await Assert.That(screen).Contains(emoji);
+        }
+
+        // Act
+        await tui.PressAsync('y');
+        await controller.ApproveVerification();
+
+        // Assert
+        await tui.WaitForTextAsync("Verified with another session.");
+        await recorder.WaitForAsync("finished");
+    }
+
+    [Test]
+    public async Task ResetRecoveryKey_ShouldReplaceTheKey()
+    {
+        // Arrange
+        await using TuiTester tui = await TuiTester.StartAsync(homeserver);
+        await tui.WaitForTextAsync("verified backup:on");
+        await tui.CommandAsync("recovery enable");
+        await tui.WaitForTextAsync("recovery:on");
+        string first = RecoveryKey().Match(await tui.GetScreenAsync()).Value;
+
+        // Act
+        await tui.CommandAsync("recovery reset");
+        await tui.WaitForTextAsync("Replace the recovery key?");
+        await tui.PressAsync('y');
+
+        // Assert
+        await tui.WaitForTextAsync("Created a new recovery key, store it.");
+        string second = RecoveryKey().Match(await tui.GetScreenAsync()).Value;
+        await Assert.That(second).IsNotEmpty();
+        await Assert.That(second).IsNotEqualTo(first);
+    }
+
+    /// <summary>
+    /// The verification controller of a new session, which needs the identity of the user it downloads after the
+    /// login.
+    /// </summary>
+    private static Task<SessionVerificationController> GetControllerAsync(Client device) =>
+        Poll.UntilAsync(
+            async () =>
+            {
+                try
+                {
+                    return await device.GetSessionVerificationController();
+                }
+                catch (ClientException)
+                {
+                    return null;
+                }
+            },
+            "the verification controller"
+        );
+
+    [Test]
     public async Task Recovery_ShouldRestoreTheHistoryInANewSession()
     {
         // Arrange: an encrypted room with a message, the keys are in the backup
@@ -170,8 +251,16 @@ public partial class EncryptionTests(Homeserver homeserver)
         private readonly ConcurrentQueue<string> _events = new();
         private volatile string[]? _emojis;
 
-        public void DidReceiveVerificationRequest(SessionVerificationRequestDetails details) =>
+        private volatile SessionVerificationRequestDetails? _request;
+
+        public void DidReceiveVerificationRequest(SessionVerificationRequestDetails details)
+        {
+            _request = details;
             _events.Enqueue("request");
+        }
+
+        public Task<SessionVerificationRequestDetails> RequestAsync() =>
+            Poll.UntilAsync(() => Task.FromResult(_request), "the verification request");
 
         public void DidAcceptVerificationRequest() => _events.Enqueue("accepted");
 
