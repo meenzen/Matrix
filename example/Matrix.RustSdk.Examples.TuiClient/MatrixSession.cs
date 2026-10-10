@@ -199,7 +199,11 @@ public sealed class MatrixSession : IAsyncDisposable
             .ToLiveList<Room, RoomSummary>(SummarizeAsync, synchronizationContext: ThreadPool);
         // the list is updated on another thread and may have changed before the handler was attached, so it is
         // reported once right away
-        _rooms.Changed += (_, _) => RoomsChanged?.Invoke(this, EventArgs.Empty);
+        _rooms.Changed += (_, _) =>
+        {
+            LoadMoreRooms();
+            RoomsChanged?.Invoke(this, EventArgs.Empty);
+        };
         RoomsChanged?.Invoke(this, EventArgs.Empty);
 
         stopping.ThrowIfCancellationRequested();
@@ -278,6 +282,19 @@ public sealed class MatrixSession : IAsyncDisposable
         catch (Exception e) when (e is OperationCanceledException or ClientException or ObjectDisposedException)
         {
             // stopped, or the next attempt tries again
+        }
+    }
+
+    /// <summary>
+    /// The room list yields one page of rooms at a time: a full list asks for the next page, so accounts with more
+    /// rooms see all of them.
+    /// </summary>
+    private void LoadMoreRooms()
+    {
+        int count = _rooms?.Count ?? 0;
+        if (count > 0 && count % RoomListPageSize == 0)
+        {
+            _query.AddOnePage();
         }
     }
 
