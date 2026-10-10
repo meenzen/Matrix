@@ -1,0 +1,18 @@
+0|──────────────────────── Yesterday ────────────────────────|
+1|17:00  alice hello everyone, this message is long enough to|
+1|             wrap onto the next line|
+2|17:01        a follow-up|
+3|18:40      * bob joined|
+4|────────────────────────── Today ──────────────────────────|
+5|17:30      * bob waves|
+6|17:40    bob ↳ alice: hello everyone, this message is long …|
+6|             sure (edited)|
+6|             👍 2  🎉|
+6|             ✓ carol|
+7|─────────────────────── new messages ───────────────────────|
+8|17:59     me lost (failed to send, R sends it again)|
+9|17:59        on my way (sending…)|
+10|18:00  carol shall we discuss?|
+10|             ↪ 2 replies in the thread|
+11|18:00    bob in the thread (in a thread)|
+12|18:00  carol [image] cat.png (image/png, 120.6 KB)|
