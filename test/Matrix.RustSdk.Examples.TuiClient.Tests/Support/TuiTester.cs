@@ -41,6 +41,11 @@ public sealed class TuiTester : IAsyncDisposable
     public string DownloadDirectory => _downloads.Path;
 
     /// <summary>
+    /// Where the client stores the session, the keys and its own files.
+    /// </summary>
+    public string DataDirectory => _data.Path;
+
+    /// <summary>
     /// The files the client opened with the default application.
     /// </summary>
     public IReadOnlyCollection<string> OpenedFiles => _opened;

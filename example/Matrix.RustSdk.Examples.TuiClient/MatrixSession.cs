@@ -42,6 +42,9 @@ public sealed class MatrixSession : IAsyncDisposable
     private readonly SyncService _syncService;
     private readonly CancellationTokenSource _stopping = new();
     private readonly RoomListQuery _query = new(RoomListPageSize);
+
+    // the number of rooms the room list was asked for, the next page is requested once it is full
+    private int _requestedRooms = RoomListPageSize;
     private readonly List<Task> _watchers = [];
     private RoomListService? _roomListService;
     private RoomList? _roomList;
@@ -117,6 +120,8 @@ public sealed class MatrixSession : IAsyncDisposable
         set
         {
             field = value;
+            // a new filter starts again with one page
+            Volatile.Write(ref _requestedRooms, RoomListPageSize);
             _query.Filter = string.IsNullOrWhiteSpace(value)
                 ? null
                 : new RoomListEntriesDynamicFilterKind.FuzzyMatchRoomName(value.Trim());
@@ -292,8 +297,10 @@ public sealed class MatrixSession : IAsyncDisposable
     private void LoadMoreRooms()
     {
         int count = _rooms?.Count ?? 0;
-        if (count > 0 && count % RoomListPageSize == 0)
+        int requested = Volatile.Read(ref _requestedRooms);
+        if (count > 0 && count >= requested)
         {
+            Volatile.Write(ref _requestedRooms, requested + RoomListPageSize);
             _query.AddOnePage();
         }
     }

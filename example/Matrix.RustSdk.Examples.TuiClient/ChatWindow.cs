@@ -328,6 +328,8 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
         // updates of a previously opened room can still be queued, they are ignored
         int generation = ++_roomGeneration;
         SwitchDraft(roomId);
+        // a question about the invite of the previous room would act on this one
+        ClearPrompts(InviteTag);
         OpenedRoom? previous = _room;
         _room = null;
         _entries = [];
@@ -368,7 +370,12 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
                 ShowPage(Pages.Invite(opened.Summary));
                 if (askInvite)
                 {
-                    Ask($"Accept the invite to {opened.Summary.Name}? (y/n)", AcceptInvite, DeclineInvite, InviteTag);
+                    Ask(
+                        $"Accept the invite to {opened.Summary.Name}? (y/n)",
+                        () => WhenStillOpen(opened, AcceptInvite),
+                        () => WhenStillOpen(opened, DeclineInvite),
+                        InviteTag
+                    );
                 }
             }
             else if (startInsert)
@@ -384,6 +391,17 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
                 ShowTimeline();
                 ShowError($"Opening {name} failed: {e.Message}");
             }
+        }
+    }
+
+    /// <summary>
+    /// Runs <paramref name="action"/> only if <paramref name="room"/> is still the open room.
+    /// </summary>
+    private void WhenStillOpen(OpenedRoom room, System.Action action)
+    {
+        if (_room == room)
+        {
+            action();
         }
     }
 

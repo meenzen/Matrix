@@ -130,6 +130,53 @@ public class RoomTests(Homeserver homeserver)
     }
 
     [Test]
+    public async Task InviteQuestion_ShouldOnlyAnswerForItsRoom()
+    {
+        // Arrange: two invites with names the fuzzy filter can't confuse, the question about the first one is open
+        await using TuiTester tui = await TuiTester.StartAsync(homeserver);
+        await using Peer peer = await Peer.StartAsync(homeserver);
+        string first = $"Apple {Guid.NewGuid().ToString("N")[..6]}";
+        string second = $"Zebra {Guid.NewGuid().ToString("N")[..6]}";
+        string firstId = await peer.CreateRoomAsync(first, invite: [tui.User.UserId]);
+        string secondId = await peer.CreateRoomAsync(second, invite: [tui.User.UserId]);
+        await tui.WaitForTextAsync($"+ {first}");
+        await tui.WaitForTextAsync($"+ {second}");
+        await tui.CommandAsync($"search {first}");
+        // the room list is filtered in the background
+        await tui.WaitForTextGoneAsync($"+ {second}");
+        await tui.PressAsync(Key.Enter);
+        await tui.WaitForTextAsync($"Accept the invite to {first}? (y/n)");
+        await tui.CommandAsync("search");
+        await tui.WaitForTextAsync($"+ {second}");
+
+        // Act: moving to the other invite with J or K drops the question about the first one, so n declines nothing
+        string screen = await tui.GetScreenAsync();
+        bool secondIsBelow =
+            screen.IndexOf($"+ {second}", StringComparison.Ordinal)
+            > screen.IndexOf($"+ {first}", StringComparison.Ordinal);
+        await tui.PressAsync(secondIsBelow ? 'J' : 'K');
+        await tui.WaitForTextAsync($"┤{second}");
+        await tui.PressAsync('n');
+
+        // Assert: both invites are still there
+        await tui.WaitForTextGoneAsync("Accept the invite to");
+        await tui.WaitForTextAsync($"+ {first}");
+        await tui.WaitForTextAsync($"+ {second}");
+        await peer.WaitForMembershipAsync(
+            firstId,
+            tui.User.UserId,
+            m => m is MembershipState.Invite,
+            "the first invite"
+        );
+        await peer.WaitForMembershipAsync(
+            secondId,
+            tui.User.UserId,
+            m => m is MembershipState.Invite,
+            "the second invite"
+        );
+    }
+
+    [Test]
     public async Task DirectMessage_ShouldCreateADirectChat()
     {
         // Arrange

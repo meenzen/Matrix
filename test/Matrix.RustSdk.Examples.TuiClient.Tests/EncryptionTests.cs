@@ -222,6 +222,10 @@ public partial class EncryptionTests(Homeserver homeserver)
 
         // Assert: verified, the keys come from the backup
         await second.WaitForTextAsync("Recovered: this session is verified");
+        // the recovery key is a secret, the command history keeps the other commands only
+        string history = await File.ReadAllTextAsync(Path.Join(second.DataDirectory, "command-history"));
+        await Assert.That(history).Contains($"search {room}");
+        await Assert.That(history).DoesNotContain(recoveryKey);
         await second.WaitForTextAsync("verified backup:on recovery:on");
         await second.PressAsync(Key.Esc);
         await second.WaitForTextAsync("top secret");

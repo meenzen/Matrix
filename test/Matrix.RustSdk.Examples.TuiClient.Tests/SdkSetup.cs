@@ -15,7 +15,7 @@ public static class SdkSetup
             new MatrixSdkOptions
             {
                 LogLevel = LogLevel.Info,
-                LogDirectory = Path.Combine(AppContext.BaseDirectory, "logs"),
+                LogDirectory = Path.Join(AppContext.BaseDirectory, "logs"),
             }
         );
 }

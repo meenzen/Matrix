@@ -655,12 +655,13 @@ public sealed partial class ChatWindow
         {
             return;
         }
-        if (_history.Count == 0 || _history[^1] != text)
+        ParsedCommand parsed = CommandParser.Parse(text);
+        // the recovery key is a secret, it never goes to the history file
+        if (parsed.Command is not Input.Command.Recover && (_history.Count == 0 || _history[^1] != text))
         {
             _history.Add(text);
             SaveHistory();
         }
-        ParsedCommand parsed = CommandParser.Parse(text);
         if (parsed.Command is { } command)
         {
             Execute(command);
