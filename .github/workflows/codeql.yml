@@ -52,3 +52,22 @@ jobs:
         uses: github/codeql-action/analyze@24c54180a607b1449ed407dd24f251e4e9147c8d # v4
         with:
           category: "/language:${{matrix.language}}"
+          # uploaded after filtering, see below
+          upload: never
+          output: sarif-results
+
+      # paths-ignore has no effect for compiled languages, so the alerts in the generated bindings are filtered out of the
+      # results instead
+      - name: Filter generated bindings
+        uses: advanced-security/filter-sarif@2da736ff05ef065cb2894ac6892e47b5eac2c3c0 # v1.1
+        with:
+          patterns: |
+            -src/Matrix.RustSdk.Bindings/**
+          input: sarif-results/${{ matrix.language }}.sarif
+          output: sarif-results/${{ matrix.language }}.sarif
+
+      - name: Upload results
+        uses: github/codeql-action/upload-sarif@24c54180a607b1449ed407dd24f251e4e9147c8d # v4
+        with:
+          sarif_file: sarif-results/${{ matrix.language }}.sarif
+          category: "/language:${{matrix.language}}"
