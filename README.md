@@ -69,6 +69,14 @@ using Matrix.RustSdk.Bindings;
 // once per process, before anything else calls into the SDK: a multi-threaded runtime and logs
 MatrixSdk.Initialize(new MatrixSdkOptions { LogDirectory = "logs" });
 
+// stops the bot on Ctrl+C
+using CancellationTokenSource stopping = new();
+Console.CancelKeyPress += (_, e) =>
+{
+    e.Cancel = true;
+    stopping.Cancel();
+};
+
 // restores the session stored in the data directory, or logs in and stores the new session there
 await using StoredClient stored = await StoredClient.LoginOrRestoreAsync(
     new ClientStoreOptions { DataDirectory = "data" },
@@ -83,19 +91,30 @@ await using StoredClient stored = await StoredClient.LoginOrRestoreAsync(
 // sliding sync only returns the latest event of each room by default, a bot wants all new ones
 using SyncService sync = await stored.Client.SyncService().WithRoomListTimelineLimit(20).Finish();
 await sync.Start();
-
-// answers every new text message of other users in the room with the same text
-using Room room = await stored.Client.JoinRoomByIdOrAlias("#my-room:matrix.org", serverNames: []);
-using Timeline timeline = await room.Timeline();
-await foreach (EventTimelineItem message in timeline.WatchIncomingMessagesAsync())
+try
 {
-    using (message)
+    // answers every new text message of other users in the room with the same text
+    using Room room = await stored.Client.JoinRoomByIdOrAlias("#my-room:matrix.org", serverNames: []);
+    using Timeline timeline = await room.Timeline();
+    await foreach (EventTimelineItem message in timeline.WatchIncomingMessagesAsync(stopping.Token))
     {
-        if (message.TryGetText(out string? text))
+        using (message)
         {
-            await timeline.SendTextAsync(text, inReplyTo: message.EventId);
+            if (message.TryGetText(out string? text))
+            {
+                await timeline.SendTextAsync(text, inReplyTo: message.EventId);
+            }
         }
     }
+}
+catch (OperationCanceledException) when (stopping.IsCancellationRequested)
+{
+    // Ctrl+C
+}
+finally
+{
+    // the sync has to stop before the StoredClient closes the stores
+    await sync.Stop();
 }
 ```
 
