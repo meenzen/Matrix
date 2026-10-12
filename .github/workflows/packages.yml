@@ -157,13 +157,13 @@ jobs:
           workspaces: |
             external/matrix-rust-sdk
 
-      # the official image from the mirror on ECR Public: Docker Hub rate limits anonymous pulls per IP, which the
-      # shared runners exceed. ECR Public throttles anonymous pulls as well ("toomanyrequests: Rate exceeded"), but
-      # only for a short time, so retry with a backoff.
+      # the official image from Google's Docker Hub mirror: Docker Hub rate limits anonymous pulls per IP, which the
+      # shared runners exceed, and ECR Public's mirror throttled the arm64 runners too. Retry in case the mirror has a
+      # hiccup as well.
       - name: Pull rust image
         run: |
           for attempt in 1 2 3 4 5 6; do
-            docker pull public.ecr.aws/docker/library/rust:1-alpine && exit 0
+            docker pull mirror.gcr.io/library/rust:1-alpine && exit 0
             echo "pull failed (attempt $attempt), retrying in $((attempt * 10))s"
             sleep $((attempt * 10))
           done
@@ -174,7 +174,7 @@ jobs:
           docker run --rm -v "$PWD:/work" -w /work -v "$HOME/.cargo:/cargo" -e CARGO_HOME=/cargo
           -e CARGO_TERM_COLOR -e CARGO_PROFILE -e CARGO_PROFILE_SMALL_RELEASE_STRIPPED_STRIP
           -e TARGET=${{ matrix.target }} -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)"
-          public.ecr.aws/docker/library/rust:1-alpine .github/scripts/build-musl.sh
+          mirror.gcr.io/library/rust:1-alpine .github/scripts/build-musl.sh
 
       # test the exact library that ends up in the package, docker is available so all tests run
       - name: Test native library
