@@ -8,11 +8,13 @@ public static class TuiClient
     /// <summary>
     /// Runs the client on the initialized <paramref name="app"/> until the user quits or
     /// <paramref name="cancellationToken"/> is cancelled: the chat window with the stored session, the login window
-    /// first if there is none. Logging out goes back to the login window.
+    /// first if there is none. Logging out goes back to the login window. <paramref name="settings"/> decide how the
+    /// client interacts with the desktop (notifications, opening attachments).
     /// </summary>
     public static async Task RunAsync(
         IApplication app,
         LoginOptions options,
+        ClientSettings? settings = null,
         CancellationToken cancellationToken = default
     )
     {
@@ -44,7 +46,7 @@ public static class TuiClient
             }
 
             bool logout;
-            await using (ChatWindow chatWindow = new(app, session))
+            await using (ChatWindow chatWindow = new(app, session, settings))
             {
                 await app.RunAsync(chatWindow, cancellationToken);
                 logout = chatWindow.IsLogoutRequested;

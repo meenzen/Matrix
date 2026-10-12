@@ -75,8 +75,8 @@ Complete example apps are in [`example/`](example):
 
 - [Echo bot](example/Matrix.RustSdk.Examples.EchoBot): a worker service that joins rooms it's invited to and echoes
   messages
-- [TUI client](example/Matrix.RustSdk.Examples.TuiClient): a basic terminal client with a room list, timeline and
-  composer
+- [TUI client](example/Matrix.RustSdk.Examples.TuiClient): a terminal client with vim keys: rooms, invites, direct
+  chats, replies, edits, reactions, attachments, notifications, emoji verification and key backup
 
 For everything else, the [matrix-rust-sdk documentation](https://github.com/matrix-org/matrix-rust-sdk) and the
 `matrix-sdk-ffi` sources are the best reference, the C# methods are the PascalCase versions of the Rust ones.
