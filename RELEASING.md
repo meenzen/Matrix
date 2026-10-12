@@ -4,18 +4,23 @@
 
 | Package                                  | Contents                                                                |
 |------------------------------------------|-------------------------------------------------------------------------|
+| `Matrix.RustSdk`                         | the helpers on top of the bindings, depends on the bindings             |
 | `Matrix.RustSdk.Bindings`                | the generated C# bindings, no native libraries                          |
 | `Matrix.RustSdk.Bindings.Native.Linux`   | `linux-x64`, `linux-arm64`, `linux-musl-x64`, `linux-musl-arm64`        |
 | `Matrix.RustSdk.Bindings.Native.Windows` | `win-x64`, `win-arm64`                                                  |
 | `Matrix.RustSdk.Bindings.Native.MacOS`   | `osx-x64`, `osx-arm64`                                                  |
 | `Matrix.RustSdk.Bindings.Native.All`     | depends on all native packages                                          |
-| `Matrix.RustSdk`                         | not published yet (`IsPackable=false`) until it provides helpers        |
 
 All packages are built from the same commit and share one version. The native packages depend on **exactly** that
 version of `Matrix.RustSdk.Bindings` (`[x.y.z]`, see `ExactProjectReferenceVersions` in `Directory.Build.targets`):
 uniffi verifies API checksums when the native library is loaded, so bindings and native libraries of different versions
 never work together. The exact dependency turns such a mismatch into a NuGet restore error instead of a runtime
-exception.
+exception. `Matrix.RustSdk` depends on exactly that version of the bindings as well: it is compiled against them, and
+their API changes with every matrix-sdk-ffi update, so newer bindings would fail at runtime with missing members.
+
+`Matrix.RustSdk` packs its XML documentation, and unlike the rest of the repository it fails the build for public
+members without docs (CS1591). Its public API is snapshotted by `PublicApiTests`, a changed snapshot is a change of the
+published API.
 
 ## Versioning
 
@@ -56,8 +61,9 @@ that it matches the `external/matrix-rust-sdk` submodule (`scripts/check-sdk-ver
    [trusted publishing](#trusted-publishing). Configure required reviewers on the `production` environment to get an
    approval step before the push. Afterwards the `release` job creates the `v<version>` tag and the GitHub release,
    see [GitHub releases](#github-releases).
-4. Verify the release: reference the native package from a small console app on the platforms you care about, e.g.
-   Windows, macOS and an Alpine container, and create a client (see `test/Matrix.RustSdk.Tests/NativeLibraryTests.cs`).
+4. Verify the release: reference `Matrix.RustSdk` and the native package from a small console app on the platforms you
+   care about, e.g. Windows, macOS and an Alpine container, and create a client (see
+   `test/Matrix.RustSdk.Tests/NativeLibraryTests.cs`).
 
 ### GitHub releases
 

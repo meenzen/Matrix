@@ -31,8 +31,12 @@ public abstract class VectorDiff<T> : IDisposable
         /// </summary>
         public IReadOnlyList<T> Values { get; } = values ?? throw new ArgumentNullException(nameof(values));
 
+        /// <summary>
+        /// Deconstructs the diff into its values, for positional patterns.
+        /// </summary>
         public void Deconstruct(out IReadOnlyList<T> values) => values = Values;
 
+        /// <inheritdoc/>
         public override string ToString() => $"Append({Values.Count} values)";
 
         private protected override void Apply(IList<T> list, Action<T>? removed)
@@ -51,6 +55,7 @@ public abstract class VectorDiff<T> : IDisposable
     /// </summary>
     public sealed class Clear : VectorDiff<T>
     {
+        /// <inheritdoc/>
         public override string ToString() => "Clear";
 
         private protected override void Apply(IList<T> list, Action<T>? removed) => RemoveFrom(list, 0, removed);
@@ -66,8 +71,12 @@ public abstract class VectorDiff<T> : IDisposable
         /// </summary>
         public T Value { get; } = value;
 
+        /// <summary>
+        /// Deconstructs the diff into its values, for positional patterns.
+        /// </summary>
         public void Deconstruct(out T value) => value = Value;
 
+        /// <inheritdoc/>
         public override string ToString() => $"PushFront({Value})";
 
         private protected override void Apply(IList<T> list, Action<T>? removed) => list.Insert(0, Value);
@@ -85,8 +94,12 @@ public abstract class VectorDiff<T> : IDisposable
         /// </summary>
         public T Value { get; } = value;
 
+        /// <summary>
+        /// Deconstructs the diff into its values, for positional patterns.
+        /// </summary>
         public void Deconstruct(out T value) => value = Value;
 
+        /// <inheritdoc/>
         public override string ToString() => $"PushBack({Value})";
 
         private protected override void Apply(IList<T> list, Action<T>? removed) => list.Add(Value);
@@ -99,6 +112,7 @@ public abstract class VectorDiff<T> : IDisposable
     /// </summary>
     public sealed class PopFront : VectorDiff<T>
     {
+        /// <inheritdoc/>
         public override string ToString() => "PopFront";
 
         private protected override void Apply(IList<T> list, Action<T>? removed)
@@ -113,6 +127,7 @@ public abstract class VectorDiff<T> : IDisposable
     /// </summary>
     public sealed class PopBack : VectorDiff<T>
     {
+        /// <inheritdoc/>
         public override string ToString() => "PopBack";
 
         private protected override void Apply(IList<T> list, Action<T>? removed)
@@ -137,8 +152,12 @@ public abstract class VectorDiff<T> : IDisposable
         /// </summary>
         public T Value { get; } = value;
 
+        /// <summary>
+        /// Deconstructs the diff into its values, for positional patterns.
+        /// </summary>
         public void Deconstruct(out int index, out T value) => (index, value) = (Index, Value);
 
+        /// <inheritdoc/>
         public override string ToString() => $"Insert({Index}, {Value})";
 
         private protected override void Apply(IList<T> list, Action<T>? removed)
@@ -167,8 +186,12 @@ public abstract class VectorDiff<T> : IDisposable
         /// </summary>
         public T Value { get; } = value;
 
+        /// <summary>
+        /// Deconstructs the diff into its values, for positional patterns.
+        /// </summary>
         public void Deconstruct(out int index, out T value) => (index, value) = (Index, Value);
 
+        /// <inheritdoc/>
         public override string ToString() => $"Set({Index}, {Value})";
 
         private protected override void Apply(IList<T> list, Action<T>? removed)
@@ -191,8 +214,12 @@ public abstract class VectorDiff<T> : IDisposable
         /// </summary>
         public int Index { get; } = index;
 
+        /// <summary>
+        /// Deconstructs the diff into its values, for positional patterns.
+        /// </summary>
         public void Deconstruct(out int index) => index = Index;
 
+        /// <inheritdoc/>
         public override string ToString() => $"Remove({Index})";
 
         private protected override void Apply(IList<T> list, Action<T>? removed) => RemoveAt(list, Index, removed);
@@ -208,8 +235,12 @@ public abstract class VectorDiff<T> : IDisposable
         /// </summary>
         public int Length { get; } = length;
 
+        /// <summary>
+        /// Deconstructs the diff into its values, for positional patterns.
+        /// </summary>
         public void Deconstruct(out int length) => length = Length;
 
+        /// <inheritdoc/>
         public override string ToString() => $"Truncate({Length})";
 
         private protected override void Apply(IList<T> list, Action<T>? removed)
@@ -230,8 +261,12 @@ public abstract class VectorDiff<T> : IDisposable
         /// </summary>
         public IReadOnlyList<T> Values { get; } = values ?? throw new ArgumentNullException(nameof(values));
 
+        /// <summary>
+        /// Deconstructs the diff into its values, for positional patterns.
+        /// </summary>
         public void Deconstruct(out IReadOnlyList<T> values) => values = Values;
 
+        /// <inheritdoc/>
         public override string ToString() => $"Reset({Values.Count} values)";
 
         private protected override void Apply(IList<T> list, Action<T>? removed)

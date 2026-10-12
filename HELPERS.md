@@ -316,7 +316,7 @@ merged, like the subscriptions did.
 3. ~~Message and timeline helpers, the echo bot and the TUI client on top of them (helper 3)~~: done.
 4. ~~Progress, room members and `MatrixSdk.Initialize` (helper 4)~~: done.
 5. ~~Stored sessions (helper 5), the echo bot and the TUI client restore their sessions~~: done.
-6. **First release of `Matrix.RustSdk`.** Set `IsPackable`, check the packaged XML docs, see RELEASING.md.
+6. ~~First release of `Matrix.RustSdk`: packable, packed XML docs, exact dependency on the bindings~~: done.
 
 Smaller follow-ups, whenever convenient:
 

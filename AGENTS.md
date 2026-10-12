@@ -12,8 +12,8 @@ matrix-rust-sdk.
 - `src/Matrix.RustSdk.Bindings`: the generated bindings (`*.cs`, committed) and `uniffi.toml`
 - `src/Matrix.RustSdk.Bindings.Native.*`: packages containing only the native libraries, shared logic in
   `src/Native.targets`
-- `src/Matrix.RustSdk`: idiomatic helpers on top of the bindings, not published yet, see [Helpers](#helpers) and
-  [HELPERS.md](HELPERS.md) for the design notes
+- `src/Matrix.RustSdk`: idiomatic helpers on top of the bindings, published as the `Matrix.RustSdk` package, see
+  [Helpers](#helpers) and [HELPERS.md](HELPERS.md) for the design notes
 - `src/Matrix.RustSdk.Generators`: source generator for the helpers, a build time dependency of `Matrix.RustSdk` only
 - `test/Matrix.RustSdk.Tests`: TUnit tests, `test/Matrix.RustSdk.Testing`: shared test setup (homeserver container,
   snapshots), `test/Matrix.RustSdk.Generators.Tests`: snapshot tests of the generator
@@ -37,7 +37,8 @@ dotnet test               # requires docker
 
 - Never edit the generated `src/Matrix.RustSdk.Bindings/*.cs` by hand, change `scripts/generate-bindings.sh` or
   `uniffi.toml` and regenerate. Regenerating with the same SDK version must not produce a diff.
-- `TreatWarningsAsErrors` is enabled (except for the generated bindings), builds have to be warning free.
+- `TreatWarningsAsErrors` is enabled (except for the generated bindings), builds have to be warning free. Missing XML
+  docs (CS1591) are only an error in the published `Matrix.RustSdk`, every public member there needs docs.
 - Package versions are managed centrally in `Directory.Packages.props`, projects reference packages without a
   `Version`. The versions are pinned for transitive dependencies as well, `VersionOverride` is disabled. Packages every
   project needs are referenced in `Directory.Build.props` (not as `GlobalPackageReference`, so a project can drop one

@@ -52,6 +52,7 @@ Built from matrix-rust-sdk [\`$SDK_TAG\`](https://github.com/matrix-org/matrix-r
 
 | Package | Platforms |
 |---------|-----------|
+| [Matrix.RustSdk](https://www.nuget.org/packages/Matrix.RustSdk/$VERSION) | helpers on top of the bindings |
 | [Matrix.RustSdk.Bindings](https://www.nuget.org/packages/Matrix.RustSdk.Bindings/$VERSION) | managed bindings |
 | [Matrix.RustSdk.Bindings.Native.Linux](https://www.nuget.org/packages/Matrix.RustSdk.Bindings.Native.Linux/$VERSION) | \`linux-x64\`, \`linux-arm64\`, \`linux-musl-x64\`, \`linux-musl-arm64\` |
 | [Matrix.RustSdk.Bindings.Native.Windows](https://www.nuget.org/packages/Matrix.RustSdk.Bindings.Native.Windows/$VERSION) | \`win-x64\`, \`win-arm64\` |
@@ -59,6 +60,7 @@ Built from matrix-rust-sdk [\`$SDK_TAG\`](https://github.com/matrix-org/matrix-r
 | [Matrix.RustSdk.Bindings.Native.All](https://www.nuget.org/packages/Matrix.RustSdk.Bindings.Native.All/$VERSION) | all of the above |
 
 \`\`\`xml
+<PackageReference Include="Matrix.RustSdk" Version="$VERSION" />
 <PackageReference Include="Matrix.RustSdk.Bindings.Native.Linux" Version="$VERSION" />
 \`\`\`
 NOTES
