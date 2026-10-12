@@ -150,8 +150,8 @@ obvious:
   platform, tests that exact library on its runner and packs the packages. Linux and musl run all tests, Windows and
   macOS runners have no linux containers and only run the smoke tests.
 - musl: GitHub's javascript actions don't run in alpine containers on arm64, so the jobs start containers themselves
-  (`.github/scripts/build-musl.sh` in `rust:1-alpine` from the ECR Public mirror, Docker Hub rate limits the runners,
-  `.github/scripts/test-musl.sh` in the .NET alpine image with the docker socket). musl shared libraries need
+  (`.github/scripts/build-musl.sh` in `rust:1-alpine` from `mirror.gcr.io`, Docker Hub and ECR Public rate limit the
+  runners, `.github/scripts/test-musl.sh` in the .NET alpine image with the docker socket). musl shared libraries need
   `-C target-feature=-crt-static`. The scripts can be run locally with the `docker run` commands in their headers.
 - Windows arm64: aws-lc-sys requires clang-cl, the workflow adds the one shipped with Visual Studio to the `PATH`.
 - Release builds of the native packages fail if a library is missing in `native/runtimes/<rid>/native`, CI assembles
