@@ -1,7 +1,7 @@
 [![GitHub](https://img.shields.io/github/license/meenzen/Matrix.svg)](https://github.com/meenzen/Matrix/blob/main/LICENSE)
 [![codecov](https://codecov.io/gh/meenzen/Matrix/graph/badge.svg?token=OTzMAH3dRO)](https://codecov.io/gh/meenzen/Matrix)
-[![NuGet](https://img.shields.io/nuget/vpre/Matrix.RustSdk.Bindings)](https://www.nuget.org/packages/Matrix.RustSdk.Bindings)
-[![NuGet](https://img.shields.io/nuget/dt/Matrix.RustSdk.Bindings.svg)](https://www.nuget.org/packages/Matrix.RustSdk.Bindings)
+[![NuGet](https://img.shields.io/nuget/vpre/Matrix.RustSdk)](https://www.nuget.org/packages/Matrix.RustSdk)
+[![NuGet](https://img.shields.io/nuget/dt/Matrix.RustSdk.svg)](https://www.nuget.org/packages/Matrix.RustSdk)
 [![Matrix](https://img.shields.io/badge/matrix-%23dotnet%3Amnzn.dev-blue?logo=matrix)](https://matrix.to/#/#dotnet:mnzn.dev)
 
 # Matrix.RustSdk
@@ -14,25 +14,32 @@ Questions or feedback about the SDK? Join [#dotnet:mnzn.dev](https://matrix.to/#
 
 ## Installation
 
-The managed bindings and the native libraries are shipped in separate packages, so applications only download the
-platforms they need. Reference the native packages for the platforms the application runs on, they bring the matching
-`Matrix.RustSdk.Bindings` package:
+`Matrix.RustSdk` contains idiomatic helpers on top of the generated bindings (`Matrix.RustSdk.Bindings`), the native
+libraries are shipped in separate packages, so applications only download the platforms they need. Reference
+`Matrix.RustSdk` and the native packages for the platforms the application runs on, all of the same version:
 
 ```xml
+<PackageReference Include="Matrix.RustSdk" Version="0.1.0" />
 <PackageReference Include="Matrix.RustSdk.Bindings.Native.Linux" Version="0.1.0" />
 <PackageReference Include="Matrix.RustSdk.Bindings.Native.Windows" Version="0.1.0" />
 ```
 
-| Package                                  | Platforms                                                        |
-|------------------------------------------|------------------------------------------------------------------|
-| `Matrix.RustSdk.Bindings.Native.Linux`   | `linux-x64`, `linux-arm64`, `linux-musl-x64`, `linux-musl-arm64` |
-| `Matrix.RustSdk.Bindings.Native.Windows` | `win-x64`, `win-arm64`                                           |
-| `Matrix.RustSdk.Bindings.Native.MacOS`   | `osx-x64`, `osx-arm64`                                           |
-| `Matrix.RustSdk.Bindings.Native.All`     | all of the above                                                 |
+Applications that only use the bindings leave out `Matrix.RustSdk`, the native packages bring the matching
+`Matrix.RustSdk.Bindings` package.
 
-The native libraries only work with the bindings of the exact same version, so the native packages depend on exactly
-that version of `Matrix.RustSdk.Bindings`. The glibc libraries require glibc 2.35 or newer (Ubuntu 22.04, Debian 12,
-RHEL 10), the musl libraries `libgcc` (installed with .NET on Alpine).
+| Package                                  | Contents                                                                              |
+|------------------------------------------|---------------------------------------------------------------------------------------|
+| `Matrix.RustSdk`                         | helpers: subscriptions as `IAsyncEnumerable<T>`, live lists, messages, sessions       |
+| `Matrix.RustSdk.Bindings`                | the generated bindings                                                                |
+| `Matrix.RustSdk.Bindings.Native.Linux`   | native libraries for `linux-x64`, `linux-arm64`, `linux-musl-x64`, `linux-musl-arm64` |
+| `Matrix.RustSdk.Bindings.Native.Windows` | native libraries for `win-x64`, `win-arm64`                                           |
+| `Matrix.RustSdk.Bindings.Native.MacOS`   | native libraries for `osx-x64`, `osx-arm64`                                           |
+| `Matrix.RustSdk.Bindings.Native.All`     | all native packages                                                                   |
+
+The native libraries only work with the bindings of the exact same version, and the helpers are compiled against them,
+so `Matrix.RustSdk` and the native packages depend on exactly that version of `Matrix.RustSdk.Bindings`. The glibc
+libraries require glibc 2.35 or newer (Ubuntu 22.04, Debian 12, RHEL 10), the musl libraries `libgcc` (installed with
+.NET on Alpine).
 
 The packages contain matrix-rust-sdk and the Rust crates it depends on, their licenses and copyright notices are in
 `THIRD-PARTY-NOTICES.txt` in every package.
@@ -43,8 +50,56 @@ almost every release, so minor versions of the packages contain breaking changes
 
 ## Usage
 
-The bindings mirror the API of `matrix-sdk-ffi`. A minimal example that logs in, creates a room and lists the rooms of
-the account:
+The bindings mirror the API of `matrix-sdk-ffi`, `Matrix.RustSdk` adds extension methods to their types (in the
+`Matrix.RustSdk.Bindings` namespace, so they show up without another `using`) and a few types of its own:
+
+- subscriptions as `IAsyncEnumerable<T>` (`room.WatchTypingUsersAsync()`) instead of listener interfaces and task
+  handles, list diffs as `VectorDiff<T>` and `LiveList<T>`, an observable list that applies them
+- sending and reading messages (`timeline.SendTextAsync`, `timeline.WatchIncomingMessagesAsync`, `item.TryGetText`)
+- `StoredClient`: stores the session and restores it on the next start
+- `MatrixSdk.Initialize`: logs and a multi-threaded runtime for the SDK
+- `IProgress<T>` overloads for uploads and key backups
+
+A minimal bot that answers every text message in a room with the same text:
+
+```csharp
+using Matrix.RustSdk;
+using Matrix.RustSdk.Bindings;
+
+// once per process, before anything else calls into the SDK: a multi-threaded runtime and logs
+MatrixSdk.Initialize(new MatrixSdkOptions { LogDirectory = "logs" });
+
+// restores the session stored in the data directory, or logs in and stores the new session there
+await using StoredClient stored = await StoredClient.LoginOrRestoreAsync(
+    new ClientStoreOptions { DataDirectory = "data" },
+    new PasswordCredentials
+    {
+        Homeserver = "matrix.org",
+        Username = "username",
+        Password = "password",
+    }
+);
+
+// sliding sync only returns the latest event of each room by default, a bot wants all new ones
+using SyncService sync = await stored.Client.SyncService().WithRoomListTimelineLimit(20).Finish();
+await sync.Start();
+
+// answers every new text message of other users in the room with the same text
+using Room room = await stored.Client.JoinRoomByIdOrAlias("#my-room:matrix.org", serverNames: []);
+using Timeline timeline = await room.Timeline();
+await foreach (EventTimelineItem message in timeline.WatchIncomingMessagesAsync())
+{
+    using (message)
+    {
+        if (message.TryGetText(out string? text))
+        {
+            await timeline.SendTextAsync(text, inReplyTo: message.EventId);
+        }
+    }
+}
+```
+
+The bindings work on their own too. A minimal example that logs in, creates a room and lists the rooms of the account:
 
 ```csharp
 using Matrix.RustSdk.Bindings;
@@ -71,7 +126,7 @@ foreach (Room room in client.Rooms())
 }
 ```
 
-Complete example apps are in [`example/`](example):
+Complete example apps, built on the helpers, are in [`example/`](example):
 
 - [Echo bot](example/Matrix.RustSdk.Examples.EchoBot): a worker service that joins rooms it's invited to and echoes
   messages
@@ -79,7 +134,8 @@ Complete example apps are in [`example/`](example):
   chats, replies, edits, reactions, attachments, notifications, emoji verification and key backup
 
 For everything else, the [matrix-rust-sdk documentation](https://github.com/matrix-org/matrix-rust-sdk) and the
-`matrix-sdk-ffi` sources are the best reference, the C# methods are the PascalCase versions of the Rust ones.
+`matrix-sdk-ffi` sources are the best reference, the C# methods are the PascalCase versions of the Rust ones. The helpers are documented in their XML docs, the design
+notes are in [HELPERS.md](HELPERS.md).
 
 ## Development
 
