@@ -111,14 +111,18 @@ public sealed class LiveList<T>
     /// <see cref="InvalidOperationException"/> if it ended without a batch, and is cancelled if the list is disposed
     /// before.
     /// </summary>
+#pragma warning disable VSTHRD003 // exposes the task of a TaskCompletionSource, nothing is awaited here
     public Task Initialized => _initialized.Task;
+#pragma warning restore VSTHRD003
 
     /// <summary>
     /// Completes when the list stopped updating: successfully when the stream ended (the SDK can end streams on its
     /// own) or the list was disposed, cancelled when the stream was cancelled, faulted when it, a projection or an
     /// event handler threw. Observe it, the list doesn't report errors otherwise.
     /// </summary>
+#pragma warning disable VSTHRD003 // exposes the task of a TaskCompletionSource, nothing is awaited here
     public Task Completion => _completion.Task;
+#pragma warning restore VSTHRD003
 
     /// <summary>
     /// The item at <paramref name="index"/>.
