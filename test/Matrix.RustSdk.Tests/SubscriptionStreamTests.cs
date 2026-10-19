@@ -116,8 +116,13 @@ public class SubscriptionStreamTests
     public async Task CancellationWhileWaiting_ShouldThrowOperationCanceledException()
     {
         // Arrange
-        using CancellationTokenSource cancellation = new(TimeSpan.FromMilliseconds(100));
-        IAsyncEnumerable<int> values = Create<int>(SubscriptionBuffer.All, (_, _) => { }, out Func<FakeHandle?> handle);
+        using CancellationTokenSource cancellation = new();
+        // the timer starts once subscribed, the enumeration doesn't subscribe when it is cancelled already
+        IAsyncEnumerable<int> values = Create<int>(
+            SubscriptionBuffer.All,
+            (_, _) => cancellation.CancelAfter(TimeSpan.FromMilliseconds(100)),
+            out Func<FakeHandle?> handle
+        );
 
         // Act
         Task EnumerateAsync() => ConsumeAsync(values, cancellation.Token);
