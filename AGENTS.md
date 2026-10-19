@@ -142,6 +142,10 @@ obvious:
   `TUWUNEL_RATE_LIMITING__LOGIN__*` environment variables (`__` separates nested config sections).
 - tuwunel doesn't support sticky events (MSC4354), their homeserver test skips itself, `StickyEventsSnapshotTests`
   cover the helper without the SDK.
+- TUnit runs all tests in parallel and `dotnet test` runs the test projects in parallel, on CI runners the
+  homeserver tests then time out. Every test project runs at most `Environment.ProcessorCount` tests at a time
+  (`TestParallelLimit`, applied by `test/ParallelLimiter.cs` from `Directory.Build.targets`, `TEST_PARALLEL_LIMIT`
+  overrides it).
 - Shared test setup lives in `test/Matrix.RustSdk.Testing`: `Homeserver` is shared per test session
   (`[ClassDataSource<Homeserver>(Shared = SharedType.PerTestSession)]`), tests register their own users with
   `CreateUserAsync` because they run in parallel. Tests that build on each other's state are chained with
