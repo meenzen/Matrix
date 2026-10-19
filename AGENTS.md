@@ -140,6 +140,8 @@ obvious:
 - The tuwunel image is pinned in `Homeserver.cs`, Renovate updates it with a regex manager (`renovate.json`). Read
   the release notes on updates, new features can need configuration: the tests disable the login rate limits with
   `TUWUNEL_RATE_LIMITING__LOGIN__*` environment variables (`__` separates nested config sections).
+- tuwunel doesn't support sticky events (MSC4354), their homeserver test skips itself, `StickyEventsSnapshotTests`
+  cover the helper without the SDK.
 - Shared test setup lives in `test/Matrix.RustSdk.Testing`: `Homeserver` is shared per test session
   (`[ClassDataSource<Homeserver>(Shared = SharedType.PerTestSession)]`), tests register their own users with
   `CreateUserAsync` because they run in parallel. Tests that build on each other's state are chained with
