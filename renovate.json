@@ -14,5 +14,18 @@
       ],
       "enabled": false
     }
+  ],
+  "customManagers": [
+    {
+      "description": "The tuwunel image the tests start with Testcontainers",
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^test/Matrix\\.RustSdk\\.Testing/Homeserver\\.cs$/"
+      ],
+      "matchStrings": [
+        "\"(?<depName>ghcr\\.io/matrix-construct/tuwunel):(?<currentValue>v[0-9][^\"]*)\""
+      ],
+      "datasourceTemplate": "docker"
+    }
   ]
 }

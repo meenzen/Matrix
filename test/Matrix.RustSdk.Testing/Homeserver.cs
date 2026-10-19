@@ -50,7 +50,7 @@ public sealed class Homeserver : IAsyncInitializer, IAsyncDisposable
 
     public async Task InitializeAsync()
     {
-        _container = new ContainerBuilder("ghcr.io/matrix-construct/tuwunel:v1.9.3")
+        _container = new ContainerBuilder("ghcr.io/matrix-construct/tuwunel:v1.9.4")
             .WithEnvironment("TUWUNEL_SERVER_NAME", ServerName)
             .WithEnvironment("TUWUNEL_ADDRESS", "0.0.0.0")
             .WithEnvironment("TUWUNEL_PORT", Port.ToString(CultureInfo.InvariantCulture))
@@ -59,7 +59,9 @@ public sealed class Homeserver : IAsyncInitializer, IAsyncDisposable
                 "TUWUNEL_YES_I_AM_VERY_VERY_SURE_I_WANT_AN_OPEN_REGISTRATION_SERVER_PRONE_TO_ABUSE",
                 "true"
             )
-            .WithEnvironment("TUWUNEL_ALLOW_CHECK_FOR_UPDATES", "false")
+            // the tests log in to the same accounts many times and try wrong passwords, a burst of 0 disables the limits
+            .WithEnvironment("TUWUNEL_RATE_LIMITING__LOGIN__ACCOUNT__BURST_COUNT", "0")
+            .WithEnvironment("TUWUNEL_RATE_LIMITING__LOGIN__FAILED__BURST_COUNT", "0")
             .WithPortBinding(Port, true)
             .WithWaitStrategy(
                 Wait.ForUnixContainer()
