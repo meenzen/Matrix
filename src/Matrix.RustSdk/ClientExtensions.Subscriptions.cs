@@ -71,6 +71,33 @@ public static partial class ClientExtensions
     );
 
     /// <summary>
+    /// Watches the custom to-device messages sent to this device. Yields each message whose type is one of
+    /// <paramref name="eventTypes"/>, starting with the next one. Encrypted messages are yielded decrypted, with their
+    /// <see cref="ToDeviceMessage.EncryptionInfo"/>.
+    /// </summary>
+    /// <param name="client">The client.</param>
+    /// <param name="eventTypes">The types of the messages, all custom messages if it's empty.</param>
+    /// <include file="Subscriptions/Subscriptions.xml" path="docs/cancellationToken/*"/>
+    /// <remarks>
+    /// <include file="Subscriptions/Subscriptions.xml" path="docs/stream/*"/>
+    /// <para>
+    /// <see cref="ToDeviceMessage.SenderId"/> is claimed by the sender and not verified, only
+    /// <see cref="EventEncryptionInfo.SenderId"/> of <see cref="ToDeviceMessage.EncryptionInfo"/> is authenticated:
+    /// check it before trusting a message, unencrypted messages have none.
+    /// </para>
+    /// <para>
+    /// The to-device messages the SDK handles itself (room keys, verification and other encryption traffic) and
+    /// messages it couldn't decrypt are never yielded, also when <paramref name="eventTypes"/> names their type.
+    /// </para>
+    /// </remarks>
+    [Subscription(nameof(Client.SubscribeToCustomToDeviceMessages), SubscriptionBuffer.All)]
+    public static partial IAsyncEnumerable<ToDeviceMessage> WatchCustomToDeviceMessagesAsync(
+        this Client client,
+        string[] eventTypes,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Watches the ignored users. Yields their ids, starting with the current list.
     /// </summary>
     /// <param name="client">The client.</param>

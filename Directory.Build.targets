@@ -27,6 +27,8 @@
   <!-- the snapshots of the tests are in the test projects, Matrix.RustSdk.Testing.Snapshot finds them with this -->
   <ItemGroup Condition="'$(IsTestProject)' == 'true'">
     <AssemblyMetadata Include="ProjectDirectory" Value="$(MSBuildProjectDirectory)" />
+    <!-- limits the tests running at the same time, see Matrix.RustSdk.Testing.TestParallelLimit -->
+    <Compile Include="$(MSBuildThisFileDirectory)test/ParallelLimiter.cs" Link="ParallelLimiter.cs" />
   </ItemGroup>
 
   <!--

@@ -355,6 +355,12 @@ public sealed class StoredClientTests(Homeserver homeserver) : IDisposable
             cancelled = e;
         }
         await Assert.That(cancelled).IsNotNull();
+        // probing with TryRestoreAsync before the login took the lock (it runs on the thread pool, on a slow machine
+        // after the cancellation) takes the lock from it, the login then fails and never stores a session
+        await Poll.UntilAsync(
+            () => Task.FromResult(File.Exists(Path.Join(_directory.Path, "session.json")) ? (object)true : null),
+            "the abandoned login to store the session"
+        );
         StoredClient restored = await Poll.UntilAsync(
             async () =>
             {

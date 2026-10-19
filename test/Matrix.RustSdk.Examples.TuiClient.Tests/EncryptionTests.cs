@@ -58,8 +58,7 @@ public partial class EncryptionTests(Homeserver homeserver)
         await WaitUntilVerificationIsReadyAsync(tui);
 
         // Act: the device asks, the TUI client accepts
-        await controller.RequestDeviceVerification();
-        await tui.WaitForTextAsync("wants to verify. Accept? (y/n)");
+        await RequestVerificationAsync(controller, tui, "wants to verify. Accept? (y/n)");
         await tui.PressAsync('y');
 
         // the device asked, so it starts the emoji comparison
@@ -160,6 +159,42 @@ public partial class EncryptionTests(Homeserver homeserver)
         await tui.WaitForTextAsync("ready, :verify verifies with another session");
         await tui.PressAsync(Key.Esc);
     }
+
+    /// <summary>
+    /// Asks the TUI client from another session to verify until <paramref name="question"/> shows up. The TUI client
+    /// ignores requests from a session whose keys it didn't download yet ("Could not retrieve the device data for the
+    /// incoming verification request"), the SDK doesn't retry them, and on a busy machine the request can arrive
+    /// first.
+    /// </summary>
+    internal static Task RequestVerificationAsync(
+        SessionVerificationController controller,
+        TuiTester tui,
+        string question
+    ) =>
+        Poll.UntilAsync(
+            async () =>
+            {
+                // a new request replaces the ignored one in the requesting session
+                await controller.RequestDeviceVerification();
+                try
+                {
+                    return await Poll.UntilAsync(
+                        async () =>
+                            (await tui.GetScreenAsync()).Contains(question, StringComparison.Ordinal)
+                                ? (object)true
+                                : null,
+                        $"\"{question}\"",
+                        TimeSpan.FromSeconds(10)
+                    );
+                }
+                catch (TimeoutException)
+                {
+                    return null;
+                }
+            },
+            $"the TUI client to show \"{question}\"",
+            TimeSpan.FromSeconds(60)
+        );
 
     /// <summary>
     /// The verification controller of a new session, which needs the identity of the user it downloads after the
