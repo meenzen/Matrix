@@ -106,8 +106,7 @@ public class ComposerTests(Homeserver homeserver)
         controller.SetDelegate(recorder);
 
         // Act
-        await controller.RequestDeviceVerification();
-        await tui.WaitForTextAsync("a question waits for normal mode");
+        await EncryptionTests.RequestVerificationAsync(controller, tui, "a question waits for normal mode");
         await tui.TypeAsync(" yes");
 
         // Assert: the typed y went into the message, not to the question
