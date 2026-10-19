@@ -189,7 +189,16 @@ public class EventSubscriptionTests(Homeserver homeserver)
 
         public async ValueTask DisposeAsync()
         {
-            await syncService.Stop();
+            // a Stop right after Start, before the sync tasks ran once, is lost and never returns (matrix-rust-sdk
+            // race, see SubscriptionTests), the skipped sticky events test stops right away
+            try
+            {
+                await syncService.Stop().WaitAsync(TimeSpan.FromSeconds(10));
+            }
+            catch (TimeoutException)
+            {
+                // the homeserver disposes the client
+            }
             syncService.Dispose();
         }
     }
