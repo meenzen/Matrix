@@ -654,6 +654,76 @@ class BigEndianStream
         return result;
     }
 
+    // Reads a UTF-8 string of `length` bytes. Streams over RustBuffer memory
+    // are decoded in place, avoiding an intermediate byte[] copy.
+    public string ReadUtf8String(int length)
+    {
+        stream.CheckRemaining(length);
+        if (length >= 0 && stream is UnmanagedMemoryStream unmanagedStream && unmanagedStream.CanRead)
+        {
+            unsafe
+            {
+                var start = unmanagedStream.PositionPointer;
+                var result = System.Text.Encoding.UTF8.GetString(start, length);
+                unmanagedStream.PositionPointer = start + length;
+                return result;
+            }
+        }
+        return System.Text.Encoding.UTF8.GetString(ReadBytes(length));
+    }
+
+    // Writes a big-endian length prefix followed by the UTF-8 bytes. Streams
+    // over RustBuffer memory are encoded in place, avoiding an intermediate
+    // byte[] copy.
+    public void WriteUtf8String(string value)
+    {
+        if (value == null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+
+        if (stream is UnmanagedMemoryStream unmanagedStream && unmanagedStream.CanWrite)
+        {
+            // Bytes left for the string itself, after its 4-byte length prefix.
+            var available = unmanagedStream.Length - unmanagedStream.Position - 4;
+
+            // UTF-8 needs at most 3 bytes per UTF-16 code unit, so the exact
+            // byte count is only computed when that worst case might not fit.
+            if (
+                available >= 0
+                && (available >= 3L * value.Length || available >= System.Text.Encoding.UTF8.GetByteCount(value))
+            )
+            {
+                unsafe
+                {
+                    var start = unmanagedStream.PositionPointer;
+                    int length;
+                    fixed (char* chars = value)
+                    {
+                        length = System.Text.Encoding.UTF8.GetBytes(
+                            chars,
+                            value.Length,
+                            start + 4,
+                            (int)Math.Min(available, int.MaxValue)
+                        );
+                    }
+                    // The length is only known after encoding, so it goes into the
+                    // 4 bytes reserved before the string, big-endian like WriteInt.
+                    // `available >= 0` guarantees those bytes are inside the stream.
+                    start[0] = (byte)(length >> 24);
+                    start[1] = (byte)(length >> 16);
+                    start[2] = (byte)(length >> 8);
+                    start[3] = (byte)length;
+                    unmanagedStream.PositionPointer = start + 4 + length;
+                }
+                return;
+            }
+        }
+        var bytes = System.Text.Encoding.UTF8.GetBytes(value);
+        WriteInt(bytes.Length);
+        WriteBytes(bytes);
+    }
+
     public byte ReadByte() => (byte)stream.ReadUint32(bytesToRead: 1);
 
     public ushort ReadUShort() => (ushort)stream.ReadUint32(bytesToRead: 2);
@@ -1153,6 +1223,22 @@ static class _UniFFILib
     );
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void UniffiCallbackInterfaceRoomMessageLikeEventsListenerMethod0(
+        ulong @uniffiHandle,
+        RustBuffer @event,
+        IntPtr @uniffiOutReturn,
+        ref UniffiRustCallStatus _uniffi_out_err
+    );
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void UniffiCallbackInterfaceStickyEventsListenerMethod0(
+        ulong @uniffiHandle,
+        RustBuffer @update,
+        IntPtr @uniffiOutReturn,
+        ref UniffiRustCallStatus _uniffi_out_err
+    );
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void UniffiCallbackInterfaceRoomDirectorySearchEntriesListenerMethod0(
         ulong @uniffiHandle,
         RustBuffer @roomEntriesUpdate,
@@ -1632,6 +1718,22 @@ static class _UniFFILib
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    public struct UniffiVTableCallbackInterfaceRoomMessageLikeEventsListener
+    {
+        public IntPtr @uniffiFree;
+        public IntPtr @uniffiClone;
+        public IntPtr @onEvent;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct UniffiVTableCallbackInterfaceStickyEventsListener
+    {
+        public IntPtr @uniffiFree;
+        public IntPtr @uniffiClone;
+        public IntPtr @onUpdate;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     public struct UniffiVTableCallbackInterfaceRoomDirectorySearchEntriesListener
     {
         public IntPtr @uniffiFree;
@@ -1841,6 +1943,7 @@ static class _UniFFILib
         UniffiCallbackInterfaceRoomListLoadingStateListener.Register();
         UniffiCallbackInterfaceRoomListServiceStateListener.Register();
         UniffiCallbackInterfaceRoomListServiceSyncIndicatorListener.Register();
+        UniffiCallbackInterfaceRoomMessageLikeEventsListener.Register();
         UniffiCallbackInterfaceRoomStateEventsListener.Register();
         UniffiCallbackInterfaceSearchServicePaginationStateListener.Register();
         UniffiCallbackInterfaceSearchServiceResultsListener.Register();
@@ -1853,6 +1956,7 @@ static class _UniFFILib
         UniffiCallbackInterfaceSpaceRoomListSpaceListener.Register();
         UniffiCallbackInterfaceSpaceServiceJoinedSpacesListener.Register();
         UniffiCallbackInterfaceSpaceServiceSpaceFiltersListener.Register();
+        UniffiCallbackInterfaceStickyEventsListener.Register();
         UniffiCallbackInterfaceSyncListenerV2.Register();
         UniffiCallbackInterfaceSyncNotificationListener.Register();
         UniffiCallbackInterfaceSyncServiceStateObserver.Register();
@@ -2213,7 +2317,7 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    ulong uniffi_matrix_sdk_ffi_fn_method_client_deactivate_account(ulong @ptr, RustBuffer @authData, sbyte @eraseData);
+    ulong uniffi_matrix_sdk_ffi_fn_method_client_deactivate_account(ulong @ptr, RustBuffer @password, sbyte @eraseData);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -2248,6 +2352,16 @@ static class _UniFFILib
         sbyte @disable,
         ref UniffiRustCallStatus _uniffi_out_err
     );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_client_discover_rtc_transports(ulong @ptr);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -2636,6 +2750,16 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_client_is_sticky_events_supported(ulong @ptr);
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     ulong uniffi_matrix_sdk_ffi_fn_method_client_is_user_status_supported(ulong @ptr);
 
 #if NET8_0_OR_GREATER
@@ -2967,6 +3091,20 @@ static class _UniFFILib
     public static extern
 #endif
     RustBuffer uniffi_matrix_sdk_ffi_fn_method_client_rooms(ulong @ptr, ref UniffiRustCallStatus _uniffi_out_err);
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_client_run_search_backfill(
+        ulong @ptr,
+        RustBuffer @strategy,
+        ref UniffiRustCallStatus _uniffi_out_err
+    );
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -4079,7 +4217,7 @@ static class _UniFFILib
     ulong uniffi_matrix_sdk_ffi_fn_method_clientbuilder_with_search_index_store(
         ulong @ptr,
         RustBuffer @path,
-        RustBuffer @password,
+        RustBuffer @key,
         ref UniffiRustCallStatus _uniffi_out_err
     );
 
@@ -5468,7 +5606,11 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    ulong uniffi_matrix_sdk_ffi_fn_method_grantloginwithqrcodehandler_generate(ulong @ptr, ulong @progressListener);
+    ulong uniffi_matrix_sdk_ffi_fn_method_grantloginwithqrcodehandler_generate(
+        ulong @ptr,
+        ulong @progressListener,
+        ref UniffiRustCallStatus _uniffi_out_err
+    );
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -5481,8 +5623,58 @@ static class _UniFFILib
     ulong uniffi_matrix_sdk_ffi_fn_method_grantloginwithqrcodehandler_scan(
         ulong @ptr,
         ulong @qrCodeData,
-        ulong @progressListener
+        ulong @progressListener,
+        ref UniffiRustCallStatus _uniffi_out_err
     );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ulong uniffi_matrix_sdk_ffi_fn_clone_grantloginwithqrcodetask(
+        ulong @handle,
+        ref UniffiRustCallStatus _uniffi_out_err
+    );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    void uniffi_matrix_sdk_ffi_fn_free_grantloginwithqrcodetask(
+        ulong @handle,
+        ref UniffiRustCallStatus _uniffi_out_err
+    );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    void uniffi_matrix_sdk_ffi_fn_method_grantloginwithqrcodetask_cancel(
+        ulong @ptr,
+        ref UniffiRustCallStatus _uniffi_out_err
+    );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_grantloginwithqrcodetask_wait(ulong @ptr);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -5515,7 +5707,11 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    ulong uniffi_matrix_sdk_ffi_fn_method_loginwithqrcodehandler_generate(ulong @ptr, ulong @progressListener);
+    ulong uniffi_matrix_sdk_ffi_fn_method_loginwithqrcodehandler_generate(
+        ulong @ptr,
+        ulong @progressListener,
+        ref UniffiRustCallStatus _uniffi_out_err
+    );
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -5528,8 +5724,52 @@ static class _UniFFILib
     ulong uniffi_matrix_sdk_ffi_fn_method_loginwithqrcodehandler_scan(
         ulong @ptr,
         ulong @qrCodeData,
-        ulong @progressListener
+        ulong @progressListener,
+        ref UniffiRustCallStatus _uniffi_out_err
     );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ulong uniffi_matrix_sdk_ffi_fn_clone_loginwithqrcodetask(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    void uniffi_matrix_sdk_ffi_fn_free_loginwithqrcodetask(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    void uniffi_matrix_sdk_ffi_fn_method_loginwithqrcodetask_cancel(
+        ulong @ptr,
+        ref UniffiRustCallStatus _uniffi_out_err
+    );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_loginwithqrcodetask_wait(ulong @ptr);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -5596,6 +5836,19 @@ static class _UniFFILib
     public static extern
 #endif
     RustBuffer uniffi_matrix_sdk_ffi_fn_method_qrcodedata_server_name(
+        ulong @ptr,
+        ref UniffiRustCallStatus _uniffi_out_err
+    );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    RustBuffer uniffi_matrix_sdk_ffi_fn_method_qrcodedata_to_base64(
         ulong @ptr,
         ref UniffiRustCallStatus _uniffi_out_err
     );
@@ -6418,16 +6671,6 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    ulong uniffi_matrix_sdk_ffi_fn_method_room_room_events_debug_string(ulong @ptr);
-
-#if NET8_0_OR_GREATER
-    [LibraryImport("matrix_sdk_ffi")]
-    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
-    public static partial
-#else
-    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
-    public static extern
-#endif
     ulong uniffi_matrix_sdk_ffi_fn_method_room_room_info(ulong @ptr);
 
 #if NET8_0_OR_GREATER
@@ -6857,6 +7100,60 @@ static class _UniFFILib
         ulong @ptr,
         RustBuffer @userIds,
         ulong @sendHandle
+    );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_room_subscribe_to_message_like_events(
+        ulong @ptr,
+        RustBuffer @eventType,
+        ulong @listener,
+        ref UniffiRustCallStatus _uniffi_out_err
+    );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_room_send_sticky_raw(
+        ulong @ptr,
+        RustBuffer @eventType,
+        RustBuffer @content,
+        ulong @durationMs
+    );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    RustBuffer uniffi_matrix_sdk_ffi_fn_method_room_sticky_events(ulong @ptr, ref UniffiRustCallStatus _uniffi_out_err);
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_room_subscribe_to_sticky_events(
+        ulong @ptr,
+        ulong @listener,
+        ref UniffiRustCallStatus _uniffi_out_err
     );
 
 #if NET8_0_OR_GREATER
@@ -7945,6 +8242,19 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    RustBuffer uniffi_matrix_sdk_ffi_fn_method_sessionverificationcontroller_request_cancel_info(
+        ulong @ptr,
+        ref UniffiRustCallStatus _uniffi_out_err
+    );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     ulong uniffi_matrix_sdk_ffi_fn_method_sessionverificationcontroller_request_device_verification(ulong @ptr);
 
 #if NET8_0_OR_GREATER
@@ -7958,6 +8268,19 @@ static class _UniFFILib
     ulong uniffi_matrix_sdk_ffi_fn_method_sessionverificationcontroller_request_user_verification(
         ulong @ptr,
         RustBuffer @userId
+    );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    RustBuffer uniffi_matrix_sdk_ffi_fn_method_sessionverificationcontroller_sas_cancel_info(
+        ulong @ptr,
+        ref UniffiRustCallStatus _uniffi_out_err
     );
 
 #if NET8_0_OR_GREATER
@@ -8911,6 +9234,16 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_timeline_abort_send(ulong @ptr, RustBuffer @itemId, RustBuffer @target);
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     ulong uniffi_matrix_sdk_ffi_fn_method_timeline_add_listener(ulong @ptr, ulong @listener);
 
 #if NET8_0_OR_GREATER
@@ -8966,6 +9299,21 @@ static class _UniFFILib
     public static extern
 #endif
     ulong uniffi_matrix_sdk_ffi_fn_method_timeline_edit_revisions(ulong @ptr, RustBuffer @eventId);
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_timeline_edit_with_attachment(
+        ulong @ptr,
+        RustBuffer @eventId,
+        RustBuffer @params,
+        RustBuffer @attachment
+    );
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -9103,7 +9451,32 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_timeline_retry_send(ulong @ptr, RustBuffer @itemId, RustBuffer @target);
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     ulong uniffi_matrix_sdk_ffi_fn_method_timeline_send(ulong @ptr, ulong @msg);
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_timeline_send_attachment(
+        ulong @ptr,
+        RustBuffer @params,
+        RustBuffer @attachment,
+        ref UniffiRustCallStatus _uniffi_out_err
+    );
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -10125,6 +10498,32 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    void uniffi_matrix_sdk_ffi_fn_init_callback_vtable_roommessagelikeeventslistener(
+        IntPtr /*_UniFFILib.UniffiVTableCallbackInterfaceRoomMessageLikeEventsListener*/
+        @vtable
+    );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    void uniffi_matrix_sdk_ffi_fn_init_callback_vtable_stickyeventslistener(
+        IntPtr /*_UniFFILib.UniffiVTableCallbackInterfaceStickyEventsListener*/
+        @vtable
+    );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     void uniffi_matrix_sdk_ffi_fn_init_callback_vtable_roomdirectorysearchentrieslistener(
         IntPtr /*_UniFFILib.UniffiVTableCallbackInterfaceRoomDirectorySearchEntriesListener*/
         @vtable
@@ -10468,6 +10867,19 @@ static class _UniFFILib
     public static extern
 #endif
     ulong uniffi_matrix_sdk_ffi_fn_method_tagname_uniffi_trait_hash(
+        RustBuffer @ptr,
+        ref UniffiRustCallStatus _uniffi_out_err
+    );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    RustBuffer uniffi_matrix_sdk_ffi_fn_method_oauthcrosssigningresetinfo_as_auth_data(
         RustBuffer @ptr,
         ref UniffiRustCallStatus _uniffi_out_err
     );
@@ -11873,6 +12285,16 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_client_discover_rtc_transports();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_client_display_name();
 
 #if NET8_0_OR_GREATER
@@ -12213,6 +12635,16 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_client_is_sticky_events_supported();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_client_is_user_status_supported();
 
 #if NET8_0_OR_GREATER
@@ -12494,6 +12926,16 @@ static class _UniFFILib
     public static extern
 #endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_client_rooms();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_client_run_search_backfill();
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -14173,6 +14615,26 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_grantloginwithqrcodetask_cancel();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_grantloginwithqrcodetask_wait();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_loginwithqrcodehandler_generate();
 
 #if NET8_0_OR_GREATER
@@ -14184,6 +14646,26 @@ static class _UniFFILib
     public static extern
 #endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_loginwithqrcodehandler_scan();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_loginwithqrcodetask_cancel();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_loginwithqrcodetask_wait();
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -14214,6 +14696,16 @@ static class _UniFFILib
     public static extern
 #endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_qrcodedata_server_name();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_qrcodedata_to_base64();
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -14943,16 +15435,6 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    ushort uniffi_matrix_sdk_ffi_checksum_method_room_room_events_debug_string();
-
-#if NET8_0_OR_GREATER
-    [LibraryImport("matrix_sdk_ffi")]
-    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
-    public static partial
-#else
-    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
-    public static extern
-#endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_room_room_info();
 
 #if NET8_0_OR_GREATER
@@ -15324,6 +15806,46 @@ static class _UniFFILib
     public static extern
 #endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_room_withdraw_verification_and_resend();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_message_like_events();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_room_send_sticky_raw();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_room_sticky_events();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_sticky_events();
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -15963,6 +16485,16 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_request_cancel_info();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_request_device_verification();
 
 #if NET8_0_OR_GREATER
@@ -15974,6 +16506,16 @@ static class _UniFFILib
     public static extern
 #endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_request_user_verification();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_sas_cancel_info();
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -16543,6 +17085,16 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_timeline_abort_send();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_timeline_add_listener();
 
 #if NET8_0_OR_GREATER
@@ -16584,6 +17136,16 @@ static class _UniFFILib
     public static extern
 #endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_timeline_edit_revisions();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_timeline_edit_with_attachment();
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -16713,7 +17275,27 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_timeline_retry_send();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_timeline_send();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_timeline_send_attachment();
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -17553,6 +18135,26 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_roommessagelikeeventslistener_on_event();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_stickyeventslistener_on_update();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_roomdirectorysearchentrieslistener_on_update();
 
 #if NET8_0_OR_GREATER
@@ -18012,10 +18614,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_func_parse_matrix_entity_from();
-            if (checksum != 47063)
+            if (checksum != 41615)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_func_parse_matrix_entity_from` checksum `47063`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_func_parse_matrix_entity_from` checksum `41615`, library returned `{checksum}`"
                 );
             }
         }
@@ -18039,10 +18641,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_func_generate_webview_url();
-            if (checksum != 44877)
+            if (checksum != 21892)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_func_generate_webview_url` checksum `44877`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_func_generate_webview_url` checksum `21892`, library returned `{checksum}`"
                 );
             }
         }
@@ -18066,10 +18668,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_func_new_virtual_element_call_widget();
-            if (checksum != 51000)
+            if (checksum != 14288)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_func_new_virtual_element_call_widget` checksum `51000`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_func_new_virtual_element_call_widget` checksum `14288`, library returned `{checksum}`"
                 );
             }
         }
@@ -18152,10 +18754,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_ssohandler_url();
-            if (checksum != 38378)
+            if (checksum != 9818)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_ssohandler_url` checksum `38378`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_ssohandler_url` checksum `9818`, library returned `{checksum}`"
                 );
             }
         }
@@ -18224,19 +18826,19 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_can_deactivate_account();
-            if (checksum != 12377)
+            if (checksum != 46985)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_can_deactivate_account` checksum `12377`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_can_deactivate_account` checksum `46985`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_clear_caches();
-            if (checksum != 18813)
+            if (checksum != 12078)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_clear_caches` checksum `18813`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_clear_caches` checksum `12078`, library returned `{checksum}`"
                 );
             }
         }
@@ -18269,19 +18871,19 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_custom_login_with_jwt();
-            if (checksum != 56228)
+            if (checksum != 58183)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_custom_login_with_jwt` checksum `56228`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_custom_login_with_jwt` checksum `58183`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_deactivate_account();
-            if (checksum != 50064)
+            if (checksum != 65060)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_deactivate_account` checksum `50064`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_deactivate_account` checksum `65060`, library returned `{checksum}`"
                 );
             }
         }
@@ -18309,6 +18911,15 @@ static class _UniFFILib
             {
                 throw new UniffiContractChecksumException(
                     $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_disable_well_known_lookup` checksum `38090`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_discover_rtc_transports();
+            if (checksum != 38965)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_discover_rtc_transports` checksum `38965`, library returned `{checksum}`"
                 );
             }
         }
@@ -18386,10 +18997,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_get_invite_avatars_display_policy();
-            if (checksum != 48202)
+            if (checksum != 15140)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_get_invite_avatars_display_policy` checksum `48202`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_get_invite_avatars_display_policy` checksum `15140`, library returned `{checksum}`"
                 );
             }
         }
@@ -18422,10 +19033,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_get_media_preview_display_policy();
-            if (checksum != 56154)
+            if (checksum != 54801)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_get_media_preview_display_policy` checksum `56154`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_get_media_preview_display_policy` checksum `54801`, library returned `{checksum}`"
                 );
             }
         }
@@ -18467,10 +19078,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_get_room();
-            if (checksum != 21053)
+            if (checksum != 19167)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_get_room` checksum `21053`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_get_room` checksum `19167`, library returned `{checksum}`"
                 );
             }
         }
@@ -18485,10 +19096,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_get_room_preview_from_room_id();
-            if (checksum != 32950)
+            if (checksum != 61718)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_get_room_preview_from_room_id` checksum `32950`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_get_room_preview_from_room_id` checksum `61718`, library returned `{checksum}`"
                 );
             }
         }
@@ -18522,10 +19133,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_get_url_preview();
-            if (checksum != 13590)
+            if (checksum != 44378)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_get_url_preview` checksum `13590`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_get_url_preview` checksum `44378`, library returned `{checksum}`"
                 );
             }
         }
@@ -18613,10 +19224,19 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_is_room_alias_available();
-            if (checksum != 29606)
+            if (checksum != 16005)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_is_room_alias_available` checksum `29606`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_is_room_alias_available` checksum `16005`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_is_sticky_events_supported();
+            if (checksum != 6866)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_is_sticky_events_supported` checksum `6866`, library returned `{checksum}`"
                 );
             }
         }
@@ -18640,10 +19260,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_join_room_by_id_or_alias();
-            if (checksum != 36531)
+            if (checksum != 36557)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_join_room_by_id_or_alias` checksum `36531`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_join_room_by_id_or_alias` checksum `36557`, library returned `{checksum}`"
                 );
             }
         }
@@ -18694,10 +19314,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_mark_all_rooms_as_read();
-            if (checksum != 20882)
+            if (checksum != 2022)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_mark_all_rooms_as_read` checksum `20882`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_mark_all_rooms_as_read` checksum `2022`, library returned `{checksum}`"
                 );
             }
         }
@@ -18713,10 +19333,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_new_login_with_qr_code_handler();
-            if (checksum != 2903)
+            if (checksum != 14560)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_new_login_with_qr_code_handler` checksum `2903`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_new_login_with_qr_code_handler` checksum `14560`, library returned `{checksum}`"
                 );
             }
         }
@@ -18767,19 +19387,19 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_pause();
-            if (checksum != 15854)
+            if (checksum != 8061)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_pause` checksum `15854`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_pause` checksum `8061`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_register_notification_handler();
-            if (checksum != 47738)
+            if (checksum != 19168)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_register_notification_handler` checksum `47738`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_register_notification_handler` checksum `19168`, library returned `{checksum}`"
                 );
             }
         }
@@ -18812,10 +19432,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_reset_well_known();
-            if (checksum != 52326)
+            if (checksum != 35371)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_reset_well_known` checksum `52326`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_reset_well_known` checksum `35371`, library returned `{checksum}`"
                 );
             }
         }
@@ -18883,6 +19503,15 @@ static class _UniFFILib
             }
         }
         {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_run_search_backfill();
+            if (checksum != 15095)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_run_search_backfill` checksum `15095`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_search_users();
             if (checksum != 51156)
             {
@@ -18893,28 +19522,28 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_send_encrypted_to_device_message();
-            if (checksum != 36432)
+            if (checksum != 23656)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_send_encrypted_to_device_message` checksum `36432`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_send_encrypted_to_device_message` checksum `23656`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_server();
-            if (checksum != 53378)
+            if (checksum != 55051)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_server` checksum `53378`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_server` checksum `55051`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_server_vendor_info();
-            if (checksum != 11469)
+            if (checksum != 22941)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_server_vendor_info` checksum `11469`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_server_vendor_info` checksum `22941`, library returned `{checksum}`"
                 );
             }
         }
@@ -19019,10 +19648,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_set_user_status();
-            if (checksum != 4862)
+            if (checksum != 23)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_set_user_status` checksum `4862`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_set_user_status` checksum `23`, library returned `{checksum}`"
                 );
             }
         }
@@ -19065,10 +19694,10 @@ static class _UniFFILib
         {
             var checksum =
                 _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_subscribe_to_custom_to_device_messages();
-            if (checksum != 60226)
+            if (checksum != 50580)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_subscribe_to_custom_to_device_messages` checksum `60226`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_subscribe_to_custom_to_device_messages` checksum `50580`, library returned `{checksum}`"
                 );
             }
         }
@@ -19121,10 +19750,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_subscribe_to_room_info();
-            if (checksum != 42276)
+            if (checksum != 7474)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_subscribe_to_room_info` checksum `42276`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_subscribe_to_room_info` checksum `7474`, library returned `{checksum}`"
                 );
             }
         }
@@ -19139,19 +19768,19 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_subscribe_to_send_queue_updates();
-            if (checksum != 25278)
+            if (checksum != 24108)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_subscribe_to_send_queue_updates` checksum `25278`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_subscribe_to_send_queue_updates` checksum `24108`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_sync_once_v2();
-            if (checksum != 36079)
+            if (checksum != 26789)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_sync_once_v2` checksum `36079`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_sync_once_v2` checksum `26789`, library returned `{checksum}`"
                 );
             }
         }
@@ -19166,10 +19795,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_sync_v2();
-            if (checksum != 34947)
+            if (checksum != 10162)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_sync_v2` checksum `34947`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_sync_v2` checksum `10162`, library returned `{checksum}`"
                 );
             }
         }
@@ -19229,10 +19858,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_url_for_oauth();
-            if (checksum != 14390)
+            if (checksum != 57377)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_url_for_oauth` checksum `14390`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_url_for_oauth` checksum `57377`, library returned `{checksum}`"
                 );
             }
         }
@@ -19406,10 +20035,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_backup_download_strategy();
-            if (checksum != 45874)
+            if (checksum != 20957)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_backup_download_strategy` checksum `45874`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_backup_download_strategy` checksum `20957`, library returned `{checksum}`"
                 );
             }
         }
@@ -19582,10 +20211,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_session_paths();
-            if (checksum != 40724)
+            if (checksum != 12862)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_session_paths` checksum `40724`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_session_paths` checksum `12862`, library returned `{checksum}`"
                 );
             }
         }
@@ -19620,10 +20249,10 @@ static class _UniFFILib
         {
             var checksum =
                 _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_system_is_memory_constrained();
-            if (checksum != 41143)
+            if (checksum != 25170)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_system_is_memory_constrained` checksum `41143`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_system_is_memory_constrained` checksum `25170`, library returned `{checksum}`"
                 );
             }
         }
@@ -19647,10 +20276,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_with_search_index_store();
-            if (checksum != 61083)
+            if (checksum != 62704)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_with_search_index_store` checksum `61083`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_clientbuilder_with_search_index_store` checksum `62704`, library returned `{checksum}`"
                 );
             }
         }
@@ -19665,10 +20294,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_encryption_backup_exists_on_server();
-            if (checksum != 29875)
+            if (checksum != 21920)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_encryption_backup_exists_on_server` checksum `29875`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_encryption_backup_exists_on_server` checksum `21920`, library returned `{checksum}`"
                 );
             }
         }
@@ -19711,19 +20340,19 @@ static class _UniFFILib
         {
             var checksum =
                 _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_encryption_dehydrated_device_event_listener();
-            if (checksum != 50887)
+            if (checksum != 32461)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_encryption_dehydrated_device_event_listener` checksum `50887`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_encryption_dehydrated_device_event_listener` checksum `32461`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_encryption_delete_dehydrated_device();
-            if (checksum != 30488)
+            if (checksum != 50855)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_encryption_delete_dehydrated_device` checksum `30488`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_encryption_delete_dehydrated_device` checksum `50855`, library returned `{checksum}`"
                 );
             }
         }
@@ -19774,19 +20403,19 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_encryption_import_secrets_bundle();
-            if (checksum != 63785)
+            if (checksum != 51946)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_encryption_import_secrets_bundle` checksum `63785`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_encryption_import_secrets_bundle` checksum `51946`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_encryption_is_dehydrated_device_supported();
-            if (checksum != 63170)
+            if (checksum != 45636)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_encryption_is_dehydrated_device_supported` checksum `63170`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_encryption_is_dehydrated_device_supported` checksum `45636`, library returned `{checksum}`"
                 );
             }
         }
@@ -19810,10 +20439,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_encryption_recover_and_fix_backup();
-            if (checksum != 61212)
+            if (checksum != 34956)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_encryption_recover_and_fix_backup` checksum `61212`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_encryption_recover_and_fix_backup` checksum `34956`, library returned `{checksum}`"
                 );
             }
         }
@@ -19873,28 +20502,28 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_encryption_start_dehydrated_devices();
-            if (checksum != 49831)
+            if (checksum != 2412)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_encryption_start_dehydrated_devices` checksum `49831`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_encryption_start_dehydrated_devices` checksum `2412`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_encryption_stop_dehydrated_devices();
-            if (checksum != 4775)
+            if (checksum != 55485)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_encryption_stop_dehydrated_devices` checksum `4775`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_encryption_stop_dehydrated_devices` checksum `55485`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_encryption_user_identity();
-            if (checksum != 37690)
+            if (checksum != 18228)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_encryption_user_identity` checksum `37690`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_encryption_user_identity` checksum `18228`, library returned `{checksum}`"
                 );
             }
         }
@@ -19956,20 +20585,20 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_identityresethandle_reset();
-            if (checksum != 3385)
+            if (checksum != 30627)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_identityresethandle_reset` checksum `3385`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_identityresethandle_reset` checksum `30627`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum =
                 _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_secretsbundlewithuserid_contains_backup_key();
-            if (checksum != 21861)
+            if (checksum != 13305)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_secretsbundlewithuserid_contains_backup_key` checksum `21861`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_secretsbundlewithuserid_contains_backup_key` checksum `13305`, library returned `{checksum}`"
                 );
             }
         }
@@ -20002,10 +20631,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_useridentity_pin();
-            if (checksum != 40348)
+            if (checksum != 54763)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_useridentity_pin` checksum `40348`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_useridentity_pin` checksum `54763`, library returned `{checksum}`"
                 );
             }
         }
@@ -20074,10 +20703,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_livelocationsobserver_subscribe();
-            if (checksum != 8714)
+            if (checksum != 22247)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_livelocationsobserver_subscribe` checksum `8714`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_livelocationsobserver_subscribe` checksum `22247`, library returned `{checksum}`"
                 );
             }
         }
@@ -20150,10 +20779,10 @@ static class _UniFFILib
         {
             var checksum =
                 _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_get_default_room_notification_mode();
-            if (checksum != 49990)
+            if (checksum != 33692)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_get_default_room_notification_mode` checksum `49990`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_get_default_room_notification_mode` checksum `33692`, library returned `{checksum}`"
                 );
             }
         }
@@ -20169,10 +20798,10 @@ static class _UniFFILib
         {
             var checksum =
                 _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_get_room_notification_settings();
-            if (checksum != 14192)
+            if (checksum != 54808)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_get_room_notification_settings` checksum `14192`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_get_room_notification_settings` checksum `54808`, library returned `{checksum}`"
                 );
             }
         }
@@ -20266,10 +20895,10 @@ static class _UniFFILib
         {
             var checksum =
                 _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_set_default_room_notification_mode();
-            if (checksum != 29556)
+            if (checksum != 8601)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_set_default_room_notification_mode` checksum `29556`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_set_default_room_notification_mode` checksum `8601`, library returned `{checksum}`"
                 );
             }
         }
@@ -20324,10 +20953,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_unmute_room();
-            if (checksum != 64791)
+            if (checksum != 59659)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_unmute_room` checksum `64791`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_notificationsettings_unmute_room` checksum `59659`, library returned `{checksum}`"
                 );
             }
         }
@@ -20405,37 +21034,73 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_grantloginwithqrcodehandler_generate();
-            if (checksum != 61870)
+            if (checksum != 38241)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_grantloginwithqrcodehandler_generate` checksum `61870`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_grantloginwithqrcodehandler_generate` checksum `38241`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_grantloginwithqrcodehandler_scan();
-            if (checksum != 47395)
+            if (checksum != 25900)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_grantloginwithqrcodehandler_scan` checksum `47395`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_grantloginwithqrcodehandler_scan` checksum `25900`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_grantloginwithqrcodetask_cancel();
+            if (checksum != 17878)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_grantloginwithqrcodetask_cancel` checksum `17878`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_grantloginwithqrcodetask_wait();
+            if (checksum != 50889)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_grantloginwithqrcodetask_wait` checksum `50889`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_loginwithqrcodehandler_generate();
-            if (checksum != 15861)
+            if (checksum != 30286)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_loginwithqrcodehandler_generate` checksum `15861`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_loginwithqrcodehandler_generate` checksum `30286`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_loginwithqrcodehandler_scan();
-            if (checksum != 40418)
+            if (checksum != 34217)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_loginwithqrcodehandler_scan` checksum `40418`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_loginwithqrcodehandler_scan` checksum `34217`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_loginwithqrcodetask_cancel();
+            if (checksum != 1253)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_loginwithqrcodetask_cancel` checksum `1253`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_loginwithqrcodetask_wait();
+            if (checksum != 31155)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_loginwithqrcodetask_wait` checksum `31155`, library returned `{checksum}`"
                 );
             }
         }
@@ -20459,10 +21124,19 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_qrcodedata_server_name();
-            if (checksum != 17844)
+            if (checksum != 40553)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_qrcodedata_server_name` checksum `17844`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_qrcodedata_server_name` checksum `40553`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_qrcodedata_to_base64();
+            if (checksum != 8752)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_qrcodedata_to_base64` checksum `8752`, library returned `{checksum}`"
                 );
             }
         }
@@ -20603,10 +21277,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_decline_call();
-            if (checksum != 40439)
+            if (checksum != 64142)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_decline_call` checksum `40439`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_decline_call` checksum `64142`, library returned `{checksum}`"
                 );
             }
         }
@@ -20729,10 +21403,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_ignore_device_trust_and_resend();
-            if (checksum != 33031)
+            if (checksum != 38639)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_ignore_device_trust_and_resend` checksum `33031`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_ignore_device_trust_and_resend` checksum `38639`, library returned `{checksum}`"
                 );
             }
         }
@@ -20909,19 +21583,19 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_load_user_receipt();
-            if (checksum != 24376)
+            if (checksum != 49162)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_load_user_receipt` checksum `24376`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_load_user_receipt` checksum `49162`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_mark_as_fully_read_unchecked();
-            if (checksum != 40862)
+            if (checksum != 59574)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_mark_as_fully_read_unchecked` checksum `40862`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_mark_as_fully_read_unchecked` checksum `59574`, library returned `{checksum}`"
                 );
             }
         }
@@ -21044,10 +21718,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_publish_room_alias_in_room_directory();
-            if (checksum != 45260)
+            if (checksum != 227)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_publish_room_alias_in_room_directory` checksum `45260`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_publish_room_alias_in_room_directory` checksum `227`, library returned `{checksum}`"
                 );
             }
         }
@@ -21062,10 +21736,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_redact();
-            if (checksum != 51147)
+            if (checksum != 34543)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_redact` checksum `51147`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_redact` checksum `34543`, library returned `{checksum}`"
                 );
             }
         }
@@ -21081,28 +21755,28 @@ static class _UniFFILib
         {
             var checksum =
                 _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_remove_room_alias_from_room_directory();
-            if (checksum != 23464)
+            if (checksum != 37712)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_remove_room_alias_from_room_directory` checksum `23464`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_remove_room_alias_from_room_directory` checksum `37712`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_report_content();
-            if (checksum != 18600)
+            if (checksum != 64920)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_report_content` checksum `18600`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_report_content` checksum `64920`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_report_room();
-            if (checksum != 57822)
+            if (checksum != 57804)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_report_room` checksum `57822`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_report_room` checksum `57804`, library returned `{checksum}`"
                 );
             }
         }
@@ -21112,15 +21786,6 @@ static class _UniFFILib
             {
                 throw new UniffiContractChecksumException(
                     $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_reset_power_levels` checksum `61300`, library returned `{checksum}`"
-                );
-            }
-        }
-        {
-            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_room_events_debug_string();
-            if (checksum != 47632)
-            {
-                throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_room_events_debug_string` checksum `47632`, library returned `{checksum}`"
                 );
             }
         }
@@ -21153,28 +21818,28 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_send_raw();
-            if (checksum != 33452)
+            if (checksum != 29137)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_raw` checksum `33452`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_raw` checksum `29137`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_send_single_receipt();
-            if (checksum != 54263)
+            if (checksum != 44071)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_single_receipt` checksum `54263`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_single_receipt` checksum `44071`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_send_state_event_raw();
-            if (checksum != 1352)
+            if (checksum != 54069)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_state_event_raw` checksum `1352`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_state_event_raw` checksum `54069`, library returned `{checksum}`"
                 );
             }
         }
@@ -21216,10 +21881,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_set_thread_subscription();
-            if (checksum != 16350)
+            if (checksum != 32594)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_set_thread_subscription` checksum `16350`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_set_thread_subscription` checksum `32594`, library returned `{checksum}`"
                 );
             }
         }
@@ -21252,10 +21917,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_state_events();
-            if (checksum != 9090)
+            if (checksum != 37294)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_state_events` checksum `9090`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_state_events` checksum `37294`, library returned `{checksum}`"
                 );
             }
         }
@@ -21270,10 +21935,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_call_decline_events();
-            if (checksum != 19237)
+            if (checksum != 41573)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_call_decline_events` checksum `19237`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_call_decline_events` checksum `41573`, library returned `{checksum}`"
                 );
             }
         }
@@ -21288,10 +21953,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_knock_requests();
-            if (checksum != 28083)
+            if (checksum != 30200)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_knock_requests` checksum `28083`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_knock_requests` checksum `30200`, library returned `{checksum}`"
                 );
             }
         }
@@ -21306,19 +21971,19 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_send_queue_updates();
-            if (checksum != 14598)
+            if (checksum != 56695)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_send_queue_updates` checksum `14598`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_send_queue_updates` checksum `56695`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_state_events();
-            if (checksum != 49220)
+            if (checksum != 6661)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_state_events` checksum `49220`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_state_events` checksum `6661`, library returned `{checksum}`"
                 );
             }
         }
@@ -21450,19 +22115,55 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_upload_avatar();
-            if (checksum != 25508)
+            if (checksum != 40573)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_upload_avatar` checksum `25508`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_upload_avatar` checksum `40573`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_withdraw_verification_and_resend();
-            if (checksum != 20291)
+            if (checksum != 56581)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_withdraw_verification_and_resend` checksum `20291`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_withdraw_verification_and_resend` checksum `56581`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_message_like_events();
+            if (checksum != 31308)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_message_like_events` checksum `31308`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_send_sticky_raw();
+            if (checksum != 20102)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_sticky_raw` checksum `20102`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_sticky_events();
+            if (checksum != 3124)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_sticky_events` checksum `3124`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_sticky_events();
+            if (checksum != 17106)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_subscribe_to_sticky_events` checksum `17106`, library returned `{checksum}`"
                 );
             }
         }
@@ -21613,10 +22314,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roompowerlevels_can_user_redact_own();
-            if (checksum != 59071)
+            if (checksum != 60530)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roompowerlevels_can_user_redact_own` checksum `59071`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roompowerlevels_can_user_redact_own` checksum `60530`, library returned `{checksum}`"
                 );
             }
         }
@@ -21713,10 +22414,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roomdirectorysearch_search();
-            if (checksum != 56447)
+            if (checksum != 33671)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomdirectorysearch_search` checksum `56447`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roomdirectorysearch_search` checksum `33671`, library returned `{checksum}`"
                 );
             }
         }
@@ -21973,10 +22674,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_searchservice_set_query();
-            if (checksum != 2525)
+            if (checksum != 44250)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_searchservice_set_query` checksum `2525`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_searchservice_set_query` checksum `44250`, library returned `{checksum}`"
                 );
             }
         }
@@ -22012,10 +22713,10 @@ static class _UniFFILib
         {
             var checksum =
                 _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_acknowledge_verification_request();
-            if (checksum != 18373)
+            if (checksum != 28973)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_acknowledge_verification_request` checksum `18373`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_acknowledge_verification_request` checksum `28973`, library returned `{checksum}`"
                 );
             }
         }
@@ -22051,6 +22752,16 @@ static class _UniFFILib
         }
         {
             var checksum =
+                _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_request_cancel_info();
+            if (checksum != 4040)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_request_cancel_info` checksum `4040`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum =
                 _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_request_device_verification();
             if (checksum != 1050)
             {
@@ -22066,6 +22777,16 @@ static class _UniFFILib
             {
                 throw new UniffiContractChecksumException(
                     $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_request_user_verification` checksum `35126`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum =
+                _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_sas_cancel_info();
+            if (checksum != 34680)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontroller_sas_cancel_info` checksum `34680`, library returned `{checksum}`"
                 );
             }
         }
@@ -22145,10 +22866,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_spaceroomlist_reset();
-            if (checksum != 22706)
+            if (checksum != 23197)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_spaceroomlist_reset` checksum `22706`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_spaceroomlist_reset` checksum `23197`, library returned `{checksum}`"
                 );
             }
         }
@@ -22227,10 +22948,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_spaceservice_joined_parent_ids_of_child();
-            if (checksum != 8766)
+            if (checksum != 27836)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_spaceservice_joined_parent_ids_of_child` checksum `8766`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_spaceservice_joined_parent_ids_of_child` checksum `27836`, library returned `{checksum}`"
                 );
             }
         }
@@ -22263,10 +22984,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_spaceservice_space_filters();
-            if (checksum != 38445)
+            if (checksum != 58798)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_spaceservice_space_filters` checksum `38445`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_spaceservice_space_filters` checksum `58798`, library returned `{checksum}`"
                 );
             }
         }
@@ -22309,10 +23030,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_spaceservice_top_level_joined_spaces();
-            if (checksum != 60660)
+            if (checksum != 25974)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_spaceservice_top_level_joined_spaces` checksum `60660`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_spaceservice_top_level_joined_spaces` checksum `25974`, library returned `{checksum}`"
                 );
             }
         }
@@ -22328,10 +23049,10 @@ static class _UniFFILib
         {
             var checksum =
                 _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sqlitestorebuilder_high_entropy_passphrase();
-            if (checksum != 44330)
+            if (checksum != 27261)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sqlitestorebuilder_high_entropy_passphrase` checksum `44330`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sqlitestorebuilder_high_entropy_passphrase` checksum `27261`, library returned `{checksum}`"
                 );
             }
         }
@@ -22374,19 +23095,19 @@ static class _UniFFILib
         {
             var checksum =
                 _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sqlitestorebuilder_system_is_memory_constrained();
-            if (checksum != 21398)
+            if (checksum != 13762)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sqlitestorebuilder_system_is_memory_constrained` checksum `21398`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sqlitestorebuilder_system_is_memory_constrained` checksum `13762`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_syncservice_expire_sessions();
-            if (checksum != 59217)
+            if (checksum != 7864)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_syncservice_expire_sessions` checksum `59217`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_syncservice_expire_sessions` checksum `7864`, library returned `{checksum}`"
                 );
             }
         }
@@ -22456,10 +23177,10 @@ static class _UniFFILib
         {
             var checksum =
                 _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_syncservicebuilder_with_room_list_connection_id();
-            if (checksum != 56899)
+            if (checksum != 16274)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_syncservicebuilder_with_room_list_connection_id` checksum `56899`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_syncservicebuilder_with_room_list_connection_id` checksum `16274`, library returned `{checksum}`"
                 );
             }
         }
@@ -22566,19 +23287,28 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sendhandle_abort();
-            if (checksum != 49988)
+            if (checksum != 29352)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sendhandle_abort` checksum `49988`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sendhandle_abort` checksum `29352`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sendhandle_try_resend();
-            if (checksum != 14844)
+            if (checksum != 26565)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sendhandle_try_resend` checksum `14844`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sendhandle_try_resend` checksum `26565`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timeline_abort_send();
+            if (checksum != 54321)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_abort_send` checksum `54321`, library returned `{checksum}`"
                 );
             }
         }
@@ -22611,19 +23341,28 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timeline_edit();
-            if (checksum != 45899)
+            if (checksum != 6714)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_edit` checksum `45899`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_edit` checksum `6714`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timeline_edit_revisions();
-            if (checksum != 40262)
+            if (checksum != 1208)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_edit_revisions` checksum `40262`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_edit_revisions` checksum `1208`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timeline_edit_with_attachment();
+            if (checksum != 28721)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_edit_with_attachment` checksum `28721`, library returned `{checksum}`"
                 );
             }
         }
@@ -22657,10 +23396,10 @@ static class _UniFFILib
         {
             var checksum =
                 _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timeline_get_event_timeline_item_by_event_id();
-            if (checksum != 49000)
+            if (checksum != 43047)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_get_event_timeline_item_by_event_id` checksum `49000`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_get_event_timeline_item_by_event_id` checksum `43047`, library returned `{checksum}`"
                 );
             }
         }
@@ -22684,10 +23423,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timeline_mark_as_read();
-            if (checksum != 26178)
+            if (checksum != 4509)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_mark_as_read` checksum `26178`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_mark_as_read` checksum `4509`, library returned `{checksum}`"
                 );
             }
         }
@@ -22720,10 +23459,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timeline_redact_event();
-            if (checksum != 46975)
+            if (checksum != 13285)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_redact_event` checksum `46975`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_redact_event` checksum `13285`, library returned `{checksum}`"
                 );
             }
         }
@@ -22737,38 +23476,56 @@ static class _UniFFILib
             }
         }
         {
-            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timeline_send();
-            if (checksum != 19080)
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timeline_retry_send();
+            if (checksum != 10265)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_send` checksum `19080`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_retry_send` checksum `10265`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timeline_send();
+            if (checksum != 58715)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_send` checksum `58715`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timeline_send_attachment();
+            if (checksum != 21735)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_send_attachment` checksum `21735`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timeline_send_audio();
-            if (checksum != 48107)
+            if (checksum != 45499)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_send_audio` checksum `48107`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_send_audio` checksum `45499`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timeline_send_file();
-            if (checksum != 1749)
+            if (checksum != 44250)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_send_file` checksum `1749`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_send_file` checksum `44250`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timeline_send_image();
-            if (checksum != 27766)
+            if (checksum != 50294)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_send_image` checksum `27766`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_send_image` checksum `50294`, library returned `{checksum}`"
                 );
             }
         }
@@ -22801,37 +23558,37 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timeline_send_reply();
-            if (checksum != 64045)
+            if (checksum != 37856)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_send_reply` checksum `64045`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_send_reply` checksum `37856`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timeline_send_video();
-            if (checksum != 5467)
+            if (checksum != 46403)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_send_video` checksum `5467`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_send_video` checksum `46403`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timeline_send_voice_message();
-            if (checksum != 62779)
+            if (checksum != 7232)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_send_voice_message` checksum `62779`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_send_voice_message` checksum `7232`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_timeline_send_with_extra_content();
-            if (checksum != 14666)
+            if (checksum != 5571)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_send_with_extra_content` checksum `14666`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_timeline_send_with_extra_content` checksum `5571`, library returned `{checksum}`"
                 );
             }
         }
@@ -23104,10 +23861,10 @@ static class _UniFFILib
         {
             var checksum =
                 _UniFFILib.uniffi_matrix_sdk_ffi_checksum_constructor_passwordstrengthestimator_with_modern_defaults2025();
-            if (checksum != 41863)
+            if (checksum != 63712)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_constructor_passwordstrengthestimator_with_modern_defaults2025` checksum `41863`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_constructor_passwordstrengthestimator_with_modern_defaults2025` checksum `63712`, library returned `{checksum}`"
                 );
             }
         }
@@ -23132,19 +23889,19 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_constructor_span_new();
-            if (checksum != 8416)
+            if (checksum != 62951)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_constructor_span_new` checksum `8416`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_constructor_span_new` checksum `62951`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_constructor_span_new_bridge_span();
-            if (checksum != 11047)
+            if (checksum != 56477)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_constructor_span_new_bridge_span` checksum `11047`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_constructor_span_new_bridge_span` checksum `56477`, library returned `{checksum}`"
                 );
             }
         }
@@ -23388,10 +24145,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_livelocationslistener_on_update();
-            if (checksum != 7495)
+            if (checksum != 53525)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_livelocationslistener_on_update` checksum `7495`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_livelocationslistener_on_update` checksum `53525`, library returned `{checksum}`"
                 );
             }
         }
@@ -23503,6 +24260,24 @@ static class _UniFFILib
             {
                 throw new UniffiContractChecksumException(
                     $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_typingnotificationslistener_call` checksum `39527`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_roommessagelikeeventslistener_on_event();
+            if (checksum != 30590)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_roommessagelikeeventslistener_on_event` checksum `30590`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_stickyeventslistener_on_update();
+            if (checksum != 8844)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_stickyeventslistener_on_update` checksum `8844`, library returned `{checksum}`"
                 );
             }
         }
@@ -24052,8 +24827,10 @@ class FfiConverterString : FfiConverter<string, RustBuffer>
     {
         try
         {
-            var bytes = value.AsStream().ReadBytes(Convert.ToInt32(value.len));
-            return System.Text.Encoding.UTF8.GetString(bytes);
+            unsafe
+            {
+                return System.Text.Encoding.UTF8.GetString((byte*)value.data.ToPointer(), Convert.ToInt32(value.len));
+            }
         }
         finally
         {
@@ -24064,16 +24841,33 @@ class FfiConverterString : FfiConverter<string, RustBuffer>
     public override string Read(BigEndianStream stream)
     {
         var length = stream.ReadInt();
-        var bytes = stream.ReadBytes(length);
-        return System.Text.Encoding.UTF8.GetString(bytes);
+        return stream.ReadUtf8String(length);
     }
 
     public override RustBuffer Lower(string value)
     {
-        var bytes = System.Text.Encoding.UTF8.GetBytes(value);
-        var rbuf = RustBuffer.Alloc(bytes.Length);
-        rbuf.AsWriteableStream().WriteBytes(bytes);
-        return rbuf;
+        var rustBuffer = RustBuffer.Alloc(System.Text.Encoding.UTF8.GetByteCount(value));
+        try
+        {
+            unsafe
+            {
+                fixed (char* chars = value)
+                {
+                    System.Text.Encoding.UTF8.GetBytes(
+                        chars,
+                        value.Length,
+                        (byte*)rustBuffer.data.ToPointer(),
+                        Convert.ToInt32(rustBuffer.len)
+                    );
+                }
+            }
+            return rustBuffer;
+        }
+        catch
+        {
+            RustBuffer.Free(rustBuffer);
+            throw;
+        }
     }
 
     // TODO(CS)
@@ -24089,9 +24883,7 @@ class FfiConverterString : FfiConverter<string, RustBuffer>
 
     public override void Write(string value, BigEndianStream stream)
     {
-        var bytes = System.Text.Encoding.UTF8.GetBytes(value);
-        stream.WriteInt(bytes.Length);
-        stream.WriteBytes(bytes);
+        stream.WriteUtf8String(value);
     }
 }
 
@@ -24400,8 +25192,8 @@ public interface IClient
     Task<string?> CachedAvatarUrl();
 
     /// <summary>
-    /// Lets the user know whether this is an `m.login.password` based
-    /// auth and if the account can actually be deactivated
+    /// Lets the user know whether this is an `m.login.password` based auth and
+    /// if the account can actually be deactivated
     /// </summary>
     bool CanDeactivateAccount();
 
@@ -24413,15 +25205,15 @@ public interface IClient
     /// calling it.
     ///
     /// In particular, if a [`SyncService`] is running, it must be passed here
-    /// as a parameter, or stopped before calling this method. Ideally, the
-    /// send queues should have been disabled and must all be inactive (i.e.
-    /// not sending events); this method will disable them, but it might not
-    /// be enough if the queues are still processing events.
+    /// as a parameter, or stopped before calling this method. Ideally, the send
+    /// queues should have been disabled and must all be inactive (i.e. not
+    /// sending events); this method will disable them, but it might not be
+    /// enough if the queues are still processing events.
     ///
-    /// After the method returns, the Client will be in an unstable
-    /// state, and it is required that the caller reinstantiates a new
-    /// Client instance, be it via dropping the previous and re-creating it,
-    /// restarting their application, or any other similar means.
+    /// After the method returns, the Client will be in an unstable state, and
+    /// it is required that the caller reinstantiates a new Client instance, be
+    /// it via dropping the previous and re-creating it, restarting their
+    /// application, or any other similar means.
     ///
     /// - This will get rid of the backing state store file, if provided.
     /// - This will empty all the room's persisted event caches, so all rooms
@@ -24451,27 +25243,25 @@ public interface IClient
     Task<string> CreateRoom(CreateRoomParameters @request);
 
     /// <summary>
-    /// Login using JWT
-    /// This is an implementation of the custom_login https://docs.rs/matrix-sdk/latest/matrix_sdk/matrix_auth/struct.MatrixAuth.html#method.login_custom
-    /// For more information on logging in with JWT: https://element-hq.github.io/synapse/latest/jwt.html
+    /// Login using JWT This is an implementation of the custom_login
+    /// https://docs.rs/matrix-sdk/latest/matrix_sdk/matrix_auth/struct.MatrixAuth.html#method.login_custom
+    /// For more information on logging in with JWT:
+    /// https://element-hq.github.io/synapse/latest/jwt.html
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task CustomLoginWithJwt(string @jwt, string? @initialDeviceName, string? @deviceId);
 
     /// <summary>
-    /// Deactivate this account definitively.
-    /// Similarly to `encryption::reset_identity` this
-    /// will only work with password-based authentication (`m.login.password`)
+    /// Deactivate this account definitively. Similarly to
+    /// `encryption::reset_identity` this will only work with password-based
+    /// authentication (`m.login.password`)
     ///
-    /// # Arguments
-    ///
-    /// * `auth_data` - This request uses the [User-Interactive Authentication
-    /// API][uiaa]. The first request needs to set this to `None` and will
-    /// always fail and the same request needs to be made but this time with
-    /// some `auth_data` provided.
+    /// This sends the initial unauthenticated request to retrieve a User-
+    /// Interactive Authentication session, then completes it with the given
+    /// password.
     /// </summary>
     /// <exception cref="ClientException"></exception>
-    Task DeactivateAccount(AuthData? @authData, bool @eraseData);
+    Task DeactivateAccount(string @password, bool @eraseData);
 
     /// <summary>
     /// Deletes a pusher of given pusher ids
@@ -24493,6 +25283,23 @@ public interface IClient
     /// `m.rtc_foci`, relying only on the MSC4143 discovery endpoint.
     /// </summary>
     void DisableWellKnownLookup(bool @disable);
+
+    /// <summary>
+    /// Discover the RTC transports advertised by the homeserver.
+    ///
+    /// The transports are first looked up through the authenticated
+    /// `GET /_matrix/client/v1/rtc/transports` endpoint (MSC4143). If the
+    /// homeserver doesn't implement that endpoint, this falls back to the
+    /// `m.rtc_foci` field of the well-known, unless well-known discovery was
+    /// disabled with [`ClientBuilder::disable_well_known_lookup`] or
+    /// [`Client::disable_well_known_lookup`].
+    ///
+    /// Returns `None` if neither source could provide transports, which is kept
+    /// distinct from an empty list, i.e. a homeserver that advertises no
+    /// transports at all.
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    Task<RtcTransport[]?> DiscoverRtcTransports();
 
     /// <exception cref="ClientException"></exception>
     Task<string> DisplayName();
@@ -24540,8 +25347,8 @@ public interface IClient
     Room[] GetDmRooms(string @userId);
 
     /// <summary>
-    /// Get the invite request avatars display policy
-    /// currently stored in the cache.
+    /// Get the invite request avatars display policy currently stored in the
+    /// cache.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task<InviteAvatars?> GetInviteAvatarsDisplayPolicy();
@@ -24571,8 +25378,8 @@ public interface IClient
     );
 
     /// <summary>
-    /// Get the media previews timeline display policy
-    /// currently stored in the cache.
+    /// Get the media previews timeline display policy currently stored in the
+    /// cache.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task<MediaPreviews?> GetMediaPreviewDisplayPolicy();
@@ -24592,13 +25399,12 @@ public interface IClient
     ///
     /// # Arguments
     ///
-    /// * `room_id` - The ID of the room to get.
+    /// - `room_id` - The ID of the room to get.
     ///
     /// # Returns
     ///
-    /// A `Result` containing an optional room, or a `ClientError`.
-    /// This method will not initialize the room's timeline or populate it with
-    /// events.
+    /// A `Result` containing an optional room, or a `ClientError`. This method
+    /// will not initialize the room's timeline or populate it with events.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Room? GetRoom(string @roomId);
@@ -24612,9 +25418,9 @@ public interface IClient
     /// <summary>
     /// Given a room id, get the preview of a room, to interact with it.
     ///
-    /// The list of `via_servers` must be a list of servers that know
-    /// about the room and can resolve it, and that may appear as a `via`
-    /// parameter in e.g. a permalink URL. This list can be empty.
+    /// The list of `via_servers` must be a list of servers that know about the
+    /// room and can resolve it, and that may appear as a `via` parameter in
+    /// e.g. a permalink URL. This list can be empty.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task<RoomPreview> GetRoomPreviewFromRoomId(string @roomId, string[] @viaServers);
@@ -24646,9 +25452,8 @@ public interface IClient
     ///
     /// # Arguments
     ///
-    /// * `url` - The URL to generate a preview for.
-    ///
-    /// * `ts` - The preferred point in time to return a preview for, as a Unix
+    /// - `url` - The URL to generate a preview for.
+    /// - `ts` - The preferred point in time to return a preview for, as a Unix
     /// timestamp in milliseconds. Deprecated since Matrix 1.11; pass `None`.
     /// </summary>
     /// <exception cref="ClientException"></exception>
@@ -24706,6 +25511,7 @@ public interface IClient
     /// Checks if a room alias is not in use yet.
     ///
     /// Returns:
+    ///
     /// - `Ok(true)` if the room alias is available.
     /// - `Ok(false)` if it's not (the resolve alias request returned a `404`
     /// status code).
@@ -24713,6 +25519,15 @@ public interface IClient
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task<bool> IsRoomAliasAvailable(string @alias);
+
+    /// <summary>
+    /// Checks if the server supports sticky events.
+    ///
+    /// This is async and fallible as it may use the network to retrieve the
+    /// server supported features, if they aren't cached already.
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    Task<bool> IsStickyEventsSupported();
 
     /// <summary>
     /// Checks if the server supports user status.
@@ -24734,9 +25549,9 @@ public interface IClient
     /// Join a room by its ID or alias.
     ///
     /// When supplying the room's ID, you can also supply a list of server names
-    /// for the homeserver to find the room. Typically these server names
-    /// come from a permalink's `via` parameters, or from resolving a room's
-    /// alias into an ID.
+    /// for the homeserver to find the room. Typically these server names come
+    /// from a permalink's `via` parameters, or from resolving a room's alias
+    /// into an ID.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task<Room> JoinRoomByIdOrAlias(string @roomIdOrAlias, string[] @serverNames);
@@ -24776,8 +25591,8 @@ public interface IClient
     /// receipts on each room's latest event.
     ///
     /// This is a best-effort operation — per-room errors are logged and
-    /// skipped. Receipts are sent unthreaded, which per the Matrix spec
-    /// covers all events in a room including those inside threads.
+    /// skipped. Receipts are sent unthreaded, which per the Matrix spec covers
+    /// all events in a room including those inside threads.
     ///
     /// This is useful to mitigate backend led wrong iOS app badges and work
     /// around https://github.com/element-hq/element-x-ios/issues/3151
@@ -24797,7 +25612,7 @@ public interface IClient
     ///
     /// # Arguments
     ///
-    /// * `oauth_configuration` - The data to restore or register the client
+    /// - `oauth_configuration` - The data to restore or register the client
     /// with the server.
     /// </summary>
     LoginWithQrCodeHandler NewLoginWithQrCodeHandler(OAuthConfiguration @oauthConfiguration);
@@ -24857,6 +25672,7 @@ public interface IClient
     /// Pause the client for background suspension.
     ///
     /// This method:
+    ///
     /// 1. Disables all send queues (prevents new message sends).
     /// 2. Pauses all database stores, waiting for in-flight operations and
     /// releasing all connections and file locks.
@@ -24868,7 +25684,7 @@ public interface IClient
     /// Call this before the app is suspended to avoid `0xdead10cc` kills.
     /// Typically called from
     /// [`applicationDidEnterBackground`](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/applicationdidenterbackground(_:))
-    /// or an equivalent SwiftUI lifecycle event, *after* stopping the
+    /// or an equivalent SwiftUI lifecycle event, _after_ stopping the
     /// `matrix_sdk_ui::sync_service::SyncService`.
     /// </summary>
     /// <exception cref="ClientException"></exception>
@@ -24877,10 +25693,11 @@ public interface IClient
     /// <summary>
     /// Register a handler for notifications generated from sync responses.
     ///
-    /// The handler will be called during sync for each event that triggers
-    /// a notification based on the user's push rules.
+    /// The handler will be called during sync for each event that triggers a
+    /// notification based on the user's push rules.
     ///
     /// The handler receives:
+    ///
     /// - The notification with push actions and event data
     /// - The room ID where the notification occurred
     ///
@@ -24908,9 +25725,8 @@ public interface IClient
     /// <summary>
     /// Empty the well-known cache.
     ///
-    /// Since the SDK caches the well-known, it's possible to have a stale
-    /// entry in the cache. This functions makes it possible to force reset
-    /// it.
+    /// Since the SDK caches the well-known, it's possible to have a stale entry
+    /// in the cache. This functions makes it possible to force reset it.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task ResetWellKnown();
@@ -24961,6 +25777,19 @@ public interface IClient
     RoomDirectorySearch RoomDirectorySearch();
     Room[] Rooms();
 
+    /// <summary>
+    /// Start a search backfill sweep in the background.
+    ///
+    /// Back-paginates message history for every room, down to a ~3-month floor,
+    /// front-loaded by recency (the last week for all rooms first, then the
+    /// previous week, and so on), to populate the search index.
+    ///
+    /// Requires `ClientBuilder::enable_automatic_back_pagination` and
+    /// `ClientBuilder::enable_event_cache` to have been enabled, otherwise
+    /// this no-ops.
+    /// </summary>
+    TaskHandle RunSearchBackfill(SearchBackfillStrategy @strategy);
+
     /// <exception cref="ClientException"></exception>
     Task<SearchUsersResults> SearchUsers(string @searchTerm, ulong @limit);
 
@@ -24970,13 +25799,12 @@ public interface IClient
     ///
     /// # Arguments
     ///
-    /// * `event_type` - The type of the to-device event to send.
-    ///
-    /// * `recipients` - The devices to send the message to, as a `user id ->
+    /// - `event_type` - The type of the to-device event to send.
+    /// - `recipients` - The devices to send the message to, as a `user id ->
     /// device ids` map. The special device id `"*"` targets every device of
     /// that user we know about.
     ///
-    /// * `content` - The content of the to-device event, as a JSON string,
+    /// - `content` - The content of the to-device event, as a JSON string,
     /// encrypted for and sent to every recipient.
     ///
     /// The returned value contains details of any recipients that did not
@@ -24992,13 +25820,13 @@ public interface IClient
     /// <summary>
     /// The URL of the server.
     ///
-    /// Not to be confused with the `Self::homeserver`. `server` is usually
-    /// the server part in a user ID, e.g. with `@mnt_io:matrix.org`, here
+    /// Not to be confused with the `Self::homeserver`. `server` is usually the
+    /// server part in a user ID, e.g. with `@mnt_io:matrix.org`, here
     /// `matrix.org` is the server, whilst `matrix-client.matrix.org` is the
     /// homeserver (at the time of writing — 2024-08-28).
     ///
-    /// This value is optional depending on how the `Client` has been built.
-    /// If it's been built from a homeserver URL directly, we don't know the
+    /// This value is optional depending on how the `Client` has been built. If
+    /// it's been built from a homeserver URL directly, we don't know the
     /// server. However, if the `Client` has been built from a server URL or
     /// name, then the homeserver has been discovered, and we know both.
     /// </summary>
@@ -25007,8 +25835,8 @@ public interface IClient
     /// <summary>
     /// Get server vendor information from the federation API.
     ///
-    /// This method retrieves information about the server's name and version
-    /// by calling the `/_matrix/federation/v1/version` endpoint.
+    /// This method retrieves information about the server's name and version by
+    /// calling the `/_matrix/federation/v1/version` endpoint.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task<ServerVendorInfo> ServerVendorInfo();
@@ -25092,8 +25920,8 @@ public interface IClient
     /// <summary>
     /// Set the current user's status (MSC4426 `m.status` profile field).
     ///
-    /// Replaces any existing status. Use [`Self::clear_user_status`] to
-    /// remove it.
+    /// Replaces any existing status. Use [`Self::clear_user_status`] to remove
+    /// it.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task SetUserStatus(UserStatus @status);
@@ -25120,10 +25948,10 @@ public interface IClient
     /// <summary>
     /// Subscribe to the custom to-device messages received by this client.
     ///
-    /// The listener is called with every to-device message whose type is one
-    /// of `event_types`, or with every custom to-device message if
-    /// `event_types` is empty. A message that was sent encrypted is delivered
-    /// decrypted, along with its encryption info.
+    /// The listener is called with every to-device message whose type is one of
+    /// `event_types`, or with every custom to-device message if `event_types`
+    /// is empty. A message that was sent encrypted is delivered decrypted,
+    /// along with its encryption info.
     ///
     /// The to-device traffic the SDK uses for its own crypto machinery and the
     /// messages it could not decrypt are never delivered.
@@ -25174,9 +26002,9 @@ public interface IClient
     /// are processed.
     ///
     /// Note this method should be used sparingly since using callback
-    /// interfaces is expensive, as well as keeping them alive for a long
-    /// time. Usages of this method should be short-lived and dropped as
-    /// soon as possible.
+    /// interfaces is expensive, as well as keeping them alive for a long time.
+    /// Usages of this method should be short-lived and dropped as soon as
+    /// possible.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task<TaskHandle> SubscribeToRoomInfo(string @roomId, RoomInfoListener @listener);
@@ -25191,12 +26019,12 @@ public interface IClient
     TaskHandle SubscribeToSendQueueStatus(SendQueueRoomErrorListener @listener);
 
     /// <summary>
-    /// Subscribe to the global send queue update reporter, at the
-    /// client-wide level.
+    /// Subscribe to the global send queue update reporter, at the client-wide
+    /// level.
     ///
     /// The given listener will be immediately called with
-    /// `RoomSendQueueUpdate::NewLocalEvent` for each local echo existing in
-    /// the queue.
+    /// `RoomSendQueueUpdate::NewLocalEvent` for each local echo existing in the
+    /// queue.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task<TaskHandle> SubscribeToSendQueueUpdates(SendQueueRoomUpdateListener @listener);
@@ -25204,8 +26032,8 @@ public interface IClient
     /// <summary>
     /// Perform a single sync v2 call.
     ///
-    /// This is useful for performing an initial sync or a one-shot sync
-    /// without entering a continuous loop.
+    /// This is useful for performing an initial sync or a one-shot sync without
+    /// entering a continuous loop.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task<SyncResponseV2> SyncOnceV2(SyncSettingsV2 @settings);
@@ -25215,11 +26043,11 @@ public interface IClient
     /// Start a sync v2 loop.
     ///
     /// This is an alternative to [`Client::sync_service`] (which uses Sliding
-    /// Sync / MSC4186). It works with any homeserver, including older
-    /// Synapse versions that do not support Sliding Sync.
+    /// Sync / MSC4186). It works with any homeserver, including older Synapse
+    /// versions that do not support Sliding Sync.
     ///
-    /// Returns a `TaskHandle` that can be used to cancel the sync loop.
-    /// The listener is called after each successful sync response.
+    /// Returns a `TaskHandle` that can be used to cancel the sync loop. The
+    /// listener is called after each successful sync response.
     /// </summary>
     TaskHandle SyncV2(SyncSettingsV2 @settings, SyncListenerV2 @listener);
 
@@ -25259,29 +26087,31 @@ public interface IClient
     ///
     /// # Arguments
     ///
-    /// * `oauth_configuration` - The configuration used to load the credentials
+    /// - `oauth_configuration` - The configuration used to load the credentials
     /// of the client if it is already registered with the authorization
     /// server, or register the client and store its credentials if it isn't.
     ///
-    /// * `prompt` - The desired user experience in the web UI. No value means
+    /// - `prompt` - The desired user experience in the web UI. No value means
     /// that the user wishes to login into an existing account, and a value of
     /// `Create` means that the user wishes to register a new account.
     ///
-    /// * `login_hint` - A generic login hint that an identity provider can use
+    /// - `login_hint` - A generic login hint that an identity provider can use
     /// to pre-fill the login form. The format of this hint is not restricted
-    /// by the spec as external providers all have their own way to handle the hint.
-    /// However, it should be noted that when providing a user ID as a hint
-    /// for MAS (with no upstream provider), then the format to use is defined
-    /// by [MSC4198]: https://github.com/matrix-org/matrix-spec-proposals/pull/4198
+    /// by the spec as external providers all have their own way to handle the
+    /// hint. However, it should be noted that when providing a user ID as a
+    /// hint for MAS (with no upstream provider), then the format to use is
+    /// defined by [MSC4198]:
+    /// https://github.com/matrix-org/matrix-spec-proposals/pull/4198
     ///
-    /// * `device_id` - The unique ID that will be associated with the session.
+    /// - `device_id` - The unique ID that will be associated with the session.
     /// If not set, a random one will be generated. It can be an existing
     /// device ID from a previous login call. Note that this should be done
     /// only if the client also holds the corresponding encryption keys.
     ///
-    /// * `additional_scopes` - Additional scopes to request from the
-    /// authorization server, e.g. "urn:matrix:client:com.example.msc9999.foo".
-    /// The scopes for API access and the device ID according to the
+    /// - `additional_scopes` - Additional scopes to request from the
+    /// authorization server, e.g.
+    /// "urn:matrix:client:com.example.msc9999.foo". The scopes for API access
+    /// and the device ID according to the
     /// [specification](https://spec.matrix.org/v1.15/client-server-api/#allocated-scope-tokens)
     /// are always requested.
     /// </summary>
@@ -25661,8 +26491,8 @@ public class Client : IClient, IDisposable
     }
 
     /// <summary>
-    /// Lets the user know whether this is an `m.login.password` based
-    /// auth and if the account can actually be deactivated
+    /// Lets the user know whether this is an `m.login.password` based auth and
+    /// if the account can actually be deactivated
     /// </summary>
     public bool CanDeactivateAccount()
     {
@@ -25684,15 +26514,15 @@ public class Client : IClient, IDisposable
     /// calling it.
     ///
     /// In particular, if a [`SyncService`] is running, it must be passed here
-    /// as a parameter, or stopped before calling this method. Ideally, the
-    /// send queues should have been disabled and must all be inactive (i.e.
-    /// not sending events); this method will disable them, but it might not
-    /// be enough if the queues are still processing events.
+    /// as a parameter, or stopped before calling this method. Ideally, the send
+    /// queues should have been disabled and must all be inactive (i.e. not
+    /// sending events); this method will disable them, but it might not be
+    /// enough if the queues are still processing events.
     ///
-    /// After the method returns, the Client will be in an unstable
-    /// state, and it is required that the caller reinstantiates a new
-    /// Client instance, be it via dropping the previous and re-creating it,
-    /// restarting their application, or any other similar means.
+    /// After the method returns, the Client will be in an unstable state, and
+    /// it is required that the caller reinstantiates a new Client instance, be
+    /// it via dropping the previous and re-creating it, restarting their
+    /// application, or any other similar means.
     ///
     /// - This will get rid of the backing state store file, if provided.
     /// - This will empty all the room's persisted event caches, so all rooms
@@ -25816,9 +26646,10 @@ public class Client : IClient, IDisposable
     }
 
     /// <summary>
-    /// Login using JWT
-    /// This is an implementation of the custom_login https://docs.rs/matrix-sdk/latest/matrix_sdk/matrix_auth/struct.MatrixAuth.html#method.login_custom
-    /// For more information on logging in with JWT: https://element-hq.github.io/synapse/latest/jwt.html
+    /// Login using JWT This is an implementation of the custom_login
+    /// https://docs.rs/matrix-sdk/latest/matrix_sdk/matrix_auth/struct.MatrixAuth.html#method.login_custom
+    /// For more information on logging in with JWT:
+    /// https://element-hq.github.io/synapse/latest/jwt.html
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task CustomLoginWithJwt(string @jwt, string? @initialDeviceName, string? @deviceId)
@@ -25850,19 +26681,16 @@ public class Client : IClient, IDisposable
     }
 
     /// <summary>
-    /// Deactivate this account definitively.
-    /// Similarly to `encryption::reset_identity` this
-    /// will only work with password-based authentication (`m.login.password`)
+    /// Deactivate this account definitively. Similarly to
+    /// `encryption::reset_identity` this will only work with password-based
+    /// authentication (`m.login.password`)
     ///
-    /// # Arguments
-    ///
-    /// * `auth_data` - This request uses the [User-Interactive Authentication
-    /// API][uiaa]. The first request needs to set this to `None` and will
-    /// always fail and the same request needs to be made but this time with
-    /// some `auth_data` provided.
+    /// This sends the initial unauthenticated request to retrieve a User-
+    /// Interactive Authentication session, then completes it with the given
+    /// password.
     /// </summary>
     /// <exception cref="ClientException"></exception>
-    public async Task DeactivateAccount(AuthData? @authData, bool @eraseData)
+    public async Task DeactivateAccount(string @password, bool @eraseData)
     {
         await _UniFFIAsync.UniffiRustCallAsync(
             // Get rust future
@@ -25870,7 +26698,7 @@ public class Client : IClient, IDisposable
             {
                 return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_deactivate_account(
                     thisPtr,
-                    FfiConverterOptionalTypeAuthData.INSTANCE.Lower(@authData),
+                    FfiConverterString.INSTANCE.Lower(@password),
                     FfiConverterBoolean.INSTANCE.Lower(@eraseData)
                 );
             }),
@@ -25954,6 +26782,46 @@ public class Client : IClient, IDisposable
                         ref _status
                     )
             )
+        );
+    }
+
+    /// <summary>
+    /// Discover the RTC transports advertised by the homeserver.
+    ///
+    /// The transports are first looked up through the authenticated
+    /// `GET /_matrix/client/v1/rtc/transports` endpoint (MSC4143). If the
+    /// homeserver doesn't implement that endpoint, this falls back to the
+    /// `m.rtc_foci` field of the well-known, unless well-known discovery was
+    /// disabled with [`ClientBuilder::disable_well_known_lookup`] or
+    /// [`Client::disable_well_known_lookup`].
+    ///
+    /// Returns `None` if neither source could provide transports, which is kept
+    /// distinct from an empty list, i.e. a homeserver that advertises no
+    /// transports at all.
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    public async Task<RtcTransport[]?> DiscoverRtcTransports()
+    {
+        return await _UniFFIAsync.UniffiRustCallAsync(
+            // Get rust future
+            CallWithPointer(thisPtr =>
+            {
+                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_discover_rtc_transports(thisPtr);
+            }),
+            // Poll
+            (ulong future, IntPtr continuation, ulong data) =>
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_rust_buffer(future, continuation, data),
+            // Complete
+            (ulong future, ref UniffiRustCallStatus status) =>
+            {
+                return _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_rust_buffer(future, ref status);
+            },
+            // Free
+            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_rust_buffer(future),
+            // Lift
+            (result) => FfiConverterOptionalSequenceTypeRtcTransport.INSTANCE.Lift(result),
+            // Error
+            FfiConverterTypeClientError.INSTANCE
         );
     }
 
@@ -26138,8 +27006,8 @@ public class Client : IClient, IDisposable
     }
 
     /// <summary>
-    /// Get the invite request avatars display policy
-    /// currently stored in the cache.
+    /// Get the invite request avatars display policy currently stored in the
+    /// cache.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task<InviteAvatars?> GetInviteAvatarsDisplayPolicy()
@@ -26271,8 +27139,8 @@ public class Client : IClient, IDisposable
     }
 
     /// <summary>
-    /// Get the media previews timeline display policy
-    /// currently stored in the cache.
+    /// Get the media previews timeline display policy currently stored in the
+    /// cache.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task<MediaPreviews?> GetMediaPreviewDisplayPolicy()
@@ -26416,13 +27284,12 @@ public class Client : IClient, IDisposable
     ///
     /// # Arguments
     ///
-    /// * `room_id` - The ID of the room to get.
+    /// - `room_id` - The ID of the room to get.
     ///
     /// # Returns
     ///
-    /// A `Result` containing an optional room, or a `ClientError`.
-    /// This method will not initialize the room's timeline or populate it with
-    /// events.
+    /// A `Result` containing an optional room, or a `ClientError`. This method
+    /// will not initialize the room's timeline or populate it with events.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public Room? GetRoom(string @roomId)
@@ -26477,9 +27344,9 @@ public class Client : IClient, IDisposable
     /// <summary>
     /// Given a room id, get the preview of a room, to interact with it.
     ///
-    /// The list of `via_servers` must be a list of servers that know
-    /// about the room and can resolve it, and that may appear as a `via`
-    /// parameter in e.g. a permalink URL. This list can be empty.
+    /// The list of `via_servers` must be a list of servers that know about the
+    /// room and can resolve it, and that may appear as a `via` parameter in
+    /// e.g. a permalink URL. This list can be empty.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task<RoomPreview> GetRoomPreviewFromRoomId(string @roomId, string[] @viaServers)
@@ -26610,9 +27477,8 @@ public class Client : IClient, IDisposable
     ///
     /// # Arguments
     ///
-    /// * `url` - The URL to generate a preview for.
-    ///
-    /// * `ts` - The preferred point in time to return a preview for, as a Unix
+    /// - `url` - The URL to generate a preview for.
+    /// - `ts` - The preferred point in time to return a preview for, as a Unix
     /// timestamp in milliseconds. Deprecated since Matrix 1.11; pass `None`.
     /// </summary>
     /// <exception cref="ClientException"></exception>
@@ -26882,6 +27748,7 @@ public class Client : IClient, IDisposable
     /// Checks if a room alias is not in use yet.
     ///
     /// Returns:
+    ///
     /// - `Ok(true)` if the room alias is available.
     /// - `Ok(false)` if it's not (the resolve alias request returned a `404`
     /// status code).
@@ -26898,6 +27765,38 @@ public class Client : IClient, IDisposable
                     thisPtr,
                     FfiConverterString.INSTANCE.Lower(@alias)
                 );
+            }),
+            // Poll
+            (ulong future, IntPtr continuation, ulong data) =>
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_i8(future, continuation, data),
+            // Complete
+            (ulong future, ref UniffiRustCallStatus status) =>
+            {
+                return _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_i8(future, ref status);
+            },
+            // Free
+            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_i8(future),
+            // Lift
+            (result) => FfiConverterBoolean.INSTANCE.Lift(result),
+            // Error
+            FfiConverterTypeClientError.INSTANCE
+        );
+    }
+
+    /// <summary>
+    /// Checks if the server supports sticky events.
+    ///
+    /// This is async and fallible as it may use the network to retrieve the
+    /// server supported features, if they aren't cached already.
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    public async Task<bool> IsStickyEventsSupported()
+    {
+        return await _UniFFIAsync.UniffiRustCallAsync(
+            // Get rust future
+            CallWithPointer(thisPtr =>
+            {
+                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_is_sticky_events_supported(thisPtr);
             }),
             // Poll
             (ulong future, IntPtr continuation, ulong data) =>
@@ -26985,9 +27884,9 @@ public class Client : IClient, IDisposable
     /// Join a room by its ID or alias.
     ///
     /// When supplying the room's ID, you can also supply a list of server names
-    /// for the homeserver to find the room. Typically these server names
-    /// come from a permalink's `via` parameters, or from resolving a room's
-    /// alias into an ID.
+    /// for the homeserver to find the room. Typically these server names come
+    /// from a permalink's `via` parameters, or from resolving a room's alias
+    /// into an ID.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task<Room> JoinRoomByIdOrAlias(string @roomIdOrAlias, string[] @serverNames)
@@ -27181,8 +28080,8 @@ public class Client : IClient, IDisposable
     /// receipts on each room's latest event.
     ///
     /// This is a best-effort operation — per-room errors are logged and
-    /// skipped. Receipts are sent unthreaded, which per the Matrix spec
-    /// covers all events in a room including those inside threads.
+    /// skipped. Receipts are sent unthreaded, which per the Matrix spec covers
+    /// all events in a room including those inside threads.
     ///
     /// This is useful to mitigate backend led wrong iOS app badges and work
     /// around https://github.com/element-hq/element-x-ios/issues/3151
@@ -27236,7 +28135,7 @@ public class Client : IClient, IDisposable
     ///
     /// # Arguments
     ///
-    /// * `oauth_configuration` - The data to restore or register the client
+    /// - `oauth_configuration` - The data to restore or register the client
     /// with the server.
     /// </summary>
     public LoginWithQrCodeHandler NewLoginWithQrCodeHandler(OAuthConfiguration @oauthConfiguration)
@@ -27416,6 +28315,7 @@ public class Client : IClient, IDisposable
     /// Pause the client for background suspension.
     ///
     /// This method:
+    ///
     /// 1. Disables all send queues (prevents new message sends).
     /// 2. Pauses all database stores, waiting for in-flight operations and
     /// releasing all connections and file locks.
@@ -27427,7 +28327,7 @@ public class Client : IClient, IDisposable
     /// Call this before the app is suspended to avoid `0xdead10cc` kills.
     /// Typically called from
     /// [`applicationDidEnterBackground`](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/applicationdidenterbackground(_:))
-    /// or an equivalent SwiftUI lifecycle event, *after* stopping the
+    /// or an equivalent SwiftUI lifecycle event, _after_ stopping the
     /// `matrix_sdk_ui::sync_service::SyncService`.
     /// </summary>
     /// <exception cref="ClientException"></exception>
@@ -27457,10 +28357,11 @@ public class Client : IClient, IDisposable
     /// <summary>
     /// Register a handler for notifications generated from sync responses.
     ///
-    /// The handler will be called during sync for each event that triggers
-    /// a notification based on the user's push rules.
+    /// The handler will be called during sync for each event that triggers a
+    /// notification based on the user's push rules.
     ///
     /// The handler receives:
+    ///
     /// - The notification with push actions and event data
     /// - The room ID where the notification occurred
     ///
@@ -27577,9 +28478,8 @@ public class Client : IClient, IDisposable
     /// <summary>
     /// Empty the well-known cache.
     ///
-    /// Since the SDK caches the well-known, it's possible to have a stale
-    /// entry in the cache. This functions makes it possible to force reset
-    /// it.
+    /// Since the SDK caches the well-known, it's possible to have a stale entry
+    /// in the cache. This functions makes it possible to force reset it.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task ResetWellKnown()
@@ -27795,6 +28695,33 @@ public class Client : IClient, IDisposable
         );
     }
 
+    /// <summary>
+    /// Start a search backfill sweep in the background.
+    ///
+    /// Back-paginates message history for every room, down to a ~3-month floor,
+    /// front-loaded by recency (the last week for all rooms first, then the
+    /// previous week, and so on), to populate the search index.
+    ///
+    /// Requires `ClientBuilder::enable_automatic_back_pagination` and
+    /// `ClientBuilder::enable_event_cache` to have been enabled, otherwise
+    /// this no-ops.
+    /// </summary>
+    public TaskHandle RunSearchBackfill(SearchBackfillStrategy @strategy)
+    {
+        return CallWithPointer(thisPtr =>
+            FfiConverterTypeTaskHandle.INSTANCE.Lift(
+                _UniffiHelpers.RustCall(
+                    (ref UniffiRustCallStatus _status) =>
+                        _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_run_search_backfill(
+                            thisPtr,
+                            FfiConverterTypeSearchBackfillStrategy.INSTANCE.Lower(@strategy),
+                            ref _status
+                        )
+                )
+            )
+        );
+    }
+
     /// <exception cref="ClientException"></exception>
     public async Task<SearchUsersResults> SearchUsers(string @searchTerm, ulong @limit)
     {
@@ -27831,13 +28758,12 @@ public class Client : IClient, IDisposable
     ///
     /// # Arguments
     ///
-    /// * `event_type` - The type of the to-device event to send.
-    ///
-    /// * `recipients` - The devices to send the message to, as a `user id ->
+    /// - `event_type` - The type of the to-device event to send.
+    /// - `recipients` - The devices to send the message to, as a `user id ->
     /// device ids` map. The special device id `"*"` targets every device of
     /// that user we know about.
     ///
-    /// * `content` - The content of the to-device event, as a JSON string,
+    /// - `content` - The content of the to-device event, as a JSON string,
     /// encrypted for and sent to every recipient.
     ///
     /// The returned value contains details of any recipients that did not
@@ -27881,13 +28807,13 @@ public class Client : IClient, IDisposable
     /// <summary>
     /// The URL of the server.
     ///
-    /// Not to be confused with the `Self::homeserver`. `server` is usually
-    /// the server part in a user ID, e.g. with `@mnt_io:matrix.org`, here
+    /// Not to be confused with the `Self::homeserver`. `server` is usually the
+    /// server part in a user ID, e.g. with `@mnt_io:matrix.org`, here
     /// `matrix.org` is the server, whilst `matrix-client.matrix.org` is the
     /// homeserver (at the time of writing — 2024-08-28).
     ///
-    /// This value is optional depending on how the `Client` has been built.
-    /// If it's been built from a homeserver URL directly, we don't know the
+    /// This value is optional depending on how the `Client` has been built. If
+    /// it's been built from a homeserver URL directly, we don't know the
     /// server. However, if the `Client` has been built from a server URL or
     /// name, then the homeserver has been discovered, and we know both.
     /// </summary>
@@ -27906,8 +28832,8 @@ public class Client : IClient, IDisposable
     /// <summary>
     /// Get server vendor information from the federation API.
     ///
-    /// This method retrieves information about the server's name and version
-    /// by calling the `/_matrix/federation/v1/version` endpoint.
+    /// This method retrieves information about the server's name and version by
+    /// calling the `/_matrix/federation/v1/version` endpoint.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task<ServerVendorInfo> ServerVendorInfo()
@@ -28264,8 +29190,8 @@ public class Client : IClient, IDisposable
     /// <summary>
     /// Set the current user's status (MSC4426 `m.status` profile field).
     ///
-    /// Replaces any existing status. Use [`Self::clear_user_status`] to
-    /// remove it.
+    /// Replaces any existing status. Use [`Self::clear_user_status`] to remove
+    /// it.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task SetUserStatus(UserStatus @status)
@@ -28401,10 +29327,10 @@ public class Client : IClient, IDisposable
     /// <summary>
     /// Subscribe to the custom to-device messages received by this client.
     ///
-    /// The listener is called with every to-device message whose type is one
-    /// of `event_types`, or with every custom to-device message if
-    /// `event_types` is empty. A message that was sent encrypted is delivered
-    /// decrypted, along with its encryption info.
+    /// The listener is called with every to-device message whose type is one of
+    /// `event_types`, or with every custom to-device message if `event_types`
+    /// is empty. A message that was sent encrypted is delivered decrypted,
+    /// along with its encryption info.
     ///
     /// The to-device traffic the SDK uses for its own crypto machinery and the
     /// messages it could not decrypt are never delivered.
@@ -28555,9 +29481,9 @@ public class Client : IClient, IDisposable
     /// are processed.
     ///
     /// Note this method should be used sparingly since using callback
-    /// interfaces is expensive, as well as keeping them alive for a long
-    /// time. Usages of this method should be short-lived and dropped as
-    /// soon as possible.
+    /// interfaces is expensive, as well as keeping them alive for a long time.
+    /// Usages of this method should be short-lived and dropped as soon as
+    /// possible.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task<TaskHandle> SubscribeToRoomInfo(string @roomId, RoomInfoListener @listener)
@@ -28613,12 +29539,12 @@ public class Client : IClient, IDisposable
     }
 
     /// <summary>
-    /// Subscribe to the global send queue update reporter, at the
-    /// client-wide level.
+    /// Subscribe to the global send queue update reporter, at the client-wide
+    /// level.
     ///
     /// The given listener will be immediately called with
-    /// `RoomSendQueueUpdate::NewLocalEvent` for each local echo existing in
-    /// the queue.
+    /// `RoomSendQueueUpdate::NewLocalEvent` for each local echo existing in the
+    /// queue.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task<TaskHandle> SubscribeToSendQueueUpdates(SendQueueRoomUpdateListener @listener)
@@ -28652,8 +29578,8 @@ public class Client : IClient, IDisposable
     /// <summary>
     /// Perform a single sync v2 call.
     ///
-    /// This is useful for performing an initial sync or a one-shot sync
-    /// without entering a continuous loop.
+    /// This is useful for performing an initial sync or a one-shot sync without
+    /// entering a continuous loop.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task<SyncResponseV2> SyncOnceV2(SyncSettingsV2 @settings)
@@ -28700,11 +29626,11 @@ public class Client : IClient, IDisposable
     /// Start a sync v2 loop.
     ///
     /// This is an alternative to [`Client::sync_service`] (which uses Sliding
-    /// Sync / MSC4186). It works with any homeserver, including older
-    /// Synapse versions that do not support Sliding Sync.
+    /// Sync / MSC4186). It works with any homeserver, including older Synapse
+    /// versions that do not support Sliding Sync.
     ///
-    /// Returns a `TaskHandle` that can be used to cancel the sync loop.
-    /// The listener is called after each successful sync response.
+    /// Returns a `TaskHandle` that can be used to cancel the sync loop. The
+    /// listener is called after each successful sync response.
     /// </summary>
     public TaskHandle SyncV2(SyncSettingsV2 @settings, SyncListenerV2 @listener)
     {
@@ -28896,29 +29822,31 @@ public class Client : IClient, IDisposable
     ///
     /// # Arguments
     ///
-    /// * `oauth_configuration` - The configuration used to load the credentials
+    /// - `oauth_configuration` - The configuration used to load the credentials
     /// of the client if it is already registered with the authorization
     /// server, or register the client and store its credentials if it isn't.
     ///
-    /// * `prompt` - The desired user experience in the web UI. No value means
+    /// - `prompt` - The desired user experience in the web UI. No value means
     /// that the user wishes to login into an existing account, and a value of
     /// `Create` means that the user wishes to register a new account.
     ///
-    /// * `login_hint` - A generic login hint that an identity provider can use
+    /// - `login_hint` - A generic login hint that an identity provider can use
     /// to pre-fill the login form. The format of this hint is not restricted
-    /// by the spec as external providers all have their own way to handle the hint.
-    /// However, it should be noted that when providing a user ID as a hint
-    /// for MAS (with no upstream provider), then the format to use is defined
-    /// by [MSC4198]: https://github.com/matrix-org/matrix-spec-proposals/pull/4198
+    /// by the spec as external providers all have their own way to handle the
+    /// hint. However, it should be noted that when providing a user ID as a
+    /// hint for MAS (with no upstream provider), then the format to use is
+    /// defined by [MSC4198]:
+    /// https://github.com/matrix-org/matrix-spec-proposals/pull/4198
     ///
-    /// * `device_id` - The unique ID that will be associated with the session.
+    /// - `device_id` - The unique ID that will be associated with the session.
     /// If not set, a random one will be generated. It can be an existing
     /// device ID from a previous login call. Note that this should be done
     /// only if the client also holds the corresponding encryption keys.
     ///
-    /// * `additional_scopes` - Additional scopes to request from the
-    /// authorization server, e.g. "urn:matrix:client:com.example.msc9999.foo".
-    /// The scopes for API access and the device ID according to the
+    /// - `additional_scopes` - Additional scopes to request from the
+    /// authorization server, e.g.
+    /// "urn:matrix:client:com.example.msc9999.foo". The scopes for API access
+    /// and the device ID according to the
     /// [specification](https://spec.matrix.org/v1.15/client-server-api/#allocated-scope-tokens)
     /// are always requested.
     /// </summary>
@@ -29115,8 +30043,8 @@ public interface IClientBuilder
     ClientBuilder AutoEnableCrossSigning(bool @autoEnableCrossSigning);
 
     /// <summary>
-    /// Select a strategy to download room keys from the backup. By default
-    /// we download after a decryption failure.
+    /// Select a strategy to download room keys from the backup. By default we
+    /// download after a decryption failure.
     ///
     /// Take a look at the [`BackupDownloadStrategy`] enum for more options.
     /// </summary>
@@ -29266,9 +30194,9 @@ public interface IClientBuilder
     /// Sets the paths that the client will use to store its data and caches
     /// with SQLite.
     ///
-    /// Both paths **must** be unique per session as the SDK
-    /// stores aren't capable of handling multiple users, however it is
-    /// valid to use the same path for both stores on a single session.
+    /// Both paths **must** be unique per session as the SDK stores aren't
+    /// capable of handling multiple users, however it is valid to use the same
+    /// path for both stores on a single session.
     /// </summary>
     ClientBuilder SessionPaths(string @dataPath, string @cachePath);
     ClientBuilder SetSessionDelegate(ClientSessionDelegate @sessionDelegate);
@@ -29283,10 +30211,8 @@ public interface IClientBuilder
     /// Tell the client that the system is memory constrained, like in a push
     /// notification process for example.
     ///
-    /// So far, at the time of writing (2025-04-07), it changes the defaults of
-    /// `matrix_sdk::SqliteStoreConfig` (if the `sqlite` feature is enabled).
-    /// Please check
-    /// `matrix_sdk::SqliteStoreConfig::with_low_memory_config`.
+    /// It disables the Event Cache and the Latest Events, see
+    /// [`matrix_sdk::ClientBuilder::with_event_cache`].
     /// </summary>
     ClientBuilder SystemIsMemoryConstrained();
 
@@ -29307,10 +30233,10 @@ public interface IClientBuilder
     /// `path` is the directory where the search index will be stored. It must
     /// be unique per session.
     ///
-    /// `password` is an optional password to encrypt the search index at rest.
-    /// If `None`, the search index will be stored unencrypted.
+    /// `key` is an optional high-entropy key to encrypt the search index at
+    /// rest. If `None`, the search index will be stored unencrypted.
     /// </summary>
-    ClientBuilder WithSearchIndexStore(string @path, string? @password);
+    ClientBuilder WithSearchIndexStore(string @path, string? @key);
 }
 
 public class ClientBuilder : IClientBuilder, IDisposable
@@ -29482,8 +30408,8 @@ public class ClientBuilder : IClientBuilder, IDisposable
     }
 
     /// <summary>
-    /// Select a strategy to download room keys from the backup. By default
-    /// we download after a decryption failure.
+    /// Select a strategy to download room keys from the backup. By default we
+    /// download after a decryption failure.
     ///
     /// Take a look at the [`BackupDownloadStrategy`] enum for more options.
     /// </summary>
@@ -29906,9 +30832,9 @@ public class ClientBuilder : IClientBuilder, IDisposable
     /// Sets the paths that the client will use to store its data and caches
     /// with SQLite.
     ///
-    /// Both paths **must** be unique per session as the SDK
-    /// stores aren't capable of handling multiple users, however it is
-    /// valid to use the same path for both stores on a single session.
+    /// Both paths **must** be unique per session as the SDK stores aren't
+    /// capable of handling multiple users, however it is valid to use the same
+    /// path for both stores on a single session.
     /// </summary>
     public ClientBuilder SessionPaths(string @dataPath, string @cachePath)
     {
@@ -29982,10 +30908,8 @@ public class ClientBuilder : IClientBuilder, IDisposable
     /// Tell the client that the system is memory constrained, like in a push
     /// notification process for example.
     ///
-    /// So far, at the time of writing (2025-04-07), it changes the defaults of
-    /// `matrix_sdk::SqliteStoreConfig` (if the `sqlite` feature is enabled).
-    /// Please check
-    /// `matrix_sdk::SqliteStoreConfig::with_low_memory_config`.
+    /// It disables the Event Cache and the Latest Events, see
+    /// [`matrix_sdk::ClientBuilder::with_event_cache`].
     /// </summary>
     public ClientBuilder SystemIsMemoryConstrained()
     {
@@ -30049,10 +30973,10 @@ public class ClientBuilder : IClientBuilder, IDisposable
     /// `path` is the directory where the search index will be stored. It must
     /// be unique per session.
     ///
-    /// `password` is an optional password to encrypt the search index at rest.
-    /// If `None`, the search index will be stored unencrypted.
+    /// `key` is an optional high-entropy key to encrypt the search index at
+    /// rest. If `None`, the search index will be stored unencrypted.
     /// </summary>
-    public ClientBuilder WithSearchIndexStore(string @path, string? @password)
+    public ClientBuilder WithSearchIndexStore(string @path, string? @key)
     {
         return CallWithPointer(thisPtr =>
             FfiConverterTypeClientBuilder.INSTANCE.Lift(
@@ -30061,7 +30985,7 @@ public class ClientBuilder : IClientBuilder, IDisposable
                         _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_clientbuilder_with_search_index_store(
                             thisPtr,
                             FfiConverterString.INSTANCE.Lower(@path),
-                            FfiConverterOptionalString.INSTANCE.Lower(@password),
+                            FfiConverterOptionalString.INSTANCE.Lower(@key),
                             ref _status
                         )
                 )
@@ -30523,9 +31447,9 @@ public interface IEncryption
     /// Does a backup exist on the server?
     ///
     /// Because the homeserver doesn't notify us about changes to the backup
-    /// version, the [`BackupState`] and its listener are a bit crippled.
-    /// The `BackupState::Unknown` state might mean there is no backup at all or
-    /// a backup exists but we don't have access to it.
+    /// version, the [`BackupState`] and its listener are a bit crippled. The
+    /// `BackupState::Unknown` state might mean there is no backup at all or a
+    /// backup exists but we don't have access to it.
     ///
     /// Therefore it is necessary to poll the server for an answer every time
     /// you want to differentiate between those two states.
@@ -30553,15 +31477,15 @@ public interface IEncryption
     Task<string?> Curve25519Key();
 
     /// <summary>
-    /// Subscribe to lifecycle events emitted by the dehydrated-device
-    /// manager. The returned [`TaskHandle`] keeps the listener alive; drop
-    /// it to unsubscribe.
+    /// Subscribe to lifecycle events emitted by the dehydrated-device manager.
+    /// The returned [`TaskHandle`] keeps the listener alive; drop it to
+    /// unsubscribe.
     /// </summary>
     TaskHandle DehydratedDeviceEventListener(DehydratedDeviceEventListener @listener);
 
     /// <summary>
-    /// Delete the current dehydrated device, if one exists. Silent if no
-    /// device is on the server or the server does not implement MSC3814.
+    /// Delete the current dehydrated device, if one exists. Silent if no device
+    /// is on the server or the server does not implement MSC3814.
     /// </summary>
     /// <exception cref="DehydratedDeviceException"></exception>
     Task DeleteDehydratedDevice();
@@ -30596,8 +31520,8 @@ public interface IEncryption
     Task<bool> HasDevicesToVerifyAgainst();
 
     /// <summary>
-    /// This method will import all the private cross-signing keys and
-    /// the private part of a backup key and its accompanying version into the
+    /// This method will import all the private cross-signing keys and the
+    /// private part of a backup key and its accompanying version into the
     /// store.
     ///
     /// Importing all the secrets will mark the device as verified and enable
@@ -30613,8 +31537,8 @@ public interface IEncryption
     Task ImportSecretsBundle(SecretsBundleWithUserId @secretsBundle);
 
     /// <summary>
-    /// Return whether the homeserver advertises support for MSC3814
-    /// dehydrated devices.
+    /// Return whether the homeserver advertises support for MSC3814 dehydrated
+    /// devices.
     /// </summary>
     /// <exception cref="DehydratedDeviceException"></exception>
     Task<bool> IsDehydratedDeviceSupported();
@@ -30634,9 +31558,9 @@ public interface IEncryption
     ///
     /// This will create a new key backup if:
     ///
-    /// * Key backup is enabled and the backup decryption key is missing from
+    /// - Key backup is enabled and the backup decryption key is missing from
     /// Recovery, or
-    /// * Key backup is enabled and the backup decryption key does not match the
+    /// - Key backup is enabled and the backup decryption key does not match the
     /// public key
     /// </summary>
     /// <exception cref="RecoveryException"></exception>
@@ -30667,12 +31591,12 @@ public interface IEncryption
     Task<string> ResetRecoveryKey();
 
     /// <summary>
-    /// Start using dehydrated devices for this client, resolving the pickle
-    /// key through Secret Storage and scheduling weekly rotation.
+    /// Start using dehydrated devices for this client, resolving the pickle key
+    /// through Secret Storage and scheduling weekly rotation.
     ///
-    /// The Rust-side copy of the recovery key is zeroized after Secret
-    /// Storage has been unlocked; the caller keeps responsibility for the
-    /// string it passed in.
+    /// The Rust-side copy of the recovery key is zeroized after Secret Storage
+    /// has been unlocked; the caller keeps responsibility for the string it
+    /// passed in.
     /// </summary>
     /// <exception cref="DehydratedDeviceException"></exception>
     Task StartDehydratedDevices(string @recoveryKey, StartDehydratedDevicesSettings @settings);
@@ -30680,8 +31604,8 @@ public interface IEncryption
     /// <summary>
     /// Stop the scheduled dehydrated-device rotation.
     ///
-    /// Has no effect when no rotation is scheduled. Existing dehydrated
-    /// devices on the server are left in place; pair with
+    /// Has no effect when no rotation is scheduled. Existing dehydrated devices
+    /// on the server are left in place; pair with
     /// [`Encryption::delete_dehydrated_device`] to remove them.
     /// </summary>
     void StopDehydratedDevices();
@@ -30690,19 +31614,18 @@ public interface IEncryption
     /// Get the E2EE identity of a user.
     ///
     /// This method always tries to fetch the identity from the store, which we
-    /// only have if the user is tracked, meaning that we are both members
-    /// of the same encrypted room. If no user is found locally, a request will
-    /// be made to the homeserver unless `fallback_to_server` is set to `false`.
+    /// only have if the user is tracked, meaning that we are both members of
+    /// the same encrypted room. If no user is found locally, a request will be
+    /// made to the homeserver unless `fallback_to_server` is set to `false`.
     ///
     /// # Arguments
     ///
-    /// * `user_id` - The ID of the user that the identity belongs to.
-    /// * `fallback_to_server` - Should we request the user identity from the
+    /// - `user_id` - The ID of the user that the identity belongs to.
+    /// - `fallback_to_server` - Should we request the user identity from the
     /// homeserver if one isn't found locally.
     ///
-    /// Returns a `UserIdentity` if one is found. Returns an error if there
-    /// was an issue with the crypto store or with the request to the
-    /// homeserver.
+    /// Returns a `UserIdentity` if one is found. Returns an error if there was
+    /// an issue with the crypto store or with the request to the homeserver.
     ///
     /// This will always return `None` if the client hasn't been logged in.
     /// </summary>
@@ -30834,9 +31757,9 @@ public class Encryption : IEncryption, IDisposable
     /// Does a backup exist on the server?
     ///
     /// Because the homeserver doesn't notify us about changes to the backup
-    /// version, the [`BackupState`] and its listener are a bit crippled.
-    /// The `BackupState::Unknown` state might mean there is no backup at all or
-    /// a backup exists but we don't have access to it.
+    /// version, the [`BackupState`] and its listener are a bit crippled. The
+    /// `BackupState::Unknown` state might mean there is no backup at all or a
+    /// backup exists but we don't have access to it.
     ///
     /// Therefore it is necessary to poll the server for an answer every time
     /// you want to differentiate between those two states.
@@ -30963,9 +31886,9 @@ public class Encryption : IEncryption, IDisposable
     }
 
     /// <summary>
-    /// Subscribe to lifecycle events emitted by the dehydrated-device
-    /// manager. The returned [`TaskHandle`] keeps the listener alive; drop
-    /// it to unsubscribe.
+    /// Subscribe to lifecycle events emitted by the dehydrated-device manager.
+    /// The returned [`TaskHandle`] keeps the listener alive; drop it to
+    /// unsubscribe.
     /// </summary>
     public TaskHandle DehydratedDeviceEventListener(DehydratedDeviceEventListener @listener)
     {
@@ -30984,8 +31907,8 @@ public class Encryption : IEncryption, IDisposable
     }
 
     /// <summary>
-    /// Delete the current dehydrated device, if one exists. Silent if no
-    /// device is on the server or the server does not implement MSC3814.
+    /// Delete the current dehydrated device, if one exists. Silent if no device
+    /// is on the server or the server does not implement MSC3814.
     /// </summary>
     /// <exception cref="DehydratedDeviceException"></exception>
     public async Task DeleteDehydratedDevice()
@@ -31157,8 +32080,8 @@ public class Encryption : IEncryption, IDisposable
     }
 
     /// <summary>
-    /// This method will import all the private cross-signing keys and
-    /// the private part of a backup key and its accompanying version into the
+    /// This method will import all the private cross-signing keys and the
+    /// private part of a backup key and its accompanying version into the
     /// store.
     ///
     /// Importing all the secrets will mark the device as verified and enable
@@ -31198,8 +32121,8 @@ public class Encryption : IEncryption, IDisposable
     }
 
     /// <summary>
-    /// Return whether the homeserver advertises support for MSC3814
-    /// dehydrated devices.
+    /// Return whether the homeserver advertises support for MSC3814 dehydrated
+    /// devices.
     /// </summary>
     /// <exception cref="DehydratedDeviceException"></exception>
     public async Task<bool> IsDehydratedDeviceSupported()
@@ -31289,9 +32212,9 @@ public class Encryption : IEncryption, IDisposable
     ///
     /// This will create a new key backup if:
     ///
-    /// * Key backup is enabled and the backup decryption key is missing from
+    /// - Key backup is enabled and the backup decryption key is missing from
     /// Recovery, or
-    /// * Key backup is enabled and the backup decryption key does not match the
+    /// - Key backup is enabled and the backup decryption key does not match the
     /// public key
     /// </summary>
     /// <exception cref="RecoveryException"></exception>
@@ -31470,12 +32393,12 @@ public class Encryption : IEncryption, IDisposable
     }
 
     /// <summary>
-    /// Start using dehydrated devices for this client, resolving the pickle
-    /// key through Secret Storage and scheduling weekly rotation.
+    /// Start using dehydrated devices for this client, resolving the pickle key
+    /// through Secret Storage and scheduling weekly rotation.
     ///
-    /// The Rust-side copy of the recovery key is zeroized after Secret
-    /// Storage has been unlocked; the caller keeps responsibility for the
-    /// string it passed in.
+    /// The Rust-side copy of the recovery key is zeroized after Secret Storage
+    /// has been unlocked; the caller keeps responsibility for the string it
+    /// passed in.
     /// </summary>
     /// <exception cref="DehydratedDeviceException"></exception>
     public async Task StartDehydratedDevices(string @recoveryKey, StartDehydratedDevicesSettings @settings)
@@ -31508,8 +32431,8 @@ public class Encryption : IEncryption, IDisposable
     /// <summary>
     /// Stop the scheduled dehydrated-device rotation.
     ///
-    /// Has no effect when no rotation is scheduled. Existing dehydrated
-    /// devices on the server are left in place; pair with
+    /// Has no effect when no rotation is scheduled. Existing dehydrated devices
+    /// on the server are left in place; pair with
     /// [`Encryption::delete_dehydrated_device`] to remove them.
     /// </summary>
     public void StopDehydratedDevices()
@@ -31526,19 +32449,18 @@ public class Encryption : IEncryption, IDisposable
     /// Get the E2EE identity of a user.
     ///
     /// This method always tries to fetch the identity from the store, which we
-    /// only have if the user is tracked, meaning that we are both members
-    /// of the same encrypted room. If no user is found locally, a request will
-    /// be made to the homeserver unless `fallback_to_server` is set to `false`.
+    /// only have if the user is tracked, meaning that we are both members of
+    /// the same encrypted room. If no user is found locally, a request will be
+    /// made to the homeserver unless `fallback_to_server` is set to `false`.
     ///
     /// # Arguments
     ///
-    /// * `user_id` - The ID of the user that the identity belongs to.
-    /// * `fallback_to_server` - Should we request the user identity from the
+    /// - `user_id` - The ID of the user that the identity belongs to.
+    /// - `fallback_to_server` - Should we request the user identity from the
     /// homeserver if one isn't found locally.
     ///
-    /// Returns a `UserIdentity` if one is found. Returns an error if there
-    /// was an issue with the crypto store or with the request to the
-    /// homeserver.
+    /// Returns a `UserIdentity` if one is found. Returns an error if there was
+    /// an issue with the crypto store or with the request to the homeserver.
     ///
     /// This will always return `None` if the client hasn't been logged in.
     /// </summary>
@@ -31695,48 +32617,57 @@ public interface IGrantLoginWithQrCodeHandler
     /// <summary>
     /// This method allows you to grant login by generating a QR code.
     ///
-    /// This device needs to call this method and handle its progress updates to
-    /// generate a QR code which the new device can scan to log in.
+    /// This device needs to call this method and handle the returned
+    /// [`GrantLoginWithQrCodeTask`]'s progress updates to generate a QR code
+    /// which the new device can scan to log in.
     ///
-    /// This method uses the login mechanism described in [MSC4108]. As such,
-    /// it requires OAuth 2.0 support.
+    /// This spawns the login process in the background and returns
+    /// immediately with a [`GrantLoginWithQrCodeTask`] that can be used to
+    /// wait for the login to finish, or to cancel it.
     ///
-    /// For the reverse flow where the existing device generates the QR code
-    /// for this device to scan, use [`GrantLoginWithQrCodeHandler::scan`].
+    /// This method uses the login mechanism described in [MSC4108]. As such, it
+    /// requires OAuth 2.0 support.
+    ///
+    /// For the reverse flow where the existing device generates the QR code for
+    /// this device to scan, use [`GrantLoginWithQrCodeHandler::scan`].
     ///
     /// # Arguments
     ///
-    /// * `progress_listener` - A progress listener that must also be used to
+    /// - `progress_listener` - A progress listener that must also be used to
     /// obtain the [`QrCodeData`] and collect the [`CheckCode`] from the user.
     ///
     /// [MSC4108]: https://github.com/matrix-org/matrix-spec-proposals/pull/4108
     /// </summary>
     /// <exception cref="HumanQrGrantLoginException"></exception>
-    Task Generate(GrantGeneratedQrLoginProgressListener @progressListener);
+    GrantLoginWithQrCodeTask Generate(GrantGeneratedQrLoginProgressListener @progressListener);
 
     /// <summary>
     /// This method allows you to grant login with a scanned QR code.
     ///
     /// The new device needs to display the QR code which this device can
-    /// scan, call this method and handle its progress updates to grant the
-    /// login.
+    /// scan, call this method and handle the returned
+    /// [`GrantLoginWithQrCodeTask`]'s progress updates to grant the login.
     ///
-    /// This method uses the login mechanism described in [MSC4108]. As such,
-    /// it requires OAuth 2.0 support.
+    /// This spawns the login process in the background and returns
+    /// immediately with a [`GrantLoginWithQrCodeTask`] that can be used to
+    /// wait for the login to finish, or to cancel it.
+    ///
+    /// This method uses the login mechanism described in [MSC4108]. As such, it
+    /// requires OAuth 2.0 support.
     ///
     /// For the reverse flow where this device generates the QR code for the
     /// existing device to scan, use [`GrantLoginWithQrCodeHandler::generate`].
     ///
     /// # Arguments
     ///
-    /// * `qr_code_data` - The [`QrCodeData`] scanned from the QR code.
-    /// * `progress_listener` - A progress listener that must also be used to
+    /// - `qr_code_data` - The [`QrCodeData`] scanned from the QR code.
+    /// - `progress_listener` - A progress listener that must also be used to
     /// transfer the [`CheckCode`] to the new device.
     ///
     /// [MSC4108]: https://github.com/matrix-org/matrix-spec-proposals/pull/4108
     /// </summary>
     /// <exception cref="HumanQrGrantLoginException"></exception>
-    Task Scan(QrCodeData @qrCodeData, GrantQrLoginProgressListener @progressListener);
+    GrantLoginWithQrCodeTask Scan(QrCodeData @qrCodeData, GrantQrLoginProgressListener @progressListener);
 }
 
 /// <summary>
@@ -31854,46 +32785,42 @@ public class GrantLoginWithQrCodeHandler : IGrantLoginWithQrCodeHandler, IDispos
     /// <summary>
     /// This method allows you to grant login by generating a QR code.
     ///
-    /// This device needs to call this method and handle its progress updates to
-    /// generate a QR code which the new device can scan to log in.
+    /// This device needs to call this method and handle the returned
+    /// [`GrantLoginWithQrCodeTask`]'s progress updates to generate a QR code
+    /// which the new device can scan to log in.
     ///
-    /// This method uses the login mechanism described in [MSC4108]. As such,
-    /// it requires OAuth 2.0 support.
+    /// This spawns the login process in the background and returns
+    /// immediately with a [`GrantLoginWithQrCodeTask`] that can be used to
+    /// wait for the login to finish, or to cancel it.
     ///
-    /// For the reverse flow where the existing device generates the QR code
-    /// for this device to scan, use [`GrantLoginWithQrCodeHandler::scan`].
+    /// This method uses the login mechanism described in [MSC4108]. As such, it
+    /// requires OAuth 2.0 support.
+    ///
+    /// For the reverse flow where the existing device generates the QR code for
+    /// this device to scan, use [`GrantLoginWithQrCodeHandler::scan`].
     ///
     /// # Arguments
     ///
-    /// * `progress_listener` - A progress listener that must also be used to
+    /// - `progress_listener` - A progress listener that must also be used to
     /// obtain the [`QrCodeData`] and collect the [`CheckCode`] from the user.
     ///
     /// [MSC4108]: https://github.com/matrix-org/matrix-spec-proposals/pull/4108
     /// </summary>
     /// <exception cref="HumanQrGrantLoginException"></exception>
-    public async Task Generate(GrantGeneratedQrLoginProgressListener @progressListener)
+    public GrantLoginWithQrCodeTask Generate(GrantGeneratedQrLoginProgressListener @progressListener)
     {
-        await _UniFFIAsync.UniffiRustCallAsync(
-            // Get rust future
-            CallWithPointer(thisPtr =>
-            {
-                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_grantloginwithqrcodehandler_generate(
-                    thisPtr,
-                    FfiConverterTypeGrantGeneratedQrLoginProgressListener.INSTANCE.Lower(@progressListener)
-                );
-            }),
-            // Poll
-            (ulong future, IntPtr continuation, ulong data) =>
-                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_void(future, continuation, data),
-            // Complete
-            (ulong future, ref UniffiRustCallStatus status) =>
-            {
-                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_void(future, ref status);
-            },
-            // Free
-            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_void(future),
-            // Error
-            FfiConverterTypeHumanQrGrantLoginError.INSTANCE
+        return CallWithPointer(thisPtr =>
+            FfiConverterTypeGrantLoginWithQrCodeTask.INSTANCE.Lift(
+                _UniffiHelpers.RustCallWithError(
+                    FfiConverterTypeHumanQrGrantLoginError.INSTANCE,
+                    (ref UniffiRustCallStatus _status) =>
+                        _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_grantloginwithqrcodehandler_generate(
+                            thisPtr,
+                            FfiConverterTypeGrantGeneratedQrLoginProgressListener.INSTANCE.Lower(@progressListener),
+                            ref _status
+                        )
+                )
+            )
         );
     }
 
@@ -31901,48 +32828,43 @@ public class GrantLoginWithQrCodeHandler : IGrantLoginWithQrCodeHandler, IDispos
     /// This method allows you to grant login with a scanned QR code.
     ///
     /// The new device needs to display the QR code which this device can
-    /// scan, call this method and handle its progress updates to grant the
-    /// login.
+    /// scan, call this method and handle the returned
+    /// [`GrantLoginWithQrCodeTask`]'s progress updates to grant the login.
     ///
-    /// This method uses the login mechanism described in [MSC4108]. As such,
-    /// it requires OAuth 2.0 support.
+    /// This spawns the login process in the background and returns
+    /// immediately with a [`GrantLoginWithQrCodeTask`] that can be used to
+    /// wait for the login to finish, or to cancel it.
+    ///
+    /// This method uses the login mechanism described in [MSC4108]. As such, it
+    /// requires OAuth 2.0 support.
     ///
     /// For the reverse flow where this device generates the QR code for the
     /// existing device to scan, use [`GrantLoginWithQrCodeHandler::generate`].
     ///
     /// # Arguments
     ///
-    /// * `qr_code_data` - The [`QrCodeData`] scanned from the QR code.
-    /// * `progress_listener` - A progress listener that must also be used to
+    /// - `qr_code_data` - The [`QrCodeData`] scanned from the QR code.
+    /// - `progress_listener` - A progress listener that must also be used to
     /// transfer the [`CheckCode`] to the new device.
     ///
     /// [MSC4108]: https://github.com/matrix-org/matrix-spec-proposals/pull/4108
     /// </summary>
     /// <exception cref="HumanQrGrantLoginException"></exception>
-    public async Task Scan(QrCodeData @qrCodeData, GrantQrLoginProgressListener @progressListener)
+    public GrantLoginWithQrCodeTask Scan(QrCodeData @qrCodeData, GrantQrLoginProgressListener @progressListener)
     {
-        await _UniFFIAsync.UniffiRustCallAsync(
-            // Get rust future
-            CallWithPointer(thisPtr =>
-            {
-                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_grantloginwithqrcodehandler_scan(
-                    thisPtr,
-                    FfiConverterTypeQrCodeData.INSTANCE.Lower(@qrCodeData),
-                    FfiConverterTypeGrantQrLoginProgressListener.INSTANCE.Lower(@progressListener)
-                );
-            }),
-            // Poll
-            (ulong future, IntPtr continuation, ulong data) =>
-                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_void(future, continuation, data),
-            // Complete
-            (ulong future, ref UniffiRustCallStatus status) =>
-            {
-                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_void(future, ref status);
-            },
-            // Free
-            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_void(future),
-            // Error
-            FfiConverterTypeHumanQrGrantLoginError.INSTANCE
+        return CallWithPointer(thisPtr =>
+            FfiConverterTypeGrantLoginWithQrCodeTask.INSTANCE.Lift(
+                _UniffiHelpers.RustCallWithError(
+                    FfiConverterTypeHumanQrGrantLoginError.INSTANCE,
+                    (ref UniffiRustCallStatus _status) =>
+                        _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_grantloginwithqrcodehandler_scan(
+                            thisPtr,
+                            FfiConverterTypeQrCodeData.INSTANCE.Lower(@qrCodeData),
+                            FfiConverterTypeGrantQrLoginProgressListener.INSTANCE.Lower(@progressListener),
+                            ref _status
+                        )
+                )
+            )
         );
     }
 }
@@ -31973,6 +32895,238 @@ class FfiConverterTypeGrantLoginWithQrCodeHandler : FfiConverter<GrantLoginWithQ
     }
 
     public override void Write(GrantLoginWithQrCodeHandler value, BigEndianStream stream)
+    {
+        stream.WriteULong(Lower(value));
+    }
+}
+
+/// <summary>
+/// A handle to a single login grant attempt started by
+/// [`GrantLoginWithQrCodeHandler::scan`] or
+/// [`GrantLoginWithQrCodeHandler::generate`].
+///
+/// Use [`Self::wait`] to wait for the attempt to finish and obtain its
+/// result, and [`Self::cancel`] to request that it be aborted cooperatively.
+/// </summary>
+public interface IGrantLoginWithQrCodeTask
+{
+    /// <summary>
+    /// Request this login grant attempt to abort cooperatively. This will
+    /// make the task tear down its running work and then return the
+    /// `Cancelled` error from [`Self::wait`].
+    ///
+    /// Cancelling is idempotent: if the attempt hasn't started running yet, it
+    /// won't be started and [`Self::wait`] returns `Cancelled` right away.
+    /// Calling this more than once, or after the attempt has already finished,
+    /// has no effect.
+    /// </summary>
+    void Cancel();
+
+    /// <summary>
+    /// Wait for the login grant attempt to finish and return its result.
+    ///
+    /// If [`Self::cancel`] has been called, this returns
+    /// [`HumanQrGrantLoginError::Cancelled`] once the attempt has finished
+    /// tearing down its running task.
+    /// </summary>
+    /// <exception cref="HumanQrGrantLoginException"></exception>
+    Task Wait();
+}
+
+/// <summary>
+/// A handle to a single login grant attempt started by
+/// [`GrantLoginWithQrCodeHandler::scan`] or
+/// [`GrantLoginWithQrCodeHandler::generate`].
+///
+/// Use [`Self::wait`] to wait for the attempt to finish and obtain its
+/// result, and [`Self::cancel`] to request that it be aborted cooperatively.
+/// </summary>
+public class GrantLoginWithQrCodeTask : IGrantLoginWithQrCodeTask, IDisposable
+{
+    protected ulong pointer;
+    private int _wasDestroyed = 0;
+    private long _callCounter = 1;
+
+    public GrantLoginWithQrCodeTask(ulong pointer)
+    {
+        this.pointer = pointer;
+    }
+
+    ~GrantLoginWithQrCodeTask()
+    {
+        Destroy();
+    }
+
+    protected void FreeRustArcPtr()
+    {
+        _UniffiHelpers.RustCall(
+            (ref UniffiRustCallStatus status) =>
+            {
+                _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_grantloginwithqrcodetask(this.pointer, ref status);
+            }
+        );
+    }
+
+    protected ulong CloneRustArcPtr()
+    {
+        return _UniffiHelpers.RustCall(
+            (ref UniffiRustCallStatus status) =>
+            {
+                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_clone_grantloginwithqrcodetask(this.pointer, ref status);
+            }
+        );
+    }
+
+    public void Destroy()
+    {
+        // Only allow a single call to this method.
+        if (Interlocked.CompareExchange(ref _wasDestroyed, 1, 0) == 0)
+        {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (Interlocked.Decrement(ref _callCounter) == 0)
+            {
+                FreeRustArcPtr();
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        Destroy();
+        GC.SuppressFinalize(this); // Suppress finalization to avoid unnecessary GC overhead.
+    }
+
+    private void IncrementCallCounter()
+    {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        long count;
+        do
+        {
+            count = Interlocked.Read(ref _callCounter);
+            if (count == 0L)
+                throw new System.ObjectDisposedException(
+                    String.Format("'{0}' object has already been destroyed", this.GetType().Name)
+                );
+            if (count == long.MaxValue)
+                throw new System.OverflowException(
+                    String.Format("'{0}' call counter would overflow", this.GetType().Name)
+                );
+        } while (Interlocked.CompareExchange(ref _callCounter, count + 1, count) != count);
+    }
+
+    private void DecrementCallCounter()
+    {
+        // This decrement always matches the increment we performed above.
+        if (Interlocked.Decrement(ref _callCounter) == 0)
+        {
+            FreeRustArcPtr();
+        }
+    }
+
+    internal void CallWithPointer(Action<ulong> action)
+    {
+        IncrementCallCounter();
+        try
+        {
+            action(CloneRustArcPtr());
+        }
+        finally
+        {
+            DecrementCallCounter();
+        }
+    }
+
+    internal T CallWithPointer<T>(Func<ulong, T> func)
+    {
+        IncrementCallCounter();
+        try
+        {
+            return func(CloneRustArcPtr());
+        }
+        finally
+        {
+            DecrementCallCounter();
+        }
+    }
+
+    /// <summary>
+    /// Request this login grant attempt to abort cooperatively. This will
+    /// make the task tear down its running work and then return the
+    /// `Cancelled` error from [`Self::wait`].
+    ///
+    /// Cancelling is idempotent: if the attempt hasn't started running yet, it
+    /// won't be started and [`Self::wait`] returns `Cancelled` right away.
+    /// Calling this more than once, or after the attempt has already finished,
+    /// has no effect.
+    /// </summary>
+    public void Cancel()
+    {
+        CallWithPointer(thisPtr =>
+            _UniffiHelpers.RustCall(
+                (ref UniffiRustCallStatus _status) =>
+                    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_grantloginwithqrcodetask_cancel(thisPtr, ref _status)
+            )
+        );
+    }
+
+    /// <summary>
+    /// Wait for the login grant attempt to finish and return its result.
+    ///
+    /// If [`Self::cancel`] has been called, this returns
+    /// [`HumanQrGrantLoginError::Cancelled`] once the attempt has finished
+    /// tearing down its running task.
+    /// </summary>
+    /// <exception cref="HumanQrGrantLoginException"></exception>
+    public async Task Wait()
+    {
+        await _UniFFIAsync.UniffiRustCallAsync(
+            // Get rust future
+            CallWithPointer(thisPtr =>
+            {
+                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_grantloginwithqrcodetask_wait(thisPtr);
+            }),
+            // Poll
+            (ulong future, IntPtr continuation, ulong data) =>
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_void(future, continuation, data),
+            // Complete
+            (ulong future, ref UniffiRustCallStatus status) =>
+            {
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_void(future, ref status);
+            },
+            // Free
+            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_void(future),
+            // Error
+            FfiConverterTypeHumanQrGrantLoginError.INSTANCE
+        );
+    }
+}
+
+class FfiConverterTypeGrantLoginWithQrCodeTask : FfiConverter<GrantLoginWithQrCodeTask, ulong>
+{
+    public static FfiConverterTypeGrantLoginWithQrCodeTask INSTANCE = new FfiConverterTypeGrantLoginWithQrCodeTask();
+
+    public override ulong Lower(GrantLoginWithQrCodeTask value)
+    {
+        return value.CallWithPointer(thisPtr => thisPtr);
+    }
+
+    public override GrantLoginWithQrCodeTask Lift(ulong value)
+    {
+        return new GrantLoginWithQrCodeTask(value);
+    }
+
+    public override GrantLoginWithQrCodeTask Read(BigEndianStream stream)
+    {
+        return Lift(stream.ReadULong());
+    }
+
+    public override int AllocationSize(GrantLoginWithQrCodeTask value)
+    {
+        return 8;
+    }
+
+    public override void Write(GrantLoginWithQrCodeTask value, BigEndianStream stream)
     {
         stream.WriteULong(Lower(value));
     }
@@ -32649,8 +33803,8 @@ public interface IIdentityResetHandle
     Task Cancel();
 
     /// <summary>
-    /// This method starts the identity reset process and
-    /// will go through the following steps:
+    /// This method starts the identity reset process and will go through the
+    /// following steps:
     ///
     /// 1. Disable backing up room keys and delete the active backup
     /// 2. Disable recovery and delete secret storage
@@ -32658,7 +33812,7 @@ public interface IIdentityResetHandle
     /// 4. Finally, re-enable key backups only if they were enabled before
     /// </summary>
     /// <exception cref="ClientException"></exception>
-    Task Reset(AuthData? @auth);
+    Task Reset(AuthData @auth);
 }
 
 public class IdentityResetHandle : IIdentityResetHandle, IDisposable
@@ -32810,8 +33964,8 @@ public class IdentityResetHandle : IIdentityResetHandle, IDisposable
     }
 
     /// <summary>
-    /// This method starts the identity reset process and
-    /// will go through the following steps:
+    /// This method starts the identity reset process and will go through the
+    /// following steps:
     ///
     /// 1. Disable backing up room keys and delete the active backup
     /// 2. Disable recovery and delete secret storage
@@ -32819,7 +33973,7 @@ public class IdentityResetHandle : IIdentityResetHandle, IDisposable
     /// 4. Finally, re-enable key backups only if they were enabled before
     /// </summary>
     /// <exception cref="ClientException"></exception>
-    public async Task Reset(AuthData? @auth)
+    public async Task Reset(AuthData @auth)
     {
         await _UniFFIAsync.UniffiRustCallAsync(
             // Get rust future
@@ -32827,7 +33981,7 @@ public class IdentityResetHandle : IIdentityResetHandle, IDisposable
             {
                 return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_identityresethandle_reset(
                     thisPtr,
-                    FfiConverterOptionalTypeAuthData.INSTANCE.Lower(@auth)
+                    FfiConverterTypeAuthData.INSTANCE.Lower(@auth)
                 );
             }),
             // Poll
@@ -33841,8 +34995,8 @@ public interface ILiveLocationsObserver
     /// current snapshot (if non-empty), then calls it again for every
     /// subsequent change that arrives from sync.
     ///
-    /// Returns a [`TaskHandle`] that, when dropped, stops the listener.
-    /// The event handlers remain registered for as long as this
+    /// Returns a [`TaskHandle`] that, when dropped, stops the listener. The
+    /// event handlers remain registered for as long as this
     /// [`LiveLocationsObserver`] object is alive.
     /// </summary>
     TaskHandle Subscribe(LiveLocationsListener @listener);
@@ -33971,8 +35125,8 @@ public class LiveLocationsObserver : ILiveLocationsObserver, IDisposable
     /// current snapshot (if non-empty), then calls it again for every
     /// subsequent change that arrives from sync.
     ///
-    /// Returns a [`TaskHandle`] that, when dropped, stops the listener.
-    /// The event handlers remain registered for as long as this
+    /// Returns a [`TaskHandle`] that, when dropped, stops the listener. The
+    /// event handlers remain registered for as long as this
     /// [`LiveLocationsObserver`] object is alive.
     /// </summary>
     public TaskHandle Subscribe(LiveLocationsListener @listener)
@@ -34030,52 +35184,61 @@ public interface ILoginWithQrCodeHandler
     /// <summary>
     /// This method allows you to log in by generating a QR code.
     ///
-    /// This device needs to call this method and handle its progress updates to
-    /// generate a QR code which the existing device can scan and grant the
-    /// log in.
+    /// This device needs to call this method and handle the returned
+    /// [`LoginWithQrCodeTask`]'s progress updates to generate a QR code which
+    /// the existing device can scan and grant the log in.
     ///
-    /// This method uses the login mechanism described in [MSC4108]. As such,
-    /// it requires OAuth 2.0 support.
+    /// This spawns the login process in the background and returns
+    /// immediately with a [`LoginWithQrCodeTask`] that can be used to wait
+    /// for the login to finish, or to cancel it.
     ///
-    /// For the reverse flow where the existing device generates the QR code
-    /// for this device to scan, use [`LoginWithQrCodeHandler::scan`].
+    /// This method uses the login mechanism described in [MSC4108]. As such, it
+    /// requires OAuth 2.0 support.
+    ///
+    /// For the reverse flow where the existing device generates the QR code for
+    /// this device to scan, use [`LoginWithQrCodeHandler::scan`].
     ///
     /// # Arguments
     ///
-    /// * `progress_listener` - A progress listener that must also be used to
+    /// - `progress_listener` - A progress listener that must also be used to
     /// obtain the [`QrCodeData`] and collect the [`CheckCode`] from the user.
     ///
     /// [MSC4108]: https://github.com/matrix-org/matrix-spec-proposals/pull/4108
     /// </summary>
     /// <exception cref="HumanQrLoginException"></exception>
-    Task Generate(GeneratedQrLoginProgressListener @progressListener);
+    LoginWithQrCodeTask Generate(GeneratedQrLoginProgressListener @progressListener);
 
     /// <summary>
     /// This method allows you to log in with a scanned QR code.
     ///
     /// The existing device needs to display the QR code which this device can
-    /// scan, call this method and handle its progress updates to log in.
+    /// scan, call this method and handle the returned [`LoginWithQrCodeTask`]'s
+    /// progress updates to log in.
+    ///
+    /// This spawns the login process in the background and returns
+    /// immediately with a [`LoginWithQrCodeTask`] that can be used to wait
+    /// for the login to finish, or to cancel it.
     ///
     /// For the login to succeed, the [`Client`] associated with the
     /// [`LoginWithQrCodeHandler`] must have been built with
     /// [`QrCodeData::server_name`] as the server name.
     ///
-    /// This method uses the login mechanism described in [MSC4108]. As such,
-    /// it requires OAuth 2.0 support.
+    /// This method uses the login mechanism described in [MSC4108]. As such, it
+    /// requires OAuth 2.0 support.
     ///
     /// For the reverse flow where this device generates the QR code for the
     /// existing device to scan, use [`LoginWithQrCodeHandler::generate`].
     ///
     /// # Arguments
     ///
-    /// * `qr_code_data` - The [`QrCodeData`] scanned from the QR code.
-    /// * `progress_listener` - A progress listener that must also be used to
+    /// - `qr_code_data` - The [`QrCodeData`] scanned from the QR code.
+    /// - `progress_listener` - A progress listener that must also be used to
     /// transfer the [`CheckCode`] to the existing device.
     ///
     /// [MSC4108]: https://github.com/matrix-org/matrix-spec-proposals/pull/4108
     /// </summary>
     /// <exception cref="HumanQrLoginException"></exception>
-    Task Scan(QrCodeData @qrCodeData, QrLoginProgressListener @progressListener);
+    LoginWithQrCodeTask Scan(QrCodeData @qrCodeData, QrLoginProgressListener @progressListener);
 }
 
 /// <summary>
@@ -34193,47 +35356,42 @@ public class LoginWithQrCodeHandler : ILoginWithQrCodeHandler, IDisposable
     /// <summary>
     /// This method allows you to log in by generating a QR code.
     ///
-    /// This device needs to call this method and handle its progress updates to
-    /// generate a QR code which the existing device can scan and grant the
-    /// log in.
+    /// This device needs to call this method and handle the returned
+    /// [`LoginWithQrCodeTask`]'s progress updates to generate a QR code which
+    /// the existing device can scan and grant the log in.
     ///
-    /// This method uses the login mechanism described in [MSC4108]. As such,
-    /// it requires OAuth 2.0 support.
+    /// This spawns the login process in the background and returns
+    /// immediately with a [`LoginWithQrCodeTask`] that can be used to wait
+    /// for the login to finish, or to cancel it.
     ///
-    /// For the reverse flow where the existing device generates the QR code
-    /// for this device to scan, use [`LoginWithQrCodeHandler::scan`].
+    /// This method uses the login mechanism described in [MSC4108]. As such, it
+    /// requires OAuth 2.0 support.
+    ///
+    /// For the reverse flow where the existing device generates the QR code for
+    /// this device to scan, use [`LoginWithQrCodeHandler::scan`].
     ///
     /// # Arguments
     ///
-    /// * `progress_listener` - A progress listener that must also be used to
+    /// - `progress_listener` - A progress listener that must also be used to
     /// obtain the [`QrCodeData`] and collect the [`CheckCode`] from the user.
     ///
     /// [MSC4108]: https://github.com/matrix-org/matrix-spec-proposals/pull/4108
     /// </summary>
     /// <exception cref="HumanQrLoginException"></exception>
-    public async Task Generate(GeneratedQrLoginProgressListener @progressListener)
+    public LoginWithQrCodeTask Generate(GeneratedQrLoginProgressListener @progressListener)
     {
-        await _UniFFIAsync.UniffiRustCallAsync(
-            // Get rust future
-            CallWithPointer(thisPtr =>
-            {
-                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_loginwithqrcodehandler_generate(
-                    thisPtr,
-                    FfiConverterTypeGeneratedQrLoginProgressListener.INSTANCE.Lower(@progressListener)
-                );
-            }),
-            // Poll
-            (ulong future, IntPtr continuation, ulong data) =>
-                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_void(future, continuation, data),
-            // Complete
-            (ulong future, ref UniffiRustCallStatus status) =>
-            {
-                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_void(future, ref status);
-            },
-            // Free
-            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_void(future),
-            // Error
-            FfiConverterTypeHumanQrLoginError.INSTANCE
+        return CallWithPointer(thisPtr =>
+            FfiConverterTypeLoginWithQrCodeTask.INSTANCE.Lift(
+                _UniffiHelpers.RustCallWithError(
+                    FfiConverterTypeHumanQrLoginError.INSTANCE,
+                    (ref UniffiRustCallStatus _status) =>
+                        _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_loginwithqrcodehandler_generate(
+                            thisPtr,
+                            FfiConverterTypeGeneratedQrLoginProgressListener.INSTANCE.Lower(@progressListener),
+                            ref _status
+                        )
+                )
+            )
         );
     }
 
@@ -34241,51 +35399,47 @@ public class LoginWithQrCodeHandler : ILoginWithQrCodeHandler, IDisposable
     /// This method allows you to log in with a scanned QR code.
     ///
     /// The existing device needs to display the QR code which this device can
-    /// scan, call this method and handle its progress updates to log in.
+    /// scan, call this method and handle the returned [`LoginWithQrCodeTask`]'s
+    /// progress updates to log in.
+    ///
+    /// This spawns the login process in the background and returns
+    /// immediately with a [`LoginWithQrCodeTask`] that can be used to wait
+    /// for the login to finish, or to cancel it.
     ///
     /// For the login to succeed, the [`Client`] associated with the
     /// [`LoginWithQrCodeHandler`] must have been built with
     /// [`QrCodeData::server_name`] as the server name.
     ///
-    /// This method uses the login mechanism described in [MSC4108]. As such,
-    /// it requires OAuth 2.0 support.
+    /// This method uses the login mechanism described in [MSC4108]. As such, it
+    /// requires OAuth 2.0 support.
     ///
     /// For the reverse flow where this device generates the QR code for the
     /// existing device to scan, use [`LoginWithQrCodeHandler::generate`].
     ///
     /// # Arguments
     ///
-    /// * `qr_code_data` - The [`QrCodeData`] scanned from the QR code.
-    /// * `progress_listener` - A progress listener that must also be used to
+    /// - `qr_code_data` - The [`QrCodeData`] scanned from the QR code.
+    /// - `progress_listener` - A progress listener that must also be used to
     /// transfer the [`CheckCode`] to the existing device.
     ///
     /// [MSC4108]: https://github.com/matrix-org/matrix-spec-proposals/pull/4108
     /// </summary>
     /// <exception cref="HumanQrLoginException"></exception>
-    public async Task Scan(QrCodeData @qrCodeData, QrLoginProgressListener @progressListener)
+    public LoginWithQrCodeTask Scan(QrCodeData @qrCodeData, QrLoginProgressListener @progressListener)
     {
-        await _UniFFIAsync.UniffiRustCallAsync(
-            // Get rust future
-            CallWithPointer(thisPtr =>
-            {
-                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_loginwithqrcodehandler_scan(
-                    thisPtr,
-                    FfiConverterTypeQrCodeData.INSTANCE.Lower(@qrCodeData),
-                    FfiConverterTypeQrLoginProgressListener.INSTANCE.Lower(@progressListener)
-                );
-            }),
-            // Poll
-            (ulong future, IntPtr continuation, ulong data) =>
-                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_void(future, continuation, data),
-            // Complete
-            (ulong future, ref UniffiRustCallStatus status) =>
-            {
-                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_void(future, ref status);
-            },
-            // Free
-            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_void(future),
-            // Error
-            FfiConverterTypeHumanQrLoginError.INSTANCE
+        return CallWithPointer(thisPtr =>
+            FfiConverterTypeLoginWithQrCodeTask.INSTANCE.Lift(
+                _UniffiHelpers.RustCallWithError(
+                    FfiConverterTypeHumanQrLoginError.INSTANCE,
+                    (ref UniffiRustCallStatus _status) =>
+                        _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_loginwithqrcodehandler_scan(
+                            thisPtr,
+                            FfiConverterTypeQrCodeData.INSTANCE.Lower(@qrCodeData),
+                            FfiConverterTypeQrLoginProgressListener.INSTANCE.Lower(@progressListener),
+                            ref _status
+                        )
+                )
+            )
         );
     }
 }
@@ -34315,6 +35469,236 @@ class FfiConverterTypeLoginWithQrCodeHandler : FfiConverter<LoginWithQrCodeHandl
     }
 
     public override void Write(LoginWithQrCodeHandler value, BigEndianStream stream)
+    {
+        stream.WriteULong(Lower(value));
+    }
+}
+
+/// <summary>
+/// A handle to a single login attempt started by
+/// [`LoginWithQrCodeHandler::scan`] or [`LoginWithQrCodeHandler::generate`].
+///
+/// Use [`Self::wait`] to wait for the attempt to finish and obtain its
+/// result, and [`Self::cancel`] to request that it be aborted cooperatively.
+/// </summary>
+public interface ILoginWithQrCodeTask
+{
+    /// <summary>
+    /// Request this login attempt to abort cooperatively. This will make the
+    /// task tear down its running work and then return the `Cancelled` error
+    /// from [`Self::wait`].
+    ///
+    /// Cancelling is idempotent: if the attempt hasn't started running yet, it
+    /// won't be started and [`Self::wait`] returns `Cancelled` right away.
+    /// Calling this more than once, or after the attempt has already finished,
+    /// has no effect.
+    /// </summary>
+    void Cancel();
+
+    /// <summary>
+    /// Wait for the login attempt to finish and return its result.
+    ///
+    /// If [`Self::cancel`] has been called, this returns
+    /// [`HumanQrLoginError::Cancelled`] once the attempt has finished tearing
+    /// down its running task.
+    /// </summary>
+    /// <exception cref="HumanQrLoginException"></exception>
+    Task Wait();
+}
+
+/// <summary>
+/// A handle to a single login attempt started by
+/// [`LoginWithQrCodeHandler::scan`] or [`LoginWithQrCodeHandler::generate`].
+///
+/// Use [`Self::wait`] to wait for the attempt to finish and obtain its
+/// result, and [`Self::cancel`] to request that it be aborted cooperatively.
+/// </summary>
+public class LoginWithQrCodeTask : ILoginWithQrCodeTask, IDisposable
+{
+    protected ulong pointer;
+    private int _wasDestroyed = 0;
+    private long _callCounter = 1;
+
+    public LoginWithQrCodeTask(ulong pointer)
+    {
+        this.pointer = pointer;
+    }
+
+    ~LoginWithQrCodeTask()
+    {
+        Destroy();
+    }
+
+    protected void FreeRustArcPtr()
+    {
+        _UniffiHelpers.RustCall(
+            (ref UniffiRustCallStatus status) =>
+            {
+                _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_loginwithqrcodetask(this.pointer, ref status);
+            }
+        );
+    }
+
+    protected ulong CloneRustArcPtr()
+    {
+        return _UniffiHelpers.RustCall(
+            (ref UniffiRustCallStatus status) =>
+            {
+                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_clone_loginwithqrcodetask(this.pointer, ref status);
+            }
+        );
+    }
+
+    public void Destroy()
+    {
+        // Only allow a single call to this method.
+        if (Interlocked.CompareExchange(ref _wasDestroyed, 1, 0) == 0)
+        {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (Interlocked.Decrement(ref _callCounter) == 0)
+            {
+                FreeRustArcPtr();
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        Destroy();
+        GC.SuppressFinalize(this); // Suppress finalization to avoid unnecessary GC overhead.
+    }
+
+    private void IncrementCallCounter()
+    {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        long count;
+        do
+        {
+            count = Interlocked.Read(ref _callCounter);
+            if (count == 0L)
+                throw new System.ObjectDisposedException(
+                    String.Format("'{0}' object has already been destroyed", this.GetType().Name)
+                );
+            if (count == long.MaxValue)
+                throw new System.OverflowException(
+                    String.Format("'{0}' call counter would overflow", this.GetType().Name)
+                );
+        } while (Interlocked.CompareExchange(ref _callCounter, count + 1, count) != count);
+    }
+
+    private void DecrementCallCounter()
+    {
+        // This decrement always matches the increment we performed above.
+        if (Interlocked.Decrement(ref _callCounter) == 0)
+        {
+            FreeRustArcPtr();
+        }
+    }
+
+    internal void CallWithPointer(Action<ulong> action)
+    {
+        IncrementCallCounter();
+        try
+        {
+            action(CloneRustArcPtr());
+        }
+        finally
+        {
+            DecrementCallCounter();
+        }
+    }
+
+    internal T CallWithPointer<T>(Func<ulong, T> func)
+    {
+        IncrementCallCounter();
+        try
+        {
+            return func(CloneRustArcPtr());
+        }
+        finally
+        {
+            DecrementCallCounter();
+        }
+    }
+
+    /// <summary>
+    /// Request this login attempt to abort cooperatively. This will make the
+    /// task tear down its running work and then return the `Cancelled` error
+    /// from [`Self::wait`].
+    ///
+    /// Cancelling is idempotent: if the attempt hasn't started running yet, it
+    /// won't be started and [`Self::wait`] returns `Cancelled` right away.
+    /// Calling this more than once, or after the attempt has already finished,
+    /// has no effect.
+    /// </summary>
+    public void Cancel()
+    {
+        CallWithPointer(thisPtr =>
+            _UniffiHelpers.RustCall(
+                (ref UniffiRustCallStatus _status) =>
+                    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_loginwithqrcodetask_cancel(thisPtr, ref _status)
+            )
+        );
+    }
+
+    /// <summary>
+    /// Wait for the login attempt to finish and return its result.
+    ///
+    /// If [`Self::cancel`] has been called, this returns
+    /// [`HumanQrLoginError::Cancelled`] once the attempt has finished tearing
+    /// down its running task.
+    /// </summary>
+    /// <exception cref="HumanQrLoginException"></exception>
+    public async Task Wait()
+    {
+        await _UniFFIAsync.UniffiRustCallAsync(
+            // Get rust future
+            CallWithPointer(thisPtr =>
+            {
+                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_loginwithqrcodetask_wait(thisPtr);
+            }),
+            // Poll
+            (ulong future, IntPtr continuation, ulong data) =>
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_void(future, continuation, data),
+            // Complete
+            (ulong future, ref UniffiRustCallStatus status) =>
+            {
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_void(future, ref status);
+            },
+            // Free
+            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_void(future),
+            // Error
+            FfiConverterTypeHumanQrLoginError.INSTANCE
+        );
+    }
+}
+
+class FfiConverterTypeLoginWithQrCodeTask : FfiConverter<LoginWithQrCodeTask, ulong>
+{
+    public static FfiConverterTypeLoginWithQrCodeTask INSTANCE = new FfiConverterTypeLoginWithQrCodeTask();
+
+    public override ulong Lower(LoginWithQrCodeTask value)
+    {
+        return value.CallWithPointer(thisPtr => thisPtr);
+    }
+
+    public override LoginWithQrCodeTask Lift(ulong value)
+    {
+        return new LoginWithQrCodeTask(value);
+    }
+
+    public override LoginWithQrCodeTask Read(BigEndianStream stream)
+    {
+        return Lift(stream.ReadULong());
+    }
+
+    public override int AllocationSize(LoginWithQrCodeTask value)
+    {
+        return 8;
+    }
+
+    public override void Write(LoginWithQrCodeTask value, BigEndianStream stream)
     {
         stream.WriteULong(Lower(value));
     }
@@ -35045,8 +36429,8 @@ public interface INotificationSettings
     ///
     /// # Arguments
     ///
-    /// * `is_encrypted` - whether the room is encrypted
-    /// * `is_one_to_one` - whether the room is a direct chats involving two
+    /// - `is_encrypted` - whether the room is encrypted
+    /// - `is_one_to_one` - whether the room is a direct chats involving two
     /// people
     /// </summary>
     Task<RoomNotificationMode> GetDefaultRoomNotificationMode(bool @isEncrypted, bool @isOneToOne);
@@ -35062,9 +36446,9 @@ public interface INotificationSettings
     ///
     /// # Arguments
     ///
-    /// * `room_id` - the room ID
-    /// * `is_encrypted` - whether the room is encrypted
-    /// * `is_one_to_one` - whether the room is a direct chat involving two
+    /// - `room_id` - the room ID
+    /// - `is_encrypted` - whether the room is encrypted
+    /// - `is_one_to_one` - whether the room is a direct chat involving two
     /// people
     /// </summary>
     /// <exception cref="NotificationSettingsException"></exception>
@@ -35128,10 +36512,10 @@ public interface INotificationSettings
     ///
     /// # Arguments
     ///
-    /// * `is_encrypted` - whether the mode is for encrypted rooms
-    /// * `is_one_to_one` - whether the mode is for direct chats involving two
+    /// - `is_encrypted` - whether the mode is for encrypted rooms
+    /// - `is_one_to_one` - whether the mode is for direct chats involving two
     /// people
-    /// * `mode` - the new default mode
+    /// - `mode` - the new default mode
     /// </summary>
     /// <exception cref="NotificationSettingsException"></exception>
     Task SetDefaultRoomNotificationMode(bool @isEncrypted, bool @isOneToOne, RoomNotificationMode @mode);
@@ -35166,9 +36550,9 @@ public interface INotificationSettings
     ///
     /// # Arguments
     ///
-    /// * `room_id` - the room to unmute
-    /// * `is_encrypted` - whether the room is encrypted
-    /// * `is_one_to_one` - whether the room is a direct chat involving two
+    /// - `room_id` - the room to unmute
+    /// - `is_encrypted` - whether the room is encrypted
+    /// - `is_one_to_one` - whether the room is a direct chat involving two
     /// people
     /// </summary>
     /// <exception cref="NotificationSettingsException"></exception>
@@ -35384,8 +36768,8 @@ public class NotificationSettings : INotificationSettings, IDisposable
     ///
     /// # Arguments
     ///
-    /// * `is_encrypted` - whether the room is encrypted
-    /// * `is_one_to_one` - whether the room is a direct chats involving two
+    /// - `is_encrypted` - whether the room is encrypted
+    /// - `is_one_to_one` - whether the room is a direct chats involving two
     /// people
     /// </summary>
     public async Task<RoomNotificationMode> GetDefaultRoomNotificationMode(bool @isEncrypted, bool @isOneToOne)
@@ -35451,9 +36835,9 @@ public class NotificationSettings : INotificationSettings, IDisposable
     ///
     /// # Arguments
     ///
-    /// * `room_id` - the room ID
-    /// * `is_encrypted` - whether the room is encrypted
-    /// * `is_one_to_one` - whether the room is a direct chat involving two
+    /// - `room_id` - the room ID
+    /// - `is_encrypted` - whether the room is encrypted
+    /// - `is_one_to_one` - whether the room is a direct chat involving two
     /// people
     /// </summary>
     /// <exception cref="NotificationSettingsException"></exception>
@@ -35775,10 +37159,10 @@ public class NotificationSettings : INotificationSettings, IDisposable
     ///
     /// # Arguments
     ///
-    /// * `is_encrypted` - whether the mode is for encrypted rooms
-    /// * `is_one_to_one` - whether the mode is for direct chats involving two
+    /// - `is_encrypted` - whether the mode is for encrypted rooms
+    /// - `is_one_to_one` - whether the mode is for direct chats involving two
     /// people
-    /// * `mode` - the new default mode
+    /// - `mode` - the new default mode
     /// </summary>
     /// <exception cref="NotificationSettingsException"></exception>
     public async Task SetDefaultRoomNotificationMode(bool @isEncrypted, bool @isOneToOne, RoomNotificationMode @mode)
@@ -35949,9 +37333,9 @@ public class NotificationSettings : INotificationSettings, IDisposable
     ///
     /// # Arguments
     ///
-    /// * `room_id` - the room to unmute
-    /// * `is_encrypted` - whether the room is encrypted
-    /// * `is_one_to_one` - whether the room is a direct chat involving two
+    /// - `room_id` - the room to unmute
+    /// - `is_encrypted` - whether the room is encrypted
+    /// - `is_one_to_one` - whether the room is a direct chat involving two
     /// people
     /// </summary>
     /// <exception cref="NotificationSettingsException"></exception>
@@ -36215,7 +37599,8 @@ public class PasswordStrengthEstimator : IPasswordStrengthEstimator, IDisposable
 
     /// <summary>
     /// Creates an estimator using thresholds tuned for modern hardware (2025).
-    /// Values derived from determining entropy from the chart at https://www.hivesystems.com/blog/are-your-passwords-in-the-green
+    /// Values derived from determining entropy from the chart at
+    /// https://www.hivesystems.com/blog/are-your-passwords-in-the-green
     /// </summary>
     public static PasswordStrengthEstimator WithModernDefaults2025()
     {
@@ -36304,10 +37689,16 @@ public interface IQrCodeData
     /// The server name contained within the scanned QR code data.
     ///
     /// Note: This value is only present when scanning a QR code that belongs to
-    /// a logged in client. The mode where the new client shows the QR code
-    /// will return `None`.
+    /// a logged in client. The mode where the new client shows the QR code will
+    /// return `None`.
     /// </summary>
     string? ServerName();
+
+    /// <summary>
+    /// Serialize the [`QrCodeData`] into a base64 encoded string for encoding
+    /// as a QR code.
+    /// </summary>
+    string ToBase64();
 
     /// <summary>
     /// Serialize the [`QrCodeData`] into a byte vector for encoding as a QR
@@ -36472,8 +37863,8 @@ public class QrCodeData : IQrCodeData, IDisposable
     /// The server name contained within the scanned QR code data.
     ///
     /// Note: This value is only present when scanning a QR code that belongs to
-    /// a logged in client. The mode where the new client shows the QR code
-    /// will return `None`.
+    /// a logged in client. The mode where the new client shows the QR code will
+    /// return `None`.
     /// </summary>
     public string? ServerName()
     {
@@ -36482,6 +37873,22 @@ public class QrCodeData : IQrCodeData, IDisposable
                 _UniffiHelpers.RustCall(
                     (ref UniffiRustCallStatus _status) =>
                         _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_qrcodedata_server_name(thisPtr, ref _status)
+                )
+            )
+        );
+    }
+
+    /// <summary>
+    /// Serialize the [`QrCodeData`] into a base64 encoded string for encoding
+    /// as a QR code.
+    /// </summary>
+    public string ToBase64()
+    {
+        return CallWithPointer(thisPtr =>
+            FfiConverterString.INSTANCE.Lift(
+                _UniffiHelpers.RustCall(
+                    (ref UniffiRustCallStatus _status) =>
+                        _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_qrcodedata_to_base64(thisPtr, ref _status)
                 )
             )
         );
@@ -36604,7 +38011,7 @@ public interface IRoom
     ///
     /// # Arguments
     ///
-    /// * `rtc_notification_event_id` - the event id of the m.rtc.notification
+    /// - `rtc_notification_event_id` - the event id of the m.rtc.notification
     /// event.
     /// </summary>
     /// <exception cref="ClientException"></exception>
@@ -36696,15 +38103,16 @@ public interface IRoom
     string Id();
 
     /// <summary>
-    /// Set the local trust for the given devices to `LocalTrust::Ignored`
-    /// and resend messages that failed to send because said devices are
-    /// unverified (in response to
+    /// Set the local trust for the given devices to `LocalTrust::Ignored` and
+    /// resend messages that failed to send because said devices are unverified
+    /// (in response to
     /// `SessionRecipientCollectionError::VerifiedUserHasUnsignedDevice`).
+    ///
     /// # Arguments
     ///
-    /// * `devices` - The map of users identifiers to device identifiers
+    /// - `devices` - The map of users identifiers to device identifiers
     /// received in the error
-    /// * `transaction_id` - The send queue transaction identifier of the local
+    /// - `transaction_id` - The send queue transaction identifier of the local
     /// echo the send error applies to
     /// </summary>
     /// <exception cref="ClientException"></exception>
@@ -36817,11 +38225,11 @@ public interface IRoom
     /// optionally scoped to a thread.
     ///
     /// The receipt is read from the local store, which is fed by sync, so it
-    /// also reflects receipts sent by the user's other devices. Returns
-    /// `None` if the user has no matching receipt in this room.
+    /// also reflects receipts sent by the user's other devices. Returns `None`
+    /// if the user has no matching receipt in this room.
     ///
-    /// Note: [`ReceiptType::FullyRead`] is a marker, not an event receipt,
-    /// and is rejected.
+    /// Note: [`ReceiptType::FullyRead`] is a marker, not an event receipt, and
+    /// is rejected.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task<UserReceipt?> LoadUserReceipt(ReceiptType @receiptType, ReceiptThread @thread, string @userId);
@@ -36833,9 +38241,8 @@ public interface IRoom
     /// **Warning:** using this method is **NOT** recommended, as providing the
     /// latest event id can cause incorrect read receipts. This method won't
     /// check if sending the read receipt is necessary or valid. It should
-    /// *only* be used when some constraint prevents you from instantiating a
-    /// [`Timeline`]. For any other case use [`Timeline::mark_as_read`]
-    /// instead.
+    /// _only_ be used when some constraint prevents you from instantiating a
+    /// [`Timeline`]. For any other case use [`Timeline::mark_as_read`] instead.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task MarkAsFullyReadUnchecked(string @eventId);
@@ -36916,6 +38323,7 @@ public interface IRoom
     /// Publish a new room alias for this room in the room directory.
     ///
     /// Returns:
+    ///
     /// - `true` if the room alias didn't exist and it's now published.
     /// - `false` if the room alias was already present so it couldn't be
     /// published.
@@ -36933,9 +38341,8 @@ public interface IRoom
     ///
     /// # Arguments
     ///
-    /// * `event_id` - The ID of the event to redact
-    ///
-    /// * `reason` - The reason for the event being redacted (optional). its
+    /// - `event_id` - The ID of the event to redact
+    /// - `reason` - The reason for the event being redacted (optional). its
     /// transaction ID (optional). If not given one is created.
     /// </summary>
     /// <exception cref="ClientException"></exception>
@@ -36951,6 +38358,7 @@ public interface IRoom
     /// Remove an existing room alias for this room in the room directory.
     ///
     /// Returns:
+    ///
     /// - `true` if the room alias was present and it's now removed from the
     /// room directory.
     /// - `false` if the room alias didn't exist so it couldn't be removed.
@@ -36963,23 +38371,21 @@ public interface IRoom
     ///
     /// # Arguments
     ///
-    /// * `event_id` - The ID of the event to report
-    ///
-    /// * `reason` - The reason for the event being reported (optional).
-    ///
-    /// * `score` - The score to rate this content as where -100 is most
+    /// - `event_id` - The ID of the event to report
+    /// - `reason` - The reason for the event being reported (optional).
+    /// - `score` - The score to rate this content as where -100 is most
     /// offensive and 0 is inoffensive (optional).
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task ReportContent(string @eventId, string? @reason);
 
     /// <summary>
-    /// Reports a room as inappropriate to the server.
-    /// The caller is not required to be joined to the room to report it.
+    /// Reports a room as inappropriate to the server. The caller is not
+    /// required to be joined to the room to report it.
     ///
     /// # Arguments
     ///
-    /// * `reason` - The reason the room is being reported.
+    /// - `reason` - The reason the room is being reported.
     ///
     /// # Errors
     ///
@@ -36990,13 +38396,6 @@ public interface IRoom
 
     /// <exception cref="ClientException"></exception>
     Task<RoomPowerLevels> ResetPowerLevels();
-
-    /// <summary>
-    /// Return a debug representation for the internal room events data
-    /// structure, one line per entry in the resulting vector.
-    /// </summary>
-    /// <exception cref="ClientException"></exception>
-    Task<string[]> RoomEventsDebugString();
 
     /// <exception cref="ClientException"></exception>
     Task<RoomInfo> RoomInfo();
@@ -37022,20 +38421,21 @@ public interface IRoom
     /// * `event_type` - The type of the event to send.
     ///
     /// * `content` - The content of the event to send encoded as JSON string.
+    ///
+    /// Returns the event ID of the newly sent event.
     /// </summary>
     /// <exception cref="ClientException"></exception>
-    Task SendRaw(string @eventType, string @content);
+    Task<string> SendRaw(string @eventType, string @content);
 
     /// <summary>
     /// Send a single receipt of the given type for the given event, optionally
     /// scoped to a thread.
     ///
     /// This allows sending receipts for events without instantiating the
-    /// [`Timeline`] they belong to, e.g. marking a thread as read from its
-    /// root and latest event ids. Note that this won't check whether sending
-    /// the receipt is necessary or valid (i.e. it can move a receipt
-    /// backwards); prefer [`Timeline::send_single_receipt`] when a timeline
-    /// is available.
+    /// [`Timeline`] they belong to, e.g. marking a thread as read from its root
+    /// and latest event ids. Note that this won't check whether sending the
+    /// receipt is necessary or valid (i.e. it can move a receipt backwards);
+    /// prefer [`Timeline::send_single_receipt`] when a timeline is available.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task SendSingleReceipt(ReceiptType @receiptType, ReceiptThread @thread, string @eventId);
@@ -37045,13 +38445,13 @@ public interface IRoom
     ///
     /// # Arguments
     ///
-    /// * `event_type` - The type of the state event to send (e.g.
+    /// - `event_type` - The type of the state event to send (e.g.
     /// `"m.room.name"` or a custom type).
     ///
-    /// * `state_key` - A unique key which defines the overwriting semantics for
+    /// - `state_key` - A unique key which defines the overwriting semantics for
     /// this piece of room state. This is often an empty string.
     ///
-    /// * `content` - The content of the state event encoded as a JSON string.
+    /// - `content` - The content of the state event encoded as a JSON string.
     ///
     /// Returns the event ID of the newly created state event.
     /// </summary>
@@ -37078,8 +38478,8 @@ public interface IRoom
     /// root event id.
     ///
     /// If `subscribed` is `true`, it will subscribe to the thread, with a
-    /// precision that the subscription was manually requested by the user
-    /// (i.e. not automatic).
+    /// precision that the subscription was manually requested by the user (i.e.
+    /// not automatic).
     ///
     /// If the thread was already subscribed to (resp. unsubscribed from), while
     /// trying to subscribe to it (resp. unsubscribe from it), it will do
@@ -37113,7 +38513,7 @@ public interface IRoom
     ///
     /// # Arguments
     ///
-    /// * `event_type` - The type of the state events to read. For a type that
+    /// - `event_type` - The type of the state events to read. For a type that
     /// has no variant of its own, build one from its string representation
     /// with `stateEventTypeFromString("com.example.custom")`.
     ///
@@ -37134,8 +38534,8 @@ public interface IRoom
     /// Subscribes to call decline for a currently ringing call, using a
     /// `listener` to be notified when someone declines.
     ///
-    /// Will error if `rtc_notification_event_id` is not a valid event id.
-    /// Use the [`TaskHandle`] to cancel the subscription.
+    /// Will error if `rtc_notification_event_id` is not a valid event id. Use
+    /// the [`TaskHandle`] to cancel the subscription.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     TaskHandle SubscribeToCallDeclineEvents(string @rtcNotificationEventId, CallDeclineListener @listener);
@@ -37147,9 +38547,8 @@ public interface IRoom
     /// Subscribes to requests to join this room (knock member events), using a
     /// `listener` to be notified of the changes.
     ///
-    /// The current requests to join the room will be emitted immediately
-    /// when subscribing, along with a [`TaskHandle`] to cancel the
-    /// subscription.
+    /// The current requests to join the room will be emitted immediately when
+    /// subscribing, along with a [`TaskHandle`] to cancel the subscription.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task<TaskHandle> SubscribeToKnockRequests(KnockRequestsListener @listener);
@@ -37159,8 +38558,8 @@ public interface IRoom
     /// Subscribe to all send queue updates in this room.
     ///
     /// The given listener will be immediately called with
-    /// `RoomSendQueueUpdate::NewLocalEvent` for each local echo existing in
-    /// the queue.
+    /// `RoomSendQueueUpdate::NewLocalEvent` for each local echo existing in the
+    /// queue.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task<TaskHandle> SubscribeToSendQueueUpdates(SendQueueListener @listener);
@@ -37169,15 +38568,15 @@ public interface IRoom
     /// Subscribe to the room state events of the given type.
     ///
     /// The listener is called with the full current list of state events of
-    /// that type, one per state key, immediately and then after every sync
-    /// that changed any of them. All the changes of one sync are reported as a
+    /// that type, one per state key, immediately and then after every sync that
+    /// changed any of them. All the changes of one sync are reported as a
     /// single snapshot.
     ///
     /// Use the returned [`TaskHandle`] to cancel the subscription.
     ///
     /// # Arguments
     ///
-    /// * `event_type` - The type of the state events to listen to. For a type
+    /// - `event_type` - The type of the state events to listen to. For a type
     /// that has no variant of its own, build one from its string
     /// representation with `stateEventTypeFromString("com.example.custom")`.
     /// </summary>
@@ -37267,29 +38666,88 @@ public interface IRoom
     ///
     /// # Arguments
     ///
-    /// * `mime_type` - The mime description of the avatar, for example
+    /// - `mime_type` - The mime description of the avatar, for example
     /// image/jpeg
-    /// * `data` - The raw data that will be uploaded to the homeserver's
+    /// - `data` - The raw data that will be uploaded to the homeserver's
     /// content repository
-    /// * `media_info` - The media info used as avatar image info.
+    /// - `media_info` - The media info used as avatar image info.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task UploadAvatar(string @mimeType, byte[] @data, ImageInfo? @mediaInfo);
 
     /// <summary>
-    /// Remove verification requirements for the given users and
-    /// resend messages that failed to send because their identities were no
-    /// longer verified (in response to
+    /// Remove verification requirements for the given users and resend messages
+    /// that failed to send because their identities were no longer verified (in
+    /// response to
     /// `SessionRecipientCollectionError::VerifiedUserChangedIdentity`)
     ///
     /// # Arguments
     ///
-    /// * `user_ids` - The list of users identifiers received in the error
-    /// * `transaction_id` - The send queue transaction identifier of the local
+    /// - `user_ids` - The list of users identifiers received in the error
+    /// - `transaction_id` - The send queue transaction identifier of the local
     /// echo the send error applies to
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task WithdrawVerificationAndResend(string[] @userIds, SendHandle @sendHandle);
+
+    /// <summary>
+    /// Subscribe to the message-like events of the given type in this room.
+    ///
+    /// The listener is called with every event of that type that a sync brings
+    /// into the room's timeline from now on, decrypted if it was encrypted.
+    ///
+    /// This is built on the SDK's sync event handlers, so events come from sync
+    /// only (not from pagination).
+    /// An event that couldn't be decrypted during sync will not be reported
+    /// even if it gets decrypted later.
+    ///
+    /// Use the returned [`TaskHandle`] to cancel the subscription.
+    ///
+    /// # Arguments
+    ///
+    /// - `event_type` - The type of the events to listen to. Build one from its
+    /// string representation with
+    /// `messageLikeEventTypeFromString("org.example.type")`.
+    /// </summary>
+    TaskHandle SubscribeToMessageLikeEvents(MessageLikeEventType @eventType, RoomMessageLikeEventsListener @listener);
+
+    /// <summary>
+    /// Send a sticky event to this room.
+    /// Note that if the homeserver doesn't support sticky events, it will
+    /// ignore the duration and send the event unsticky. Server support can
+    /// be checked with [`Client::is_sticky_events_supported`].
+    ///
+    /// # Arguments
+    ///
+    /// - `event_type` - The type of the event to send.
+    /// - `content` - The content of the event to send encoded as JSON string.
+    /// - `duration_ms` - How long the event stays sticky for, in milliseconds,
+    /// clamped to one hour.
+    ///
+    /// # Returns
+    ///
+    /// The event ID of the newly sent event.
+    ///
+    /// [`Client::is_sticky_events_supported`]: crate::client::Client::is_sticky_events_supported
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    Task<string> SendStickyRaw(string @eventType, string @content, ulong @durationMs);
+
+    /// <summary>
+    /// The sticky events that are currently live in this room.
+    /// </summary>
+    StickyEvent[] StickyEvents();
+
+    /// <summary>
+    /// Subscribe to the sticky events of this room.
+    ///
+    /// The listener first receives a [`StickyEventsUpdate::Reset`] with the
+    /// sticky events that are currently live, then a
+    /// [`StickyEventsUpdate::Changes`] for every change. Should it fall behind
+    /// and miss changes, it receives another [`StickyEventsUpdate::Reset`] to
+    /// catch up with.
+    /// </summary>
+    TaskHandle SubscribeToStickyEvents(StickyEventsListener @listener);
 }
 
 public class Room : IRoom, IDisposable
@@ -37625,7 +39083,7 @@ public class Room : IRoom, IDisposable
     ///
     /// # Arguments
     ///
-    /// * `rtc_notification_event_id` - the event id of the m.rtc.notification
+    /// - `rtc_notification_event_id` - the event id of the m.rtc.notification
     /// event.
     /// </summary>
     /// <exception cref="ClientException"></exception>
@@ -37978,15 +39436,16 @@ public class Room : IRoom, IDisposable
     }
 
     /// <summary>
-    /// Set the local trust for the given devices to `LocalTrust::Ignored`
-    /// and resend messages that failed to send because said devices are
-    /// unverified (in response to
+    /// Set the local trust for the given devices to `LocalTrust::Ignored` and
+    /// resend messages that failed to send because said devices are unverified
+    /// (in response to
     /// `SessionRecipientCollectionError::VerifiedUserHasUnsignedDevice`).
+    ///
     /// # Arguments
     ///
-    /// * `devices` - The map of users identifiers to device identifiers
+    /// - `devices` - The map of users identifiers to device identifiers
     /// received in the error
-    /// * `transaction_id` - The send queue transaction identifier of the local
+    /// - `transaction_id` - The send queue transaction identifier of the local
     /// echo the send error applies to
     /// </summary>
     /// <exception cref="ClientException"></exception>
@@ -38514,11 +39973,11 @@ public class Room : IRoom, IDisposable
     /// optionally scoped to a thread.
     ///
     /// The receipt is read from the local store, which is fed by sync, so it
-    /// also reflects receipts sent by the user's other devices. Returns
-    /// `None` if the user has no matching receipt in this room.
+    /// also reflects receipts sent by the user's other devices. Returns `None`
+    /// if the user has no matching receipt in this room.
     ///
-    /// Note: [`ReceiptType::FullyRead`] is a marker, not an event receipt,
-    /// and is rejected.
+    /// Note: [`ReceiptType::FullyRead`] is a marker, not an event receipt, and
+    /// is rejected.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task<UserReceipt?> LoadUserReceipt(ReceiptType @receiptType, ReceiptThread @thread, string @userId)
@@ -38558,9 +40017,8 @@ public class Room : IRoom, IDisposable
     /// **Warning:** using this method is **NOT** recommended, as providing the
     /// latest event id can cause incorrect read receipts. This method won't
     /// check if sending the read receipt is necessary or valid. It should
-    /// *only* be used when some constraint prevents you from instantiating a
-    /// [`Timeline`]. For any other case use [`Timeline::mark_as_read`]
-    /// instead.
+    /// _only_ be used when some constraint prevents you from instantiating a
+    /// [`Timeline`]. For any other case use [`Timeline::mark_as_read`] instead.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task MarkAsFullyReadUnchecked(string @eventId)
@@ -38945,6 +40403,7 @@ public class Room : IRoom, IDisposable
     /// Publish a new room alias for this room in the room directory.
     ///
     /// Returns:
+    ///
     /// - `true` if the room alias didn't exist and it's now published.
     /// - `false` if the room alias was already present so it couldn't be
     /// published.
@@ -38998,9 +40457,8 @@ public class Room : IRoom, IDisposable
     ///
     /// # Arguments
     ///
-    /// * `event_id` - The ID of the event to redact
-    ///
-    /// * `reason` - The reason for the event being redacted (optional). its
+    /// - `event_id` - The ID of the event to redact
+    /// - `reason` - The reason for the event being redacted (optional). its
     /// transaction ID (optional). If not given one is created.
     /// </summary>
     /// <exception cref="ClientException"></exception>
@@ -39062,6 +40520,7 @@ public class Room : IRoom, IDisposable
     /// Remove an existing room alias for this room in the room directory.
     ///
     /// Returns:
+    ///
     /// - `true` if the room alias was present and it's now removed from the
     /// room directory.
     /// - `false` if the room alias didn't exist so it couldn't be removed.
@@ -39100,11 +40559,9 @@ public class Room : IRoom, IDisposable
     ///
     /// # Arguments
     ///
-    /// * `event_id` - The ID of the event to report
-    ///
-    /// * `reason` - The reason for the event being reported (optional).
-    ///
-    /// * `score` - The score to rate this content as where -100 is most
+    /// - `event_id` - The ID of the event to report
+    /// - `reason` - The reason for the event being reported (optional).
+    /// - `score` - The score to rate this content as where -100 is most
     /// offensive and 0 is inoffensive (optional).
     /// </summary>
     /// <exception cref="ClientException"></exception>
@@ -39136,12 +40593,12 @@ public class Room : IRoom, IDisposable
     }
 
     /// <summary>
-    /// Reports a room as inappropriate to the server.
-    /// The caller is not required to be joined to the room to report it.
+    /// Reports a room as inappropriate to the server. The caller is not
+    /// required to be joined to the room to report it.
     ///
     /// # Arguments
     ///
-    /// * `reason` - The reason the room is being reported.
+    /// - `reason` - The reason the room is being reported.
     ///
     /// # Errors
     ///
@@ -39195,36 +40652,6 @@ public class Room : IRoom, IDisposable
             (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_u64(future),
             // Lift
             (result) => FfiConverterTypeRoomPowerLevels.INSTANCE.Lift(result),
-            // Error
-            FfiConverterTypeClientError.INSTANCE
-        );
-    }
-
-    /// <summary>
-    /// Return a debug representation for the internal room events data
-    /// structure, one line per entry in the resulting vector.
-    /// </summary>
-    /// <exception cref="ClientException"></exception>
-    public async Task<string[]> RoomEventsDebugString()
-    {
-        return await _UniFFIAsync.UniffiRustCallAsync(
-            // Get rust future
-            CallWithPointer(thisPtr =>
-            {
-                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_room_events_debug_string(thisPtr);
-            }),
-            // Poll
-            (ulong future, IntPtr continuation, ulong data) =>
-                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_rust_buffer(future, continuation, data),
-            // Complete
-            (ulong future, ref UniffiRustCallStatus status) =>
-            {
-                return _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_rust_buffer(future, ref status);
-            },
-            // Free
-            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_rust_buffer(future),
-            // Lift
-            (result) => FfiConverterSequenceString.INSTANCE.Lift(result),
             // Error
             FfiConverterTypeClientError.INSTANCE
         );
@@ -39326,11 +40753,13 @@ public class Room : IRoom, IDisposable
     /// * `event_type` - The type of the event to send.
     ///
     /// * `content` - The content of the event to send encoded as JSON string.
+    ///
+    /// Returns the event ID of the newly sent event.
     /// </summary>
     /// <exception cref="ClientException"></exception>
-    public async Task SendRaw(string @eventType, string @content)
+    public async Task<string> SendRaw(string @eventType, string @content)
     {
-        await _UniFFIAsync.UniffiRustCallAsync(
+        return await _UniFFIAsync.UniffiRustCallAsync(
             // Get rust future
             CallWithPointer(thisPtr =>
             {
@@ -39342,14 +40771,16 @@ public class Room : IRoom, IDisposable
             }),
             // Poll
             (ulong future, IntPtr continuation, ulong data) =>
-                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_void(future, continuation, data),
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_rust_buffer(future, continuation, data),
             // Complete
             (ulong future, ref UniffiRustCallStatus status) =>
             {
-                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_void(future, ref status);
+                return _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_rust_buffer(future, ref status);
             },
             // Free
-            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_void(future),
+            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_rust_buffer(future),
+            // Lift
+            (result) => FfiConverterString.INSTANCE.Lift(result),
             // Error
             FfiConverterTypeClientError.INSTANCE
         );
@@ -39360,11 +40791,10 @@ public class Room : IRoom, IDisposable
     /// scoped to a thread.
     ///
     /// This allows sending receipts for events without instantiating the
-    /// [`Timeline`] they belong to, e.g. marking a thread as read from its
-    /// root and latest event ids. Note that this won't check whether sending
-    /// the receipt is necessary or valid (i.e. it can move a receipt
-    /// backwards); prefer [`Timeline::send_single_receipt`] when a timeline
-    /// is available.
+    /// [`Timeline`] they belong to, e.g. marking a thread as read from its root
+    /// and latest event ids. Note that this won't check whether sending the
+    /// receipt is necessary or valid (i.e. it can move a receipt backwards);
+    /// prefer [`Timeline::send_single_receipt`] when a timeline is available.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task SendSingleReceipt(ReceiptType @receiptType, ReceiptThread @thread, string @eventId)
@@ -39400,13 +40830,13 @@ public class Room : IRoom, IDisposable
     ///
     /// # Arguments
     ///
-    /// * `event_type` - The type of the state event to send (e.g.
+    /// - `event_type` - The type of the state event to send (e.g.
     /// `"m.room.name"` or a custom type).
     ///
-    /// * `state_key` - A unique key which defines the overwriting semantics for
+    /// - `state_key` - A unique key which defines the overwriting semantics for
     /// this piece of room state. This is often an empty string.
     ///
-    /// * `content` - The content of the state event encoded as a JSON string.
+    /// - `content` - The content of the state event encoded as a JSON string.
     ///
     /// Returns the event ID of the newly created state event.
     /// </summary>
@@ -39559,8 +40989,8 @@ public class Room : IRoom, IDisposable
     /// root event id.
     ///
     /// If `subscribed` is `true`, it will subscribe to the thread, with a
-    /// precision that the subscription was manually requested by the user
-    /// (i.e. not automatic).
+    /// precision that the subscription was manually requested by the user (i.e.
+    /// not automatic).
     ///
     /// If the thread was already subscribed to (resp. unsubscribed from), while
     /// trying to subscribe to it (resp. unsubscribe from it), it will do
@@ -39693,7 +41123,7 @@ public class Room : IRoom, IDisposable
     ///
     /// # Arguments
     ///
-    /// * `event_type` - The type of the state events to read. For a type that
+    /// - `event_type` - The type of the state events to read. For a type that
     /// has no variant of its own, build one from its string representation
     /// with `stateEventTypeFromString("com.example.custom")`.
     ///
@@ -39761,8 +41191,8 @@ public class Room : IRoom, IDisposable
     /// Subscribes to call decline for a currently ringing call, using a
     /// `listener` to be notified when someone declines.
     ///
-    /// Will error if `rtc_notification_event_id` is not a valid event id.
-    /// Use the [`TaskHandle`] to cancel the subscription.
+    /// Will error if `rtc_notification_event_id` is not a valid event id. Use
+    /// the [`TaskHandle`] to cancel the subscription.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public TaskHandle SubscribeToCallDeclineEvents(string @rtcNotificationEventId, CallDeclineListener @listener)
@@ -39816,9 +41246,8 @@ public class Room : IRoom, IDisposable
     /// Subscribes to requests to join this room (knock member events), using a
     /// `listener` to be notified of the changes.
     ///
-    /// The current requests to join the room will be emitted immediately
-    /// when subscribing, along with a [`TaskHandle`] to cancel the
-    /// subscription.
+    /// The current requests to join the room will be emitted immediately when
+    /// subscribing, along with a [`TaskHandle`] to cancel the subscription.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task<TaskHandle> SubscribeToKnockRequests(KnockRequestsListener @listener)
@@ -39869,8 +41298,8 @@ public class Room : IRoom, IDisposable
     /// Subscribe to all send queue updates in this room.
     ///
     /// The given listener will be immediately called with
-    /// `RoomSendQueueUpdate::NewLocalEvent` for each local echo existing in
-    /// the queue.
+    /// `RoomSendQueueUpdate::NewLocalEvent` for each local echo existing in the
+    /// queue.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task<TaskHandle> SubscribeToSendQueueUpdates(SendQueueListener @listener)
@@ -39905,15 +41334,15 @@ public class Room : IRoom, IDisposable
     /// Subscribe to the room state events of the given type.
     ///
     /// The listener is called with the full current list of state events of
-    /// that type, one per state key, immediately and then after every sync
-    /// that changed any of them. All the changes of one sync are reported as a
+    /// that type, one per state key, immediately and then after every sync that
+    /// changed any of them. All the changes of one sync are reported as a
     /// single snapshot.
     ///
     /// Use the returned [`TaskHandle`] to cancel the subscription.
     ///
     /// # Arguments
     ///
-    /// * `event_type` - The type of the state events to listen to. For a type
+    /// - `event_type` - The type of the state events to listen to. For a type
     /// that has no variant of its own, build one from its string
     /// representation with `stateEventTypeFromString("com.example.custom")`.
     /// </summary>
@@ -40309,11 +41738,11 @@ public class Room : IRoom, IDisposable
     ///
     /// # Arguments
     ///
-    /// * `mime_type` - The mime description of the avatar, for example
+    /// - `mime_type` - The mime description of the avatar, for example
     /// image/jpeg
-    /// * `data` - The raw data that will be uploaded to the homeserver's
+    /// - `data` - The raw data that will be uploaded to the homeserver's
     /// content repository
-    /// * `media_info` - The media info used as avatar image info.
+    /// - `media_info` - The media info used as avatar image info.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task UploadAvatar(string @mimeType, byte[] @data, ImageInfo? @mediaInfo)
@@ -40345,15 +41774,15 @@ public class Room : IRoom, IDisposable
     }
 
     /// <summary>
-    /// Remove verification requirements for the given users and
-    /// resend messages that failed to send because their identities were no
-    /// longer verified (in response to
+    /// Remove verification requirements for the given users and resend messages
+    /// that failed to send because their identities were no longer verified (in
+    /// response to
     /// `SessionRecipientCollectionError::VerifiedUserChangedIdentity`)
     ///
     /// # Arguments
     ///
-    /// * `user_ids` - The list of users identifiers received in the error
-    /// * `transaction_id` - The send queue transaction identifier of the local
+    /// - `user_ids` - The list of users identifiers received in the error
+    /// - `transaction_id` - The send queue transaction identifier of the local
     /// echo the send error applies to
     /// </summary>
     /// <exception cref="ClientException"></exception>
@@ -40381,6 +41810,135 @@ public class Room : IRoom, IDisposable
             (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_void(future),
             // Error
             FfiConverterTypeClientError.INSTANCE
+        );
+    }
+
+    /// <summary>
+    /// Subscribe to the message-like events of the given type in this room.
+    ///
+    /// The listener is called with every event of that type that a sync brings
+    /// into the room's timeline from now on, decrypted if it was encrypted.
+    ///
+    /// This is built on the SDK's sync event handlers, so events come from sync
+    /// only (not from pagination).
+    /// An event that couldn't be decrypted during sync will not be reported
+    /// even if it gets decrypted later.
+    ///
+    /// Use the returned [`TaskHandle`] to cancel the subscription.
+    ///
+    /// # Arguments
+    ///
+    /// - `event_type` - The type of the events to listen to. Build one from its
+    /// string representation with
+    /// `messageLikeEventTypeFromString("org.example.type")`.
+    /// </summary>
+    public TaskHandle SubscribeToMessageLikeEvents(
+        MessageLikeEventType @eventType,
+        RoomMessageLikeEventsListener @listener
+    )
+    {
+        return CallWithPointer(thisPtr =>
+            FfiConverterTypeTaskHandle.INSTANCE.Lift(
+                _UniffiHelpers.RustCall(
+                    (ref UniffiRustCallStatus _status) =>
+                        _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_subscribe_to_message_like_events(
+                            thisPtr,
+                            FfiConverterTypeMessageLikeEventType.INSTANCE.Lower(@eventType),
+                            FfiConverterTypeRoomMessageLikeEventsListener.INSTANCE.Lower(@listener),
+                            ref _status
+                        )
+                )
+            )
+        );
+    }
+
+    /// <summary>
+    /// Send a sticky event to this room.
+    /// Note that if the homeserver doesn't support sticky events, it will
+    /// ignore the duration and send the event unsticky. Server support can
+    /// be checked with [`Client::is_sticky_events_supported`].
+    ///
+    /// # Arguments
+    ///
+    /// - `event_type` - The type of the event to send.
+    /// - `content` - The content of the event to send encoded as JSON string.
+    /// - `duration_ms` - How long the event stays sticky for, in milliseconds,
+    /// clamped to one hour.
+    ///
+    /// # Returns
+    ///
+    /// The event ID of the newly sent event.
+    ///
+    /// [`Client::is_sticky_events_supported`]: crate::client::Client::is_sticky_events_supported
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    public async Task<string> SendStickyRaw(string @eventType, string @content, ulong @durationMs)
+    {
+        return await _UniFFIAsync.UniffiRustCallAsync(
+            // Get rust future
+            CallWithPointer(thisPtr =>
+            {
+                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_send_sticky_raw(
+                    thisPtr,
+                    FfiConverterString.INSTANCE.Lower(@eventType),
+                    FfiConverterString.INSTANCE.Lower(@content),
+                    FfiConverterUInt64.INSTANCE.Lower(@durationMs)
+                );
+            }),
+            // Poll
+            (ulong future, IntPtr continuation, ulong data) =>
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_rust_buffer(future, continuation, data),
+            // Complete
+            (ulong future, ref UniffiRustCallStatus status) =>
+            {
+                return _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_rust_buffer(future, ref status);
+            },
+            // Free
+            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_rust_buffer(future),
+            // Lift
+            (result) => FfiConverterString.INSTANCE.Lift(result),
+            // Error
+            FfiConverterTypeClientError.INSTANCE
+        );
+    }
+
+    /// <summary>
+    /// The sticky events that are currently live in this room.
+    /// </summary>
+    public StickyEvent[] StickyEvents()
+    {
+        return CallWithPointer(thisPtr =>
+            FfiConverterSequenceTypeStickyEvent.INSTANCE.Lift(
+                _UniffiHelpers.RustCall(
+                    (ref UniffiRustCallStatus _status) =>
+                        _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_sticky_events(thisPtr, ref _status)
+                )
+            )
+        );
+    }
+
+    /// <summary>
+    /// Subscribe to the sticky events of this room.
+    ///
+    /// The listener first receives a [`StickyEventsUpdate::Reset`] with the
+    /// sticky events that are currently live, then a
+    /// [`StickyEventsUpdate::Changes`] for every change. Should it fall behind
+    /// and miss changes, it receives another [`StickyEventsUpdate::Reset`] to
+    /// catch up with.
+    /// </summary>
+    public TaskHandle SubscribeToStickyEvents(StickyEventsListener @listener)
+    {
+        return CallWithPointer(thisPtr =>
+            FfiConverterTypeTaskHandle.INSTANCE.Lift(
+                _UniffiHelpers.RustCall(
+                    (ref UniffiRustCallStatus _status) =>
+                        _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_subscribe_to_sticky_events(
+                            thisPtr,
+                            FfiConverterTypeStickyEventsListener.INSTANCE.Lower(@listener),
+                            ref _status
+                        )
+                )
+            )
         );
     }
 }
@@ -40416,8 +41974,8 @@ class FfiConverterTypeRoom : FfiConverter<Room, ulong>
 }
 
 /// <summary>
-/// A helper for performing room searches in the room directory.
-/// The way this is intended to be used is:
+/// A helper for performing room searches in the room directory. The way this is
+/// intended to be used is:
 ///
 /// 1. Register a callback using [`RoomDirectorySearch::results`].
 /// 2. Start the room search with [`RoomDirectorySearch::search`].
@@ -40452,9 +42010,9 @@ public interface IRoomDirectorySearch
     /// <summary>
     /// Starts a filtered search for the server.
     ///
-    /// If the `filter` is not provided it will search for all the rooms.
-    /// You can specify a `batch_size` to control the number of rooms to fetch
-    /// per request.
+    /// If the `filter` is not provided it will search for all the rooms. You
+    /// can specify a `batch_size` to control the number of rooms to fetch per
+    /// request.
     ///
     /// If the `via_server` is not provided it will search in the current
     /// homeserver by default.
@@ -40466,8 +42024,8 @@ public interface IRoomDirectorySearch
 }
 
 /// <summary>
-/// A helper for performing room searches in the room directory.
-/// The way this is intended to be used is:
+/// A helper for performing room searches in the room directory. The way this is
+/// intended to be used is:
 ///
 /// 1. Register a callback using [`RoomDirectorySearch::results`].
 /// 2. Start the room search with [`RoomDirectorySearch::search`].
@@ -40702,9 +42260,9 @@ public class RoomDirectorySearch : IRoomDirectorySearch, IDisposable
     /// <summary>
     /// Starts a filtered search for the server.
     ///
-    /// If the `filter` is not provided it will search for all the rooms.
-    /// You can specify a `batch_size` to control the number of rooms to fetch
-    /// per request.
+    /// If the `filter` is not provided it will search for all the rooms. You
+    /// can specify a `batch_size` to control the number of rooms to fetch per
+    /// request.
     ///
     /// If the `via_server` is not provided it will search in the current
     /// homeserver by default.
@@ -42116,8 +43674,8 @@ public interface IRoomPowerLevels
     bool CanUserRedactOther(string @userId);
 
     /// <summary>
-    /// Returns true if the user with the given user_id is able to redact
-    /// their own messages in the room.
+    /// Returns true if the user with the given user_id is able to redact their
+    /// own messages in the room.
     ///
     /// The call may fail if there is an error in getting the power levels.
     /// </summary>
@@ -42560,8 +44118,8 @@ public class RoomPowerLevels : IRoomPowerLevels, IDisposable
     }
 
     /// <summary>
-    /// Returns true if the user with the given user_id is able to redact
-    /// their own messages in the room.
+    /// Returns true if the user with the given user_id is able to redact their
+    /// own messages in the room.
     ///
     /// The call may fail if there is an error in getting the power levels.
     /// </summary>
@@ -43064,9 +44622,9 @@ public interface ISearchService
     SearchServicePaginationState PaginationState();
 
     /// <summary>
-    /// Set (or update) the search query.
-    /// Clears the current results, restarts pagination from scratch and loads
-    /// the first page. Call [`Self::paginate`] to load any further pages.
+    /// Set (or update) the search query. Clears the current results, restarts
+    /// pagination from scratch and loads the first page. Call
+    /// [`Self::paginate`] to load any further pages.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task SetQuery(string @query);
@@ -43238,9 +44796,9 @@ public class SearchService : ISearchService, IDisposable
     }
 
     /// <summary>
-    /// Set (or update) the search query.
-    /// Clears the current results, restarts pagination from scratch and loads
-    /// the first page. Call [`Self::paginate`] to load any further pages.
+    /// Set (or update) the search query. Clears the current results, restarts
+    /// pagination from scratch and loads the first page. Call
+    /// [`Self::paginate`] to load any further pages.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task SetQuery(string @query)
@@ -43360,8 +44918,8 @@ public interface ISecretsBundleWithUserId
     /// Does the bundle contain a backup key.
     ///
     /// Since enabling a backup is optional, the backup key might be missing
-    /// from the bundle. Returns `false` if the backup key is missing,
-    /// otherwise `true`.
+    /// from the bundle. Returns `false` if the backup key is missing, otherwise
+    /// `true`.
     /// </summary>
     bool ContainsBackupKey();
 }
@@ -43483,8 +45041,8 @@ public class SecretsBundleWithUserId : ISecretsBundleWithUserId, IDisposable
     /// Does the bundle contain a backup key.
     ///
     /// Since enabling a backup is optional, the backup key might be missing
-    /// from the bundle. Returns `false` if the backup key is missing,
-    /// otherwise `true`.
+    /// from the bundle. Returns `false` if the backup key is missing, otherwise
+    /// `true`.
     /// </summary>
     public bool ContainsBackupKey()
     {
@@ -44004,8 +45562,8 @@ class FfiConverterTypeSendGalleryJoinHandle : FfiConverter<SendGalleryJoinHandle
 public interface ISendHandle
 {
     /// <summary>
-    /// Try to abort the sending of the current event, with an optional
-    /// `reason` applied to the redaction when the event went out anyway.
+    /// Try to abort the sending of the current event, with an optional `reason`
+    /// applied to the redaction when the event went out anyway.
     ///
     /// If this returns `true`, then the sending could be aborted, because the
     /// event hasn't been sent yet. Otherwise, if this returns `false`, the
@@ -44023,12 +45581,12 @@ public interface ISendHandle
     ///
     /// This is useful for example, when there's a
     /// `SessionRecipientCollectionError::VerifiedUserChangedIdentity` error;
-    /// the user may have re-verified on a different device and would now
-    /// like to send the failed message that's waiting on this device.
+    /// the user may have re-verified on a different device and would now like
+    /// to send the failed message that's waiting on this device.
     ///
     /// # Arguments
     ///
-    /// * `transaction_id` - The send queue transaction identifier of the local
+    /// - `transaction_id` - The send queue transaction identifier of the local
     /// echo that should be unwedged.
     /// </summary>
     /// <exception cref="ClientException"></exception>
@@ -44148,8 +45706,8 @@ public class SendHandle : ISendHandle, IDisposable
     }
 
     /// <summary>
-    /// Try to abort the sending of the current event, with an optional
-    /// `reason` applied to the redaction when the event went out anyway.
+    /// Try to abort the sending of the current event, with an optional `reason`
+    /// applied to the redaction when the event went out anyway.
     ///
     /// If this returns `true`, then the sending could be aborted, because the
     /// event hasn't been sent yet. Otherwise, if this returns `false`, the
@@ -44193,12 +45751,12 @@ public class SendHandle : ISendHandle, IDisposable
     ///
     /// This is useful for example, when there's a
     /// `SessionRecipientCollectionError::VerifiedUserChangedIdentity` error;
-    /// the user may have re-verified on a different device and would now
-    /// like to send the failed message that's waiting on this device.
+    /// the user may have re-verified on a different device and would now like
+    /// to send the failed message that's waiting on this device.
     ///
     /// # Arguments
     ///
-    /// * `transaction_id` - The send queue transaction identifier of the local
+    /// - `transaction_id` - The send queue transaction identifier of the local
     /// echo that should be unwedged.
     /// </summary>
     /// <exception cref="ClientException"></exception>
@@ -44267,8 +45825,9 @@ public interface ISessionVerificationController
     /// <summary>
     /// Set this particular request as the currently active one and register for
     /// events pertaining it.
-    /// * `sender_id` - The user requesting verification.
-    /// * `flow_id` - - The ID that uniquely identifies the verification flow.
+    ///
+    /// - `sender_id` - The user requesting verification.
+    /// - `flow_id` - - The ID that uniquely identifies the verification flow.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task AcknowledgeVerificationRequest(string @senderId, string @flowId);
@@ -44292,6 +45851,11 @@ public interface ISessionVerificationController
     Task DeclineVerification();
 
     /// <summary>
+    /// Get the cancel info for the verification request, if it was cancelled
+    /// </summary>
+    SessionVerificationCancelInfo? RequestCancelInfo();
+
+    /// <summary>
     /// Request verification for the current device
     /// </summary>
     /// <exception cref="ClientException"></exception>
@@ -44302,6 +45866,11 @@ public interface ISessionVerificationController
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task RequestUserVerification(string @userId);
+
+    /// <summary>
+    /// Get the cancel info for the SAS verification, if it was cancelled
+    /// </summary>
+    SessionVerificationCancelInfo? SasCancelInfo();
     void SetDelegate(SessionVerificationControllerDelegate? @delegate);
 
     /// <summary>
@@ -44456,8 +46025,9 @@ public class SessionVerificationController : ISessionVerificationController, IDi
     /// <summary>
     /// Set this particular request as the currently active one and register for
     /// events pertaining it.
-    /// * `sender_id` - The user requesting verification.
-    /// * `flow_id` - - The ID that uniquely identifies the verification flow.
+    ///
+    /// - `sender_id` - The user requesting verification.
+    /// - `flow_id` - - The ID that uniquely identifies the verification flow.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task AcknowledgeVerificationRequest(string @senderId, string @flowId)
@@ -44575,6 +46145,24 @@ public class SessionVerificationController : ISessionVerificationController, IDi
     }
 
     /// <summary>
+    /// Get the cancel info for the verification request, if it was cancelled
+    /// </summary>
+    public SessionVerificationCancelInfo? RequestCancelInfo()
+    {
+        return CallWithPointer(thisPtr =>
+            FfiConverterOptionalTypeSessionVerificationCancelInfo.INSTANCE.Lift(
+                _UniffiHelpers.RustCall(
+                    (ref UniffiRustCallStatus _status) =>
+                        _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_sessionverificationcontroller_request_cancel_info(
+                            thisPtr,
+                            ref _status
+                        )
+                )
+            )
+        );
+    }
+
+    /// <summary>
     /// Request verification for the current device
     /// </summary>
     /// <exception cref="ClientException"></exception>
@@ -44630,6 +46218,24 @@ public class SessionVerificationController : ISessionVerificationController, IDi
             (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_void(future),
             // Error
             FfiConverterTypeClientError.INSTANCE
+        );
+    }
+
+    /// <summary>
+    /// Get the cancel info for the SAS verification, if it was cancelled
+    /// </summary>
+    public SessionVerificationCancelInfo? SasCancelInfo()
+    {
+        return CallWithPointer(thisPtr =>
+            FfiConverterOptionalTypeSessionVerificationCancelInfo.INSTANCE.Lift(
+                _UniffiHelpers.RustCall(
+                    (ref UniffiRustCallStatus _status) =>
+                        _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_sessionverificationcontroller_sas_cancel_info(
+                            thisPtr,
+                            ref _status
+                        )
+                )
+            )
         );
     }
 
@@ -44883,15 +46489,15 @@ class FfiConverterTypeSessionVerificationEmoji : FfiConverter<SessionVerificatio
 }
 
 /// <summary>
-/// The `SpaceRoomList` represents a paginated list of direct rooms
-/// that belong to a particular space.
+/// The `SpaceRoomList` represents a paginated list of direct rooms that belong
+/// to a particular space.
 ///
 /// It can be used to paginate through the list (and have live updates on the
 /// pagination state) as well as subscribe to changes as rooms are joined or
 /// left.
 ///
-/// The `SpaceRoomList` also automatically subscribes to client room changes
-/// and updates the list accordingly as rooms are joined or left.
+/// The `SpaceRoomList` also automatically subscribes to client room changes and
+/// updates the list accordingly as rooms are joined or left.
 /// </summary>
 public interface ISpaceRoomList
 {
@@ -44913,9 +46519,9 @@ public interface ISpaceRoomList
     /// called.
     ///
     /// This is useful when you've added or removed children from the space as
-    /// the list is based on a cached state that lives server-side, meaning
-    /// the /hierarchy request needs to be restarted from scratch to pick up
-    /// the changes.
+    /// the list is based on a cached state that lives server-side, meaning the
+    /// /hierarchy request needs to be restarted from scratch to pick up the
+    /// changes.
     /// </summary>
     Task Reset();
 
@@ -44946,15 +46552,15 @@ public interface ISpaceRoomList
 }
 
 /// <summary>
-/// The `SpaceRoomList` represents a paginated list of direct rooms
-/// that belong to a particular space.
+/// The `SpaceRoomList` represents a paginated list of direct rooms that belong
+/// to a particular space.
 ///
 /// It can be used to paginate through the list (and have live updates on the
 /// pagination state) as well as subscribe to changes as rooms are joined or
 /// left.
 ///
-/// The `SpaceRoomList` also automatically subscribes to client room changes
-/// and updates the list accordingly as rooms are joined or left.
+/// The `SpaceRoomList` also automatically subscribes to client room changes and
+/// updates the list accordingly as rooms are joined or left.
 /// </summary>
 public class SpaceRoomList : ISpaceRoomList, IDisposable
 {
@@ -45114,9 +46720,9 @@ public class SpaceRoomList : ISpaceRoomList, IDisposable
     /// called.
     ///
     /// This is useful when you've added or removed children from the space as
-    /// the list is based on a cached state that lives server-side, meaning
-    /// the /hierarchy request needs to be restarted from scratch to pick up
-    /// the changes.
+    /// the list is based on a cached state that lives server-side, meaning the
+    /// /hierarchy request needs to be restarted from scratch to pick up the
+    /// changes.
     /// </summary>
     public async Task Reset()
     {
@@ -45317,15 +46923,14 @@ public interface ISpaceService
     /// space or room.
     ///
     /// This is a much cheaper version of [`Self::joined_parents_of_child()`]
-    /// that doesn't build any `SpaceRoom` instances, it only reads the
-    /// existing space graph.
+    /// that doesn't build any `SpaceRoom` instances, it only reads the existing
+    /// space graph.
     ///
     /// The returned IDs are always joined spaces, as that's all the space graph
     /// includes. Note that an empty result either means that the child is a
     /// top-level space (which has no direct parents) or the child isn't part of
-    /// the space graph at all.
-    /// See [`Self::top_level_ancestors_of()`] if you need that particular level
-    /// of detail.
+    /// the space graph at all. See [`Self::top_level_ancestors_of()`] if you
+    /// need that particular level of detail.
     ///
     /// Note: Unlike [`Self::top_level_joined_spaces()`], this method does not
     /// recompute the space graph nor notify subscribers about changes.
@@ -45356,8 +46961,8 @@ public interface ISpaceService
 
     /// <summary>
     /// Space filters provide access to a custom subset of the space graph that
-    /// can be used in tandem with the [`crate::RoomListService`] to narrow
-    /// down the presented rooms.
+    /// can be used in tandem with the [`crate::RoomListService`] to narrow down
+    /// the presented rooms.
     ///
     /// They are limited to the first 2 levels of the graph, with the first
     /// level only containing direct descendants while the second holds the rest
@@ -45404,8 +47009,8 @@ public interface ISpaceService
 
     /// <summary>
     /// Returns a list of all the top-level joined spaces. It will eagerly
-    /// compute the latest version and also notify subscribers if there were
-    /// any changes.
+    /// compute the latest version and also notify subscribers if there were any
+    /// changes.
     /// </summary>
     Task<SpaceRoom[]> TopLevelJoinedSpaces();
 }
@@ -45624,15 +47229,14 @@ public class SpaceService : ISpaceService, IDisposable
     /// space or room.
     ///
     /// This is a much cheaper version of [`Self::joined_parents_of_child()`]
-    /// that doesn't build any `SpaceRoom` instances, it only reads the
-    /// existing space graph.
+    /// that doesn't build any `SpaceRoom` instances, it only reads the existing
+    /// space graph.
     ///
     /// The returned IDs are always joined spaces, as that's all the space graph
     /// includes. Note that an empty result either means that the child is a
     /// top-level space (which has no direct parents) or the child isn't part of
-    /// the space graph at all.
-    /// See [`Self::top_level_ancestors_of()`] if you need that particular level
-    /// of detail.
+    /// the space graph at all. See [`Self::top_level_ancestors_of()`] if you
+    /// need that particular level of detail.
     ///
     /// Note: Unlike [`Self::top_level_joined_spaces()`], this method does not
     /// recompute the space graph nor notify subscribers about changes.
@@ -45766,8 +47370,8 @@ public class SpaceService : ISpaceService, IDisposable
 
     /// <summary>
     /// Space filters provide access to a custom subset of the space graph that
-    /// can be used in tandem with the [`crate::RoomListService`] to narrow
-    /// down the presented rooms.
+    /// can be used in tandem with the [`crate::RoomListService`] to narrow down
+    /// the presented rooms.
     ///
     /// They are limited to the first 2 levels of the graph, with the first
     /// level only containing direct descendants while the second holds the rest
@@ -45941,8 +47545,8 @@ public class SpaceService : ISpaceService, IDisposable
 
     /// <summary>
     /// Returns a list of all the top-level joined spaces. It will eagerly
-    /// compute the latest version and also notify subscribers if there were
-    /// any changes.
+    /// compute the latest version and also notify subscribers if there were any
+    /// changes.
     /// </summary>
     public async Task<SpaceRoom[]> TopLevelJoinedSpaces()
     {
@@ -46027,11 +47631,11 @@ public class Span : ISpan, IDisposable
     /// Create a span originating at the given callsite (file, line and column).
     ///
     /// The target should be something like a module path, and can be referenced
-    /// in the filter string given to `setup_tracing`. `level` and `target`
-    /// for a callsite are fixed at the first creation of a span for that
-    /// callsite and can not be changed afterwards, i.e. the level and
-    /// target passed for second and following creation of a span with the same
-    /// callsite will be ignored.
+    /// in the filter string given to `setup_tracing`. `level` and `target` for
+    /// a callsite are fixed at the first creation of a span for that callsite
+    /// and can not be changed afterwards, i.e. the level and target passed for
+    /// second and following creation of a span with the same callsite will be
+    /// ignored.
     ///
     /// This function leaks a little bit of memory for each unique (file +
     /// line + level + target + name) it is called with. Please make sure that
@@ -46046,7 +47650,7 @@ public class Span : ISpan, IDisposable
     /// work, exiting a span must be done on the same thread where it was
     /// entered. It is possible to enter a span on multiple threads, in which
     /// case it should also be exited on all of them individually; that is,
-    /// unless you *want* the span to be attached to all further events created
+    /// unless you _want_ the span to be attached to all further events created
     /// on that thread.
     /// </summary>
     public Span(string @file, uint? @line, LogLevel @level, string @target, string @name, string? @bridgeTraceId)
@@ -46202,9 +47806,9 @@ public class Span : ISpan, IDisposable
 
     /// <summary>
     /// Creates a [`Span`] that acts as a bridge between the client spans and
-    /// the SDK ones, allowing them to be joined in Sentry. This function
-    /// will only return a valid span if the `sentry` feature is enabled,
-    /// otherwise it will return a noop span.
+    /// the SDK ones, allowing them to be joined in Sentry. This function will
+    /// only return a valid span if the `sentry` feature is enabled, otherwise
+    /// it will return a noop span.
     /// </summary>
     public static Span NewBridgeSpan(string @target, string? @parentTraceId)
     {
@@ -46279,12 +47883,11 @@ public interface ISqliteStoreBuilder
     /// remove their brute-force protection.
     ///
     /// This migrates a passphrase-based store whose passphrase was created
-    /// by base64-encoding a randomly generated key to a key-based
-    /// setup.
+    /// by base64-encoding a randomly generated key to a key-based setup.
     ///
     /// Once this function has been called,
-    /// [`SqliteStoreBuilder::passphrase`] can no longer be used with
-    /// the passphrase.
+    /// [`SqliteStoreBuilder::passphrase`] can no longer be used with the
+    /// passphrase.
     ///
     /// [`SqliteStoreBuilder::key`] can be used with the original key,
     /// before it was base64-encoded.
@@ -46329,8 +47932,8 @@ public interface ISqliteStoreBuilder
     /// Tell the client that the system is memory constrained, like in a
     /// push notification process for example.
     ///
-    /// So far, at the time of writing (2025-04-07), it changes
-    /// the defaults of [`SqliteStoreConfig`]. Please check
+    /// So far, at the time of writing (2025-04-07), it changes the defaults
+    /// of [`SqliteStoreConfig`]. Please check
     /// [`SqliteStoreConfig::with_low_memory_config`].
     /// </summary>
     SqliteStoreBuilder SystemIsMemoryConstrained();
@@ -46505,12 +48108,11 @@ public class SqliteStoreBuilder : ISqliteStoreBuilder, IDisposable
     /// remove their brute-force protection.
     ///
     /// This migrates a passphrase-based store whose passphrase was created
-    /// by base64-encoding a randomly generated key to a key-based
-    /// setup.
+    /// by base64-encoding a randomly generated key to a key-based setup.
     ///
     /// Once this function has been called,
-    /// [`SqliteStoreBuilder::passphrase`] can no longer be used with
-    /// the passphrase.
+    /// [`SqliteStoreBuilder::passphrase`] can no longer be used with the
+    /// passphrase.
     ///
     /// [`SqliteStoreBuilder::key`] can be used with the original key,
     /// before it was base64-encoded.
@@ -46626,8 +48228,8 @@ public class SqliteStoreBuilder : ISqliteStoreBuilder, IDisposable
     /// Tell the client that the system is memory constrained, like in a
     /// push notification process for example.
     ///
-    /// So far, at the time of writing (2025-04-07), it changes
-    /// the defaults of [`SqliteStoreConfig`]. Please check
+    /// So far, at the time of writing (2025-04-07), it changes the defaults
+    /// of [`SqliteStoreConfig`]. Please check
     /// [`SqliteStoreConfig::with_low_memory_config`].
     /// </summary>
     public SqliteStoreBuilder SystemIsMemoryConstrained()
@@ -46689,8 +48291,8 @@ public interface ISsoHandler
 
     /// <summary>
     /// Returns the URL for starting SSO authentication. The URL should be
-    /// opened in a web view. Once the web view succeeds, call `finish` with
-    /// the callback URL.
+    /// opened in a web view. Once the web view succeeds, call `finish` with the
+    /// callback URL.
     /// </summary>
     string Url();
 }
@@ -46839,8 +48441,8 @@ public class SsoHandler : ISsoHandler, IDisposable
 
     /// <summary>
     /// Returns the URL for starting SSO authentication. The URL should be
-    /// opened in a web view. Once the web view succeeds, call `finish` with
-    /// the callback URL.
+    /// opened in a web view. Once the web view succeeds, call `finish` with the
+    /// callback URL.
     /// </summary>
     public string Url()
     {
@@ -46891,8 +48493,8 @@ public interface ISyncService
     /// Force expiring both sliding sync sessions.
     ///
     /// This ensures that the sync service is stopped before expiring both
-    /// sessions. It should be used sparingly, as it will cause a restart of
-    /// the sessions on the server as well.
+    /// sessions. It should be used sparingly, as it will cause a restart of the
+    /// sessions on the server as well.
     /// </summary>
     Task ExpireSessions();
     RoomListService RoomListService();
@@ -47014,8 +48616,8 @@ public class SyncService : ISyncService, IDisposable
     /// Force expiring both sliding sync sessions.
     ///
     /// This ensures that the sync service is stopped before expiring both
-    /// sessions. It should be used sparingly, as it will cause a restart of
-    /// the sessions on the server as well.
+    /// sessions. It should be used sparingly, as it will cause a restart of the
+    /// sessions on the server as well.
     /// </summary>
     public async Task ExpireSessions()
     {
@@ -47164,9 +48766,8 @@ public interface ISyncServiceBuilder
     /// Set a custom Sliding Sync connection ID for the room list service.
     ///
     /// By default [`matrix_sdk_ui::room_list_service::DEFAULT_CONNECTION_ID`]
-    /// is used. Set a different value for secondary processes such as iOS
-    /// Share Extensions that are not meant to reuse the main app's
-    /// connection.
+    /// is used. Set a different value for secondary processes such as iOS Share
+    /// Extensions that are not meant to reuse the main app's connection.
     /// </summary>
     SyncServiceBuilder WithRoomListConnectionId(string @connectionId);
 
@@ -47356,9 +48957,8 @@ public class SyncServiceBuilder : ISyncServiceBuilder, IDisposable
     /// Set a custom Sliding Sync connection ID for the room list service.
     ///
     /// By default [`matrix_sdk_ui::room_list_service::DEFAULT_CONNECTION_ID`]
-    /// is used. Set a different value for secondary processes such as iOS
-    /// Share Extensions that are not meant to reuse the main app's
-    /// connection.
+    /// is used. Set a different value for secondary processes such as iOS Share
+    /// Extensions that are not meant to reuse the main app's connection.
     /// </summary>
     public SyncServiceBuilder WithRoomListConnectionId(string @connectionId)
     {
@@ -47637,9 +49237,9 @@ class FfiConverterTypeTaskHandle : FfiConverter<TaskHandle, ulong>
 ///
 /// `ThreadListService` is the FFI-facing wrapper around
 /// [`matrix_sdk_ui::timeline::thread_list_service::ThreadListService`]. It
-/// maintains an observable list of [`ThreadListItem`]s and exposes a
-/// pagination state publisher, making it straightforward to build reactive UIs
-/// on top of the thread list.
+/// maintains an observable list of [`ThreadListItem`]s and exposes a pagination
+/// state publisher, making it straightforward to build reactive UIs on top of
+/// the thread list.
 ///
 /// Obtain an instance via [`Room::thread_list_service`].
 /// </summary>
@@ -47696,9 +49296,9 @@ public interface IThreadListService
 ///
 /// `ThreadListService` is the FFI-facing wrapper around
 /// [`matrix_sdk_ui::timeline::thread_list_service::ThreadListService`]. It
-/// maintains an observable list of [`ThreadListItem`]s and exposes a
-/// pagination state publisher, making it straightforward to build reactive UIs
-/// on top of the thread list.
+/// maintains an observable list of [`ThreadListItem`]s and exposes a pagination
+/// state publisher, making it straightforward to build reactive UIs on top of
+/// the thread list.
 ///
 /// Obtain an instance via [`Room::thread_list_service`].
 /// </summary>
@@ -48152,6 +49752,15 @@ class FfiConverterTypeThreadSummary : FfiConverter<ThreadSummary, ulong>
 
 public interface ITimeline
 {
+    /// <summary>
+    /// Abort sending something on this item that hasn't gone out yet, see
+    /// [`SendTarget`].
+    ///
+    /// Returns `false` if there was nothing of that kind left to abort, e.g.
+    /// because it went out in the meantime.
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    Task<bool> AbortSend(EventOrTransactionId @itemId, SendTarget @target);
     Task<TaskHandle> AddListener(TimelineListener @listener);
     RoomMessageEventContentWithoutRelation? CreateMessageContent(MessageType @msgType);
 
@@ -48161,12 +49770,12 @@ public interface ITimeline
     /// <summary>
     /// Edits an event from the timeline.
     ///
-    /// If it was a local event, this will *try* to edit it, if it was not
-    /// being sent already. If the event was a remote event, then it will be
-    /// redacted by sending an edit request to the server.
+    /// If it was a local event, this will _try_ to edit it, if it was not being
+    /// sent already. If the event was a remote event, then it will be redacted
+    /// by sending an edit request to the server.
     ///
-    /// Returns whether the edit did happen. It can only return false for
-    /// local events that are being processed.
+    /// Returns whether the edit did happen. It can only return false for local
+    /// events that are being processed.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task Edit(EventOrTransactionId @eventOrTransactionId, EditedContent @newContent);
@@ -48174,12 +49783,21 @@ public interface ITimeline
     /// <summary>
     /// Get the edit history for the given event.
     ///
-    /// Returns all revisions of the event, in chronological order.
-    /// The first entry is the original event content, followed by each
-    /// edit in the order they were applied.
+    /// Returns all revisions of the event, in chronological order. The first
+    /// entry is the original event content, followed by each edit in the order
+    /// they were applied.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task<EditRevisionRecord[]> EditRevisions(string @eventId);
+
+    /// <summary>
+    /// Edits a message the current user sent into one with the given
+    /// attachment, replacing its attachment if it had one. The caption in
+    /// `params` is the whole new text: nothing of the original content is
+    /// kept, and `in_reply_to` is ignored.
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    Task EditWithAttachment(string @eventId, UploadParameters @params, AttachmentKind @attachment);
 
     /// <exception cref="ClientException"></exception>
     Task EndPoll(string @pollStartEventId, string @text);
@@ -48191,7 +49809,7 @@ public interface ITimeline
     /// <summary>
     /// Get the current timeline item for the given event ID, if any.
     ///
-    /// Will return a remote event, *or* a local echo that has been sent but not
+    /// Will return a remote event, _or_ a local echo that has been sent but not
     /// yet replaced by a remote echo.
     ///
     /// It's preferable to store the timeline items in the model for your UI, if
@@ -48220,13 +49838,13 @@ public interface ITimeline
     /// latest visible event.
     ///
     /// The latest visible event is determined from the timeline's focus kind
-    /// and whether or not it hides threaded events. If no latest event can
-    /// be determined and the timeline is live, the room's unread marker is
-    /// unset instead.
+    /// and whether or not it hides threaded events. If no latest event can be
+    /// determined and the timeline is live, the room's unread marker is unset
+    /// instead.
     ///
     /// # Arguments
     ///
-    /// * `receipt_type` - The type of receipt to send. When using
+    /// - `receipt_type` - The type of receipt to send. When using
     /// [`ReceiptType::FullyRead`], an unthreaded receipt will be sent. This
     /// works even if the latest event belongs to a thread, as a threaded
     /// reply also belongs to the unthreaded timeline. Otherwise the receipt
@@ -48266,7 +49884,7 @@ public interface ITimeline
     ///
     /// Only works for events that exist as timeline items.
     ///
-    /// If it was a local event, this will *try* to cancel it, if it was not
+    /// If it was a local event, this will _try_ to cancel it, if it was not
     /// being sent already. If the event was a remote event, then it will be
     /// redacted by sending a redaction request to the server.
     ///
@@ -48277,8 +49895,21 @@ public interface ITimeline
     void RetryDecryption(string[] @sessionIds);
 
     /// <summary>
-    /// Queues an event in the room's send queue so it's processed for
-    /// sending later.
+    /// Retry sending something on this item that failed, see [`SendTarget`].
+    ///
+    /// Only needed after an unrecoverable failure, which parks the request
+    /// until it's retried or aborted; a recoverable one goes out again when the
+    /// room's send queue is re-enabled.
+    ///
+    /// Returns `false` if there was nothing of that kind left to retry, e.g.
+    /// because it went out in the meantime.
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    Task<bool> RetrySend(EventOrTransactionId @itemId, SendTarget @target);
+
+    /// <summary>
+    /// Queues an event in the room's send queue so it's processed for sending
+    /// later.
     ///
     /// Returns an abort handle that allows to abort sending, if it hasn't
     /// happened yet.
@@ -48286,12 +49917,27 @@ public interface ITimeline
     /// <exception cref="ClientException"></exception>
     Task<SendHandle> Send(RoomMessageEventContentWithoutRelation @msg);
 
+    /// <summary>
+    /// Sends an attachment, uploaded through the send queue.
+    /// </summary>
+    /// <exception cref="RoomException"></exception>
+    SendAttachmentJoinHandle SendAttachment(UploadParameters @params, AttachmentKind @attachment);
+
+    /// <summary>
+    /// Deprecated: use [`Self::send_attachment`] with `AttachmentKind::Audio`.
+    /// </summary>
     /// <exception cref="RoomException"></exception>
     SendAttachmentJoinHandle SendAudio(UploadParameters @params, AudioInfo @audioInfo);
 
+    /// <summary>
+    /// Deprecated: use [`Self::send_attachment`] with `AttachmentKind::File`.
+    /// </summary>
     /// <exception cref="RoomException"></exception>
     SendAttachmentJoinHandle SendFile(UploadParameters @params, FileInfo @fileInfo);
 
+    /// <summary>
+    /// Deprecated: use [`Self::send_attachment`] with `AttachmentKind::Image`.
+    /// </summary>
     /// <exception cref="RoomException"></exception>
     SendAttachmentJoinHandle SendImage(UploadParameters @params, UploadSource? @thumbnailSource, ImageInfo @imageInfo);
 
@@ -48315,21 +49961,27 @@ public interface ITimeline
     /// Send a reply.
     ///
     /// If the replied to event has a thread relation, it is forwarded on the
-    /// reply so that clients that support threads can render the reply
-    /// inside the thread. Returns a handle to abort the pending send.
+    /// reply so that clients that support threads can render the reply inside
+    /// the thread. Returns a handle to abort the pending send.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task<SendHandle> SendReply(RoomMessageEventContentWithoutRelation @msg, string @eventId);
 
+    /// <summary>
+    /// Deprecated: use [`Self::send_attachment`] with `AttachmentKind::Video`.
+    /// </summary>
     /// <exception cref="RoomException"></exception>
     SendAttachmentJoinHandle SendVideo(UploadParameters @params, UploadSource? @thumbnailSource, VideoInfo @videoInfo);
 
+    /// <summary>
+    /// Deprecated: use [`Self::send_attachment`] with `AttachmentKind::Voice`.
+    /// </summary>
     /// <exception cref="RoomException"></exception>
     SendAttachmentJoinHandle SendVoiceMessage(UploadParameters @params, AudioInfo @audioInfo, float[] @waveform);
 
     /// <summary>
-    /// Like [`Self::send`], but merges the given additional top-level fields
-    /// (a JSON object, encoded as a string) into the outgoing event's content.
+    /// Like [`Self::send`], but merges the given additional top-level fields (a
+    /// JSON object, encoded as a string) into the outgoing event's content.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task<SendHandle> SendWithExtraContent(RoomMessageEventContentWithoutRelation @msg, string? @extraContentJson);
@@ -48489,6 +50141,43 @@ public class Timeline : ITimeline, IDisposable
         }
     }
 
+    /// <summary>
+    /// Abort sending something on this item that hasn't gone out yet, see
+    /// [`SendTarget`].
+    ///
+    /// Returns `false` if there was nothing of that kind left to abort, e.g.
+    /// because it went out in the meantime.
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    public async Task<bool> AbortSend(EventOrTransactionId @itemId, SendTarget @target)
+    {
+        return await _UniFFIAsync.UniffiRustCallAsync(
+            // Get rust future
+            CallWithPointer(thisPtr =>
+            {
+                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_timeline_abort_send(
+                    thisPtr,
+                    FfiConverterTypeEventOrTransactionId.INSTANCE.Lower(@itemId),
+                    FfiConverterTypeSendTarget.INSTANCE.Lower(@target)
+                );
+            }),
+            // Poll
+            (ulong future, IntPtr continuation, ulong data) =>
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_i8(future, continuation, data),
+            // Complete
+            (ulong future, ref UniffiRustCallStatus status) =>
+            {
+                return _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_i8(future, ref status);
+            },
+            // Free
+            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_i8(future),
+            // Lift
+            (result) => FfiConverterBoolean.INSTANCE.Lift(result),
+            // Error
+            FfiConverterTypeClientError.INSTANCE
+        );
+    }
+
     public async Task<TaskHandle> AddListener(TimelineListener @listener)
     {
         return await _UniFFIAsync.UniffiRustCallAsync(
@@ -48566,12 +50255,12 @@ public class Timeline : ITimeline, IDisposable
     /// <summary>
     /// Edits an event from the timeline.
     ///
-    /// If it was a local event, this will *try* to edit it, if it was not
-    /// being sent already. If the event was a remote event, then it will be
-    /// redacted by sending an edit request to the server.
+    /// If it was a local event, this will _try_ to edit it, if it was not being
+    /// sent already. If the event was a remote event, then it will be redacted
+    /// by sending an edit request to the server.
     ///
-    /// Returns whether the edit did happen. It can only return false for
-    /// local events that are being processed.
+    /// Returns whether the edit did happen. It can only return false for local
+    /// events that are being processed.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task Edit(EventOrTransactionId @eventOrTransactionId, EditedContent @newContent)
@@ -48604,9 +50293,9 @@ public class Timeline : ITimeline, IDisposable
     /// <summary>
     /// Get the edit history for the given event.
     ///
-    /// Returns all revisions of the event, in chronological order.
-    /// The first entry is the original event content, followed by each
-    /// edit in the order they were applied.
+    /// Returns all revisions of the event, in chronological order. The first
+    /// entry is the original event content, followed by each edit in the order
+    /// they were applied.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task<EditRevisionRecord[]> EditRevisions(string @eventId)
@@ -48632,6 +50321,41 @@ public class Timeline : ITimeline, IDisposable
             (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_rust_buffer(future),
             // Lift
             (result) => FfiConverterSequenceTypeEditRevisionRecord.INSTANCE.Lift(result),
+            // Error
+            FfiConverterTypeClientError.INSTANCE
+        );
+    }
+
+    /// <summary>
+    /// Edits a message the current user sent into one with the given
+    /// attachment, replacing its attachment if it had one. The caption in
+    /// `params` is the whole new text: nothing of the original content is
+    /// kept, and `in_reply_to` is ignored.
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    public async Task EditWithAttachment(string @eventId, UploadParameters @params, AttachmentKind @attachment)
+    {
+        await _UniFFIAsync.UniffiRustCallAsync(
+            // Get rust future
+            CallWithPointer(thisPtr =>
+            {
+                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_timeline_edit_with_attachment(
+                    thisPtr,
+                    FfiConverterString.INSTANCE.Lower(@eventId),
+                    FfiConverterTypeUploadParameters.INSTANCE.Lower(@params),
+                    FfiConverterTypeAttachmentKind.INSTANCE.Lower(@attachment)
+                );
+            }),
+            // Poll
+            (ulong future, IntPtr continuation, ulong data) =>
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_void(future, continuation, data),
+            // Complete
+            (ulong future, ref UniffiRustCallStatus status) =>
+            {
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_void(future, ref status);
+            },
+            // Free
+            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_void(future),
             // Error
             FfiConverterTypeClientError.INSTANCE
         );
@@ -48718,7 +50442,7 @@ public class Timeline : ITimeline, IDisposable
     /// <summary>
     /// Get the current timeline item for the given event ID, if any.
     ///
-    /// Will return a remote event, *or* a local echo that has been sent but not
+    /// Will return a remote event, _or_ a local echo that has been sent but not
     /// yet replaced by a remote echo.
     ///
     /// It's preferable to store the timeline items in the model for your UI, if
@@ -48822,13 +50546,13 @@ public class Timeline : ITimeline, IDisposable
     /// latest visible event.
     ///
     /// The latest visible event is determined from the timeline's focus kind
-    /// and whether or not it hides threaded events. If no latest event can
-    /// be determined and the timeline is live, the room's unread marker is
-    /// unset instead.
+    /// and whether or not it hides threaded events. If no latest event can be
+    /// determined and the timeline is live, the room's unread marker is unset
+    /// instead.
     ///
     /// # Arguments
     ///
-    /// * `receipt_type` - The type of receipt to send. When using
+    /// - `receipt_type` - The type of receipt to send. When using
     /// [`ReceiptType::FullyRead`], an unthreaded receipt will be sent. This
     /// works even if the latest event belongs to a thread, as a threaded
     /// reply also belongs to the unthreaded timeline. Otherwise the receipt
@@ -48970,7 +50694,7 @@ public class Timeline : ITimeline, IDisposable
     ///
     /// Only works for events that exist as timeline items.
     ///
-    /// If it was a local event, this will *try* to cancel it, if it was not
+    /// If it was a local event, this will _try_ to cancel it, if it was not
     /// being sent already. If the event was a remote event, then it will be
     /// redacted by sending a redaction request to the server.
     ///
@@ -49019,8 +50743,48 @@ public class Timeline : ITimeline, IDisposable
     }
 
     /// <summary>
-    /// Queues an event in the room's send queue so it's processed for
-    /// sending later.
+    /// Retry sending something on this item that failed, see [`SendTarget`].
+    ///
+    /// Only needed after an unrecoverable failure, which parks the request
+    /// until it's retried or aborted; a recoverable one goes out again when the
+    /// room's send queue is re-enabled.
+    ///
+    /// Returns `false` if there was nothing of that kind left to retry, e.g.
+    /// because it went out in the meantime.
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    public async Task<bool> RetrySend(EventOrTransactionId @itemId, SendTarget @target)
+    {
+        return await _UniFFIAsync.UniffiRustCallAsync(
+            // Get rust future
+            CallWithPointer(thisPtr =>
+            {
+                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_timeline_retry_send(
+                    thisPtr,
+                    FfiConverterTypeEventOrTransactionId.INSTANCE.Lower(@itemId),
+                    FfiConverterTypeSendTarget.INSTANCE.Lower(@target)
+                );
+            }),
+            // Poll
+            (ulong future, IntPtr continuation, ulong data) =>
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_i8(future, continuation, data),
+            // Complete
+            (ulong future, ref UniffiRustCallStatus status) =>
+            {
+                return _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_i8(future, ref status);
+            },
+            // Free
+            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_i8(future),
+            // Lift
+            (result) => FfiConverterBoolean.INSTANCE.Lift(result),
+            // Error
+            FfiConverterTypeClientError.INSTANCE
+        );
+    }
+
+    /// <summary>
+    /// Queues an event in the room's send queue so it's processed for sending
+    /// later.
     ///
     /// Returns an abort handle that allows to abort sending, if it hasn't
     /// happened yet.
@@ -49054,6 +50818,31 @@ public class Timeline : ITimeline, IDisposable
         );
     }
 
+    /// <summary>
+    /// Sends an attachment, uploaded through the send queue.
+    /// </summary>
+    /// <exception cref="RoomException"></exception>
+    public SendAttachmentJoinHandle SendAttachment(UploadParameters @params, AttachmentKind @attachment)
+    {
+        return CallWithPointer(thisPtr =>
+            FfiConverterTypeSendAttachmentJoinHandle.INSTANCE.Lift(
+                _UniffiHelpers.RustCallWithError(
+                    FfiConverterTypeRoomError.INSTANCE,
+                    (ref UniffiRustCallStatus _status) =>
+                        _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_timeline_send_attachment(
+                            thisPtr,
+                            FfiConverterTypeUploadParameters.INSTANCE.Lower(@params),
+                            FfiConverterTypeAttachmentKind.INSTANCE.Lower(@attachment),
+                            ref _status
+                        )
+                )
+            )
+        );
+    }
+
+    /// <summary>
+    /// Deprecated: use [`Self::send_attachment`] with `AttachmentKind::Audio`.
+    /// </summary>
     /// <exception cref="RoomException"></exception>
     public SendAttachmentJoinHandle SendAudio(UploadParameters @params, AudioInfo @audioInfo)
     {
@@ -49073,6 +50862,9 @@ public class Timeline : ITimeline, IDisposable
         );
     }
 
+    /// <summary>
+    /// Deprecated: use [`Self::send_attachment`] with `AttachmentKind::File`.
+    /// </summary>
     /// <exception cref="RoomException"></exception>
     public SendAttachmentJoinHandle SendFile(UploadParameters @params, FileInfo @fileInfo)
     {
@@ -49092,6 +50884,9 @@ public class Timeline : ITimeline, IDisposable
         );
     }
 
+    /// <summary>
+    /// Deprecated: use [`Self::send_attachment`] with `AttachmentKind::Image`.
+    /// </summary>
     /// <exception cref="RoomException"></exception>
     public SendAttachmentJoinHandle SendImage(
         UploadParameters @params,
@@ -49215,8 +51010,8 @@ public class Timeline : ITimeline, IDisposable
     /// Send a reply.
     ///
     /// If the replied to event has a thread relation, it is forwarded on the
-    /// reply so that clients that support threads can render the reply
-    /// inside the thread. Returns a handle to abort the pending send.
+    /// reply so that clients that support threads can render the reply inside
+    /// the thread. Returns a handle to abort the pending send.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task<SendHandle> SendReply(RoomMessageEventContentWithoutRelation @msg, string @eventId)
@@ -49248,6 +51043,9 @@ public class Timeline : ITimeline, IDisposable
         );
     }
 
+    /// <summary>
+    /// Deprecated: use [`Self::send_attachment`] with `AttachmentKind::Video`.
+    /// </summary>
     /// <exception cref="RoomException"></exception>
     public SendAttachmentJoinHandle SendVideo(
         UploadParameters @params,
@@ -49272,6 +51070,9 @@ public class Timeline : ITimeline, IDisposable
         );
     }
 
+    /// <summary>
+    /// Deprecated: use [`Self::send_attachment`] with `AttachmentKind::Voice`.
+    /// </summary>
     /// <exception cref="RoomException"></exception>
     public SendAttachmentJoinHandle SendVoiceMessage(UploadParameters @params, AudioInfo @audioInfo, float[] @waveform)
     {
@@ -49293,8 +51094,8 @@ public class Timeline : ITimeline, IDisposable
     }
 
     /// <summary>
-    /// Like [`Self::send`], but merges the given additional top-level fields
-    /// (a JSON object, encoded as a string) into the outgoing event's content.
+    /// Like [`Self::send`], but merges the given additional top-level fields (a
+    /// JSON object, encoded as a string) into the outgoing event's content.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task<SendHandle> SendWithExtraContent(
@@ -50188,9 +51989,9 @@ public interface IUserIdentity
     /// action "pinning".
     ///
     /// If the identity presented for the user changes later on, the newly
-    /// presented identity is considered to be in "pin violation". This
-    /// method explicitly accepts the new identity, allowing it to replace
-    /// the previously pinned one and bringing it out of pin violation.
+    /// presented identity is considered to be in "pin violation". This method
+    /// explicitly accepts the new identity, allowing it to replace the
+    /// previously pinned one and bringing it out of pin violation.
     ///
     /// UIs should display a warning to the user when encountering an identity
     /// which is not verified and is in pin violation.
@@ -50394,9 +52195,9 @@ public class UserIdentity : IUserIdentity, IDisposable
     /// action "pinning".
     ///
     /// If the identity presented for the user changes later on, the newly
-    /// presented identity is considered to be in "pin violation". This
-    /// method explicitly accepts the new identity, allowing it to replace
-    /// the previously pinned one and bringing it out of pin violation.
+    /// presented identity is considered to be in "pin violation". This method
+    /// explicitly accepts the new identity, allowing it to replace the
+    /// previously pinned one and bringing it out of pin violation.
     ///
     /// UIs should display a warning to the user when encountering an identity
     /// which is not verified and is in pin violation.
@@ -50911,8 +52712,8 @@ class FfiConverterTypeWidgetDriverHandle : FfiConverter<WidgetDriverHandle, ulon
 /// <summary>
 /// Progress of an operation in abstract units.
 ///
-/// Contrary to [`TransmissionProgress`], this allows tracking the progress
-/// of sending or receiving a payload in estimated pseudo units representing a
+/// Contrary to [`TransmissionProgress`], this allows tracking the progress of
+/// sending or receiving a payload in estimated pseudo units representing a
 /// percentage. This is helpful in cases where the exact progress in bytes isn't
 /// known, for instance, because encryption (which changes the size) happens on
 /// the fly.
@@ -51068,6 +52869,9 @@ class FfiConverterTypeAudioMessageContent : FfiConverterRustBuffer<AudioMessageC
 /// <param name="Password">
 /// The plaintext password.
 /// </param>
+/// <param name="Session">
+/// The UIAA session token.
+/// </param>
 public record AuthDataPasswordDetails(
     /// <summary>
     /// One of the user's identifiers.
@@ -51076,7 +52880,11 @@ public record AuthDataPasswordDetails(
     /// <summary>
     /// The plaintext password.
     /// </summary>
-    string Password
+    string Password,
+    /// <summary>
+    /// The UIAA session token.
+    /// </summary>
+    string Session
 ) { }
 
 class FfiConverterTypeAuthDataPasswordDetails : FfiConverterRustBuffer<AuthDataPasswordDetails>
@@ -51087,7 +52895,8 @@ class FfiConverterTypeAuthDataPasswordDetails : FfiConverterRustBuffer<AuthDataP
     {
         return new AuthDataPasswordDetails(
             Identifier: FfiConverterString.INSTANCE.Read(stream),
-            Password: FfiConverterString.INSTANCE.Read(stream)
+            Password: FfiConverterString.INSTANCE.Read(stream),
+            Session: FfiConverterString.INSTANCE.Read(stream)
         );
     }
 
@@ -51095,13 +52904,15 @@ class FfiConverterTypeAuthDataPasswordDetails : FfiConverterRustBuffer<AuthDataP
     {
         return 0
             + FfiConverterString.INSTANCE.AllocationSize(value.Identifier)
-            + FfiConverterString.INSTANCE.AllocationSize(value.Password);
+            + FfiConverterString.INSTANCE.AllocationSize(value.Password)
+            + FfiConverterString.INSTANCE.AllocationSize(value.Session);
     }
 
     public override void Write(AuthDataPasswordDetails value, BigEndianStream stream)
     {
         FfiConverterString.INSTANCE.Write(value.Identifier, stream);
         FfiConverterString.INSTANCE.Write(value.Password, stream);
+        FfiConverterString.INSTANCE.Write(value.Session, stream);
     }
 }
 
@@ -51109,8 +52920,8 @@ class FfiConverterTypeAuthDataPasswordDetails : FfiConverterRustBuffer<AuthDataP
 /// FFI representation of a single location update from a beacon event.
 /// </summary>
 /// <param name="GeoUri">
-/// The geo URI carrying the user's coordinates
-/// (e.g. `"geo:51.5008,0.1247;u=35"`).
+/// The geo URI carrying the user's coordinates (e.g.
+/// `"geo:51.5008,0.1247;u=35"`).
 /// </param>
 /// <param name="Ts">
 /// Timestamp (ms since Unix Epoch) of this location update.
@@ -51120,8 +52931,8 @@ class FfiConverterTypeAuthDataPasswordDetails : FfiConverterRustBuffer<AuthDataP
 /// </param>
 public record BeaconInfo(
     /// <summary>
-    /// The geo URI carrying the user's coordinates
-    /// (e.g. `"geo:51.5008,0.1247;u=35"`).
+    /// The geo URI carrying the user's coordinates (e.g.
+    /// `"geo:51.5008,0.1247;u=35"`).
     /// </summary>
     string GeoUri,
     /// <summary>
@@ -51726,6 +53537,12 @@ class FfiConverterTypeEventEncryptionInfo : FfiConverterRustBuffer<EventEncrypti
 /// The raw Matrix event type string (e.g. `"m.room.message"`), or `None`
 /// when the original type is not available (e.g. redacted events).
 /// </param>
+/// <param name="EditSendState">
+/// Send state of our pending edit of this event, if any.
+/// </param>
+/// <param name="RedactionSendState">
+/// Send state of our pending redaction of this event, if any.
+/// </param>
 public record EventTimelineItem(
     /// <summary>
     /// Indicates that an event is remote.
@@ -51747,6 +53564,14 @@ public record EventTimelineItem(
     string? EventTypeRaw,
     Timestamp Timestamp,
     EventSendState? LocalSendState,
+    /// <summary>
+    /// Send state of our pending edit of this event, if any.
+    /// </summary>
+    EventSendState? EditSendState,
+    /// <summary>
+    /// Send state of our pending redaction of this event, if any.
+    /// </summary>
+    EventSendState? RedactionSendState,
     ulong? LocalCreatedAt,
     Dictionary<string, Receipt> ReadReceipts,
     EventItemOrigin? Origin,
@@ -51770,6 +53595,8 @@ public record EventTimelineItem(
             this.EventTypeRaw,
             this.Timestamp,
             this.LocalSendState,
+            this.EditSendState,
+            this.RedactionSendState,
             this.LocalCreatedAt,
             this.ReadReceipts,
             this.Origin,
@@ -51799,6 +53626,8 @@ class FfiConverterTypeEventTimelineItem : FfiConverterRustBuffer<EventTimelineIt
             EventTypeRaw: FfiConverterOptionalString.INSTANCE.Read(stream),
             Timestamp: FfiConverterTypeTimestamp.INSTANCE.Read(stream),
             LocalSendState: FfiConverterOptionalTypeEventSendState.INSTANCE.Read(stream),
+            EditSendState: FfiConverterOptionalTypeEventSendState.INSTANCE.Read(stream),
+            RedactionSendState: FfiConverterOptionalTypeEventSendState.INSTANCE.Read(stream),
             LocalCreatedAt: FfiConverterOptionalUInt64.INSTANCE.Read(stream),
             ReadReceipts: FfiConverterDictionaryStringTypeReceipt.INSTANCE.Read(stream),
             Origin: FfiConverterOptionalTypeEventItemOrigin.INSTANCE.Read(stream),
@@ -51823,6 +53652,8 @@ class FfiConverterTypeEventTimelineItem : FfiConverterRustBuffer<EventTimelineIt
             + FfiConverterOptionalString.INSTANCE.AllocationSize(value.EventTypeRaw)
             + FfiConverterTypeTimestamp.INSTANCE.AllocationSize(value.Timestamp)
             + FfiConverterOptionalTypeEventSendState.INSTANCE.AllocationSize(value.LocalSendState)
+            + FfiConverterOptionalTypeEventSendState.INSTANCE.AllocationSize(value.EditSendState)
+            + FfiConverterOptionalTypeEventSendState.INSTANCE.AllocationSize(value.RedactionSendState)
             + FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.LocalCreatedAt)
             + FfiConverterDictionaryStringTypeReceipt.INSTANCE.AllocationSize(value.ReadReceipts)
             + FfiConverterOptionalTypeEventItemOrigin.INSTANCE.AllocationSize(value.Origin)
@@ -51845,6 +53676,8 @@ class FfiConverterTypeEventTimelineItem : FfiConverterRustBuffer<EventTimelineIt
         FfiConverterOptionalString.INSTANCE.Write(value.EventTypeRaw, stream);
         FfiConverterTypeTimestamp.INSTANCE.Write(value.Timestamp, stream);
         FfiConverterOptionalTypeEventSendState.INSTANCE.Write(value.LocalSendState, stream);
+        FfiConverterOptionalTypeEventSendState.INSTANCE.Write(value.EditSendState, stream);
+        FfiConverterOptionalTypeEventSendState.INSTANCE.Write(value.RedactionSendState, stream);
         FfiConverterOptionalUInt64.INSTANCE.Write(value.LocalCreatedAt, stream);
         FfiConverterDictionaryStringTypeReceipt.INSTANCE.Write(value.ReadReceipts, stream);
         FfiConverterOptionalTypeEventItemOrigin.INSTANCE.Write(value.Origin, stream);
@@ -52144,6 +53977,10 @@ class FfiConverterTypeGalleryMessageContent : FfiConverterRustBuffer<GalleryMess
 /// <param name="InReplyTo">
 /// Optional Event ID to reply to.
 /// </param>
+/// <param name="ExtraContentJson">
+/// Additional top-level fields for the gallery, as a JSON object.
+/// The gallery's own fields take precedence on conflicts.
+/// </param>
 public record GalleryUploadParameters(
     /// <summary>
     /// Optional non-formatted caption, for clients that support it.
@@ -52160,7 +53997,12 @@ public record GalleryUploadParameters(
     /// <summary>
     /// Optional Event ID to reply to.
     /// </summary>
-    string? InReplyTo
+    string? InReplyTo,
+    /// <summary>
+    /// Additional top-level fields for the gallery, as a JSON object.
+    /// The gallery's own fields take precedence on conflicts.
+    /// </summary>
+    string? ExtraContentJson = null
 ) { }
 
 class FfiConverterTypeGalleryUploadParameters : FfiConverterRustBuffer<GalleryUploadParameters>
@@ -52173,7 +54015,8 @@ class FfiConverterTypeGalleryUploadParameters : FfiConverterRustBuffer<GalleryUp
             Caption: FfiConverterOptionalString.INSTANCE.Read(stream),
             FormattedCaption: FfiConverterOptionalTypeFormattedBody.INSTANCE.Read(stream),
             Mentions: FfiConverterOptionalTypeMentions.INSTANCE.Read(stream),
-            InReplyTo: FfiConverterOptionalString.INSTANCE.Read(stream)
+            InReplyTo: FfiConverterOptionalString.INSTANCE.Read(stream),
+            ExtraContentJson: FfiConverterOptionalString.INSTANCE.Read(stream)
         );
     }
 
@@ -52183,7 +54026,8 @@ class FfiConverterTypeGalleryUploadParameters : FfiConverterRustBuffer<GalleryUp
             + FfiConverterOptionalString.INSTANCE.AllocationSize(value.Caption)
             + FfiConverterOptionalTypeFormattedBody.INSTANCE.AllocationSize(value.FormattedCaption)
             + FfiConverterOptionalTypeMentions.INSTANCE.AllocationSize(value.Mentions)
-            + FfiConverterOptionalString.INSTANCE.AllocationSize(value.InReplyTo);
+            + FfiConverterOptionalString.INSTANCE.AllocationSize(value.InReplyTo)
+            + FfiConverterOptionalString.INSTANCE.AllocationSize(value.ExtraContentJson);
     }
 
     public override void Write(GalleryUploadParameters value, BigEndianStream stream)
@@ -52192,6 +54036,7 @@ class FfiConverterTypeGalleryUploadParameters : FfiConverterRustBuffer<GalleryUp
         FfiConverterOptionalTypeFormattedBody.INSTANCE.Write(value.FormattedCaption, stream);
         FfiConverterOptionalTypeMentions.INSTANCE.Write(value.Mentions, stream);
         FfiConverterOptionalString.INSTANCE.Write(value.InReplyTo, stream);
+        FfiConverterOptionalString.INSTANCE.Write(value.ExtraContentJson, stream);
     }
 }
 
@@ -52739,11 +54584,11 @@ class FfiConverterTypeListThreadsOptions : FfiConverterRustBuffer<ListThreadsOpt
 /// Whether this sharing session is currently active.
 /// </param>
 /// <param name="Ts">
-/// The timestamp when this live location sharing session started
-/// (from the `org.matrix.msc3488.ts` field of the originating
-/// `beacon_info` state event).
+/// The timestamp when this live location sharing session started (from the
+/// `org.matrix.msc3488.ts` field of the originating `beacon_info` state
+/// event).
 ///
-/// This marks the *beginning* of the session. The session expires at
+/// This marks the _beginning_ of the session. The session expires at
 /// `ts + timeout_ms`.
 /// </param>
 /// <param name="Description">
@@ -52753,8 +54598,8 @@ class FfiConverterTypeListThreadsOptions : FfiConverterRustBuffer<ListThreadsOpt
 /// Duration of the session in milliseconds.
 /// </param>
 /// <param name="AssetType">
-/// The asset type of the beacon (e.g. `Sender` for the user's own
-/// location, `Pin` for a fixed point of interest).
+/// The asset type of the beacon (e.g. `Sender` for the user's own location,
+/// `Pin` for a fixed point of interest).
 /// </param>
 /// <param name="Locations">
 /// All location updates received so far, sorted oldest-first.
@@ -52765,11 +54610,11 @@ public record LiveLocationContent(
     /// </summary>
     bool IsLive,
     /// <summary>
-    /// The timestamp when this live location sharing session started
-    /// (from the `org.matrix.msc3488.ts` field of the originating
-    /// `beacon_info` state event).
+    /// The timestamp when this live location sharing session started (from the
+    /// `org.matrix.msc3488.ts` field of the originating `beacon_info` state
+    /// event).
     ///
-    /// This marks the *beginning* of the session. The session expires at
+    /// This marks the _beginning_ of the session. The session expires at
     /// `ts + timeout_ms`.
     /// </summary>
     Timestamp Ts,
@@ -52782,8 +54627,8 @@ public record LiveLocationContent(
     /// </summary>
     ulong TimeoutMs,
     /// <summary>
-    /// The asset type of the beacon (e.g. `Sender` for the user's own
-    /// location, `Pin` for a fixed point of interest).
+    /// The asset type of the beacon (e.g. `Sender` for the user's own location,
+    /// `Pin` for a fixed point of interest).
     /// </summary>
     AssetType AssetType,
     /// <summary>
@@ -52843,8 +54688,8 @@ class FfiConverterTypeLiveLocationContent : FfiConverterRustBuffer<LiveLocationC
 /// The time when location sharing started.
 /// </param>
 /// <param name="Timeout">
-/// The duration that the location sharing will be live.
-/// Meaning that the location will stop being shared at ts + timeout.
+/// The duration that the location sharing will be live. Meaning that the
+/// location will stop being shared at ts + timeout.
 /// </param>
 /// <param name="BeaconId">
 /// The event ID of the beacon_info state event for this share.
@@ -52863,8 +54708,8 @@ public record LiveLocationShare(
     /// </summary>
     ulong StartTs,
     /// <summary>
-    /// The duration that the location sharing will be live.
-    /// Meaning that the location will stop being shared at ts + timeout.
+    /// The duration that the location sharing will be live. Meaning that the
+    /// location will stop being shared at ts + timeout.
     /// </summary>
     ulong Timeout,
     /// <summary>
@@ -53031,24 +54876,22 @@ class FfiConverterTypeMediaPreviewConfig : FfiConverterRustBuffer<MediaPreviewCo
 /// possibly a thumbnail) being uploaded.
 /// </summary>
 /// <param name="Index">
-/// The index of the media within the transaction. A file and its
-/// thumbnail share the same index. Will always be 0 for non-gallery
-/// media uploads.
+/// The index of the media within the transaction. A file and its thumbnail
+/// share the same index. Will always be 0 for non-gallery media uploads.
 /// </param>
 /// <param name="Progress">
-/// The current combined upload progress for both the file and,
-/// if it exists, its thumbnail.
+/// The current combined upload progress for both the file and, if it
+/// exists, its thumbnail.
 /// </param>
 public record MediaUploadProgress(
     /// <summary>
-    /// The index of the media within the transaction. A file and its
-    /// thumbnail share the same index. Will always be 0 for non-gallery
-    /// media uploads.
+    /// The index of the media within the transaction. A file and its thumbnail
+    /// share the same index. Will always be 0 for non-gallery media uploads.
     /// </summary>
     ulong Index,
     /// <summary>
-    /// The current combined upload progress for both the file and,
-    /// if it exists, its thumbnail.
+    /// The current combined upload progress for both the file and, if it
+    /// exists, its thumbnail.
     /// </summary>
     AbstractProgress Progress
 ) { }
@@ -53323,8 +55166,8 @@ class FfiConverterTypeNoticeMessageContent : FfiConverterRustBuffer<NoticeMessag
 /// missing room key, i.e. how long the homeserver waits for a to-device
 /// message to arrive before answering.
 ///
-/// Together with `decryption_deadline`, this determines how many
-/// iterations are run when the homeserver has nothing to return.
+/// Together with `decryption_deadline`, this determines how many iterations
+/// are run when the homeserver has nothing to return.
 /// </param>
 /// <param name="EncryptionSyncNetworkTimeout">
 /// Extra time allowed for the network round trip of each request of the
@@ -53360,8 +55203,8 @@ public record NotificationClientTimeouts(
     /// missing room key, i.e. how long the homeserver waits for a to-device
     /// message to arrive before answering.
     ///
-    /// Together with `decryption_deadline`, this determines how many
-    /// iterations are run when the homeserver has nothing to return.
+    /// Together with `decryption_deadline`, this determines how many iterations
+    /// are run when the homeserver has nothing to return.
     /// </summary>
     TimeSpan EncryptionSyncPollTimeout,
     /// <summary>
@@ -53412,9 +55255,9 @@ class FfiConverterTypeNotificationClientTimeouts : FfiConverterRustBuffer<Notifi
 /// The raw JSON of the underlying event.
 /// </param>
 /// <param name="IsNoisy">
-/// Is the notification supposed to be at the "noisy" level?
-/// Can be `None` if we couldn't determine this, because we lacked
-/// information to create a push context.
+/// Is the notification supposed to be at the "noisy" level? Can be `None`
+/// if we couldn't determine this, because we lacked information to create a
+/// push context.
 /// </param>
 /// <param name="Actions">
 /// The push actions for this notification (notify, sound, highlight, etc.).
@@ -53428,9 +55271,9 @@ public record NotificationItem(
     NotificationSenderInfo SenderInfo,
     NotificationRoomInfo RoomInfo,
     /// <summary>
-    /// Is the notification supposed to be at the "noisy" level?
-    /// Can be `None` if we couldn't determine this, because we lacked
-    /// information to create a push context.
+    /// Is the notification supposed to be at the "noisy" level? Can be `None`
+    /// if we couldn't determine this, because we lacked information to create a
+    /// push context.
     /// </summary>
     bool? IsNoisy,
     bool? HasMention,
@@ -53764,12 +55607,36 @@ class FfiConverterTypeOAuthConfiguration : FfiConverterRustBuffer<OAuthConfigura
 /// <param name="ApprovalUrl">
 /// The URL where the user can approve the reset of the cross-signing keys.
 /// </param>
+/// <param name="Session">
+/// The UIAA session token.
+/// </param>
 public record OAuthCrossSigningResetInfo(
     /// <summary>
     /// The URL where the user can approve the reset of the cross-signing keys.
     /// </summary>
-    string ApprovalUrl
-) { }
+    string ApprovalUrl,
+    /// <summary>
+    /// The UIAA session token.
+    /// </summary>
+    string Session
+)
+{
+    /// <summary>
+    /// Create UIAA [`AuthData`] to continue this reset session.
+    /// </summary>
+    public AuthData AsAuthData()
+    {
+        return FfiConverterTypeAuthData.INSTANCE.Lift(
+            _UniffiHelpers.RustCall(
+                (ref UniffiRustCallStatus _status) =>
+                    _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_oauthcrosssigningresetinfo_as_auth_data(
+                        FfiConverterTypeOAuthCrossSigningResetInfo.INSTANCE.Lower(this),
+                        ref _status
+                    )
+            )
+        );
+    }
+}
 
 class FfiConverterTypeOAuthCrossSigningResetInfo : FfiConverterRustBuffer<OAuthCrossSigningResetInfo>
 {
@@ -53778,17 +55645,23 @@ class FfiConverterTypeOAuthCrossSigningResetInfo : FfiConverterRustBuffer<OAuthC
 
     public override OAuthCrossSigningResetInfo Read(BigEndianStream stream)
     {
-        return new OAuthCrossSigningResetInfo(ApprovalUrl: FfiConverterString.INSTANCE.Read(stream));
+        return new OAuthCrossSigningResetInfo(
+            ApprovalUrl: FfiConverterString.INSTANCE.Read(stream),
+            Session: FfiConverterString.INSTANCE.Read(stream)
+        );
     }
 
     public override int AllocationSize(OAuthCrossSigningResetInfo value)
     {
-        return 0 + FfiConverterString.INSTANCE.AllocationSize(value.ApprovalUrl);
+        return 0
+            + FfiConverterString.INSTANCE.AllocationSize(value.ApprovalUrl)
+            + FfiConverterString.INSTANCE.AllocationSize(value.Session);
     }
 
     public override void Write(OAuthCrossSigningResetInfo value, BigEndianStream stream)
     {
         FfiConverterString.INSTANCE.Write(value.ApprovalUrl, stream);
+        FfiConverterString.INSTANCE.Write(value.Session, stream);
     }
 }
 
@@ -53910,13 +55783,13 @@ class FfiConverterTypePassPhrase : FfiConverterRustBuffer<PassPhrase>
 /// Estimated number of guesses needed to crack the password.
 /// </param>
 /// <param name="Score">
-/// A numeric score derived from the order of magnitude of `guesses`
-/// (i.e. log base 10).
+/// A numeric score derived from the order of magnitude of `guesses` (i.e.
+/// log base 10).
 /// </param>
 /// <param name="NormalScore">
 /// A normalized score from 0 to 1.0 derived from `score` and the
-/// estimator's `very_strong` threshold (`score / very_strong`).
-/// Scores above the `VeryStrong` threshold *can* exceed 1.0.
+/// estimator's `very_strong` threshold (`score / very_strong`). Scores
+/// above the `VeryStrong` threshold _can_ exceed 1.0.
 /// </param>
 /// <param name="Feedback">
 /// Verbal feedback to help choose a better password. Only set when the
@@ -53932,14 +55805,14 @@ public record PasswordStrengthEstimate(
     /// </summary>
     ulong Guesses,
     /// <summary>
-    /// A numeric score derived from the order of magnitude of `guesses`
-    /// (i.e. log base 10).
+    /// A numeric score derived from the order of magnitude of `guesses` (i.e.
+    /// log base 10).
     /// </summary>
     double Score,
     /// <summary>
     /// A normalized score from 0 to 1.0 derived from `score` and the
-    /// estimator's `very_strong` threshold (`score / very_strong`).
-    /// Scores above the `VeryStrong` threshold *can* exceed 1.0.
+    /// estimator's `very_strong` threshold (`score / very_strong`). Scores
+    /// above the `VeryStrong` threshold _can_ exceed 1.0.
     /// </summary>
     double NormalScore,
     /// <summary>
@@ -54455,7 +56328,17 @@ class FfiConverterTypeReaction : FfiConverterRustBuffer<Reaction>
     }
 }
 
-public record ReactionSenderData(string SenderId, Timestamp Timestamp) { }
+/// <param name="SendState">
+/// Send state of the reaction when it's ours and pending, `None` otherwise.
+/// </param>
+public record ReactionSenderData(
+    string SenderId,
+    Timestamp Timestamp,
+    /// <summary>
+    /// Send state of the reaction when it's ours and pending, `None` otherwise.
+    /// </summary>
+    EventSendState? SendState
+) { }
 
 class FfiConverterTypeReactionSenderData : FfiConverterRustBuffer<ReactionSenderData>
 {
@@ -54465,7 +56348,8 @@ class FfiConverterTypeReactionSenderData : FfiConverterRustBuffer<ReactionSender
     {
         return new ReactionSenderData(
             SenderId: FfiConverterString.INSTANCE.Read(stream),
-            Timestamp: FfiConverterTypeTimestamp.INSTANCE.Read(stream)
+            Timestamp: FfiConverterTypeTimestamp.INSTANCE.Read(stream),
+            SendState: FfiConverterOptionalTypeEventSendState.INSTANCE.Read(stream)
         );
     }
 
@@ -54473,13 +56357,15 @@ class FfiConverterTypeReactionSenderData : FfiConverterRustBuffer<ReactionSender
     {
         return 0
             + FfiConverterString.INSTANCE.AllocationSize(value.SenderId)
-            + FfiConverterTypeTimestamp.INSTANCE.AllocationSize(value.Timestamp);
+            + FfiConverterTypeTimestamp.INSTANCE.AllocationSize(value.Timestamp)
+            + FfiConverterOptionalTypeEventSendState.INSTANCE.AllocationSize(value.SendState);
     }
 
     public override void Write(ReactionSenderData value, BigEndianStream stream)
     {
         FfiConverterString.INSTANCE.Write(value.SenderId, stream);
         FfiConverterTypeTimestamp.INSTANCE.Write(value.Timestamp, stream);
+        FfiConverterOptionalTypeEventSendState.INSTANCE.Write(value.SendState, stream);
     }
 }
 
@@ -54825,8 +56711,8 @@ class FfiConverterTypeRoomHero : FfiConverterRustBuffer<RoomHero>
 /// notification settings.
 /// </param>
 /// <param name="NumUnreadNotifications">
-/// Events that will notify the user, according to their
-/// notification settings.
+/// Events that will notify the user, according to their notification
+/// settings.
 /// </param>
 /// <param name="NumUnreadMentions">
 /// Events causing mentions/highlights for the user, according to their
@@ -54920,8 +56806,8 @@ public record RoomInfo(
     /// </summary>
     ulong NumUnreadMessages,
     /// <summary>
-    /// Events that will notify the user, according to their
-    /// notification settings.
+    /// Events that will notify the user, according to their notification
+    /// settings.
     /// </summary>
     ulong NumUnreadNotifications,
     /// <summary>
@@ -55307,6 +57193,94 @@ class FfiConverterTypeRoomMemberWithSenderInfo : FfiConverterRustBuffer<RoomMemb
     {
         FfiConverterTypeRoomMember.INSTANCE.Write(value.RoomMember, stream);
         FfiConverterOptionalTypeRoomMember.INSTANCE.Write(value.SenderInfo, stream);
+    }
+}
+
+/// <summary>
+/// A message-like room event, as exposed over FFI.
+/// </summary>
+/// <param name="EventType">
+/// The event type, e.g. `m.reaction`.
+/// </param>
+/// <param name="EventId">
+/// The event id.
+/// </param>
+/// <param name="Sender">
+/// The event sender.
+/// </param>
+/// <param name="Timestamp">
+/// When the event was sent, in milliseconds since the Unix epoch.
+/// </param>
+/// <param name="ContentJson">
+/// The `content` of the event, as a JSON string, decrypted if the event was
+/// encrypted.
+/// </param>
+/// <param name="EncryptionInfo">
+/// The encryption info of the event, if it was encrypted.
+/// </param>
+public record RoomMessageLikeEvent(
+    /// <summary>
+    /// The event type, e.g. `m.reaction`.
+    /// </summary>
+    MessageLikeEventType EventType,
+    /// <summary>
+    /// The event id.
+    /// </summary>
+    string EventId,
+    /// <summary>
+    /// The event sender.
+    /// </summary>
+    string Sender,
+    /// <summary>
+    /// When the event was sent, in milliseconds since the Unix epoch.
+    /// </summary>
+    ulong Timestamp,
+    /// <summary>
+    /// The `content` of the event, as a JSON string, decrypted if the event was
+    /// encrypted.
+    /// </summary>
+    string ContentJson,
+    /// <summary>
+    /// The encryption info of the event, if it was encrypted.
+    /// </summary>
+    EventEncryptionInfo? EncryptionInfo
+) { }
+
+class FfiConverterTypeRoomMessageLikeEvent : FfiConverterRustBuffer<RoomMessageLikeEvent>
+{
+    public static FfiConverterTypeRoomMessageLikeEvent INSTANCE = new FfiConverterTypeRoomMessageLikeEvent();
+
+    public override RoomMessageLikeEvent Read(BigEndianStream stream)
+    {
+        return new RoomMessageLikeEvent(
+            EventType: FfiConverterTypeMessageLikeEventType.INSTANCE.Read(stream),
+            EventId: FfiConverterString.INSTANCE.Read(stream),
+            Sender: FfiConverterString.INSTANCE.Read(stream),
+            Timestamp: FfiConverterUInt64.INSTANCE.Read(stream),
+            ContentJson: FfiConverterString.INSTANCE.Read(stream),
+            EncryptionInfo: FfiConverterOptionalTypeEventEncryptionInfo.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(RoomMessageLikeEvent value)
+    {
+        return 0
+            + FfiConverterTypeMessageLikeEventType.INSTANCE.AllocationSize(value.EventType)
+            + FfiConverterString.INSTANCE.AllocationSize(value.EventId)
+            + FfiConverterString.INSTANCE.AllocationSize(value.Sender)
+            + FfiConverterUInt64.INSTANCE.AllocationSize(value.Timestamp)
+            + FfiConverterString.INSTANCE.AllocationSize(value.ContentJson)
+            + FfiConverterOptionalTypeEventEncryptionInfo.INSTANCE.AllocationSize(value.EncryptionInfo);
+    }
+
+    public override void Write(RoomMessageLikeEvent value, BigEndianStream stream)
+    {
+        FfiConverterTypeMessageLikeEventType.INSTANCE.Write(value.EventType, stream);
+        FfiConverterString.INSTANCE.Write(value.EventId, stream);
+        FfiConverterString.INSTANCE.Write(value.Sender, stream);
+        FfiConverterUInt64.INSTANCE.Write(value.Timestamp, stream);
+        FfiConverterString.INSTANCE.Write(value.ContentJson, stream);
+        FfiConverterOptionalTypeEventEncryptionInfo.INSTANCE.Write(value.EncryptionInfo, stream);
     }
 }
 
@@ -55927,21 +57901,21 @@ class FfiConverterTypeSecretStorageV1AesHmacSha2Properties
 /// The outcome of a [`Client::send_encrypted_to_device_message`] call.
 /// </summary>
 /// <param name="Failures">
-/// The devices that did not receive the message, as a `user id -> device
-/// ids` map.
+/// The devices that did not receive the message, as a
+/// `user id -> device ids` map.
 ///
 /// A device can end up in here because it is unknown to us, or because
-/// encrypting the message for it failed. An empty map means every
-/// recipient was served.
+/// encrypting the message for it failed. An empty map means every recipient
+/// was served.
 /// </param>
 public record SendToDeviceOutcome(
     /// <summary>
-    /// The devices that did not receive the message, as a `user id -> device
-    /// ids` map.
+    /// The devices that did not receive the message, as a
+    /// `user id -> device ids` map.
     ///
     /// A device can end up in here because it is unknown to us, or because
-    /// encrypting the message for it failed. An empty map means every
-    /// recipient was served.
+    /// encrypting the message for it failed. An empty map means every recipient
+    /// was served.
     /// </summary>
     Dictionary<string, string[]> Failures
 ) { }
@@ -56062,6 +58036,41 @@ class FfiConverterTypeSession : FfiConverterRustBuffer<Session>
         FfiConverterString.INSTANCE.Write(value.HomeserverUrl, stream);
         FfiConverterOptionalString.INSTANCE.Write(value.OauthData, stream);
         FfiConverterTypeSlidingSyncVersion.INSTANCE.Write(value.SlidingSyncVersion, stream);
+    }
+}
+
+/// <summary>
+/// Information about why a verification was cancelled
+/// </summary>
+public record SessionVerificationCancelInfo(string Reason, string CancelCode, bool CancelledByUs) { }
+
+class FfiConverterTypeSessionVerificationCancelInfo : FfiConverterRustBuffer<SessionVerificationCancelInfo>
+{
+    public static FfiConverterTypeSessionVerificationCancelInfo INSTANCE =
+        new FfiConverterTypeSessionVerificationCancelInfo();
+
+    public override SessionVerificationCancelInfo Read(BigEndianStream stream)
+    {
+        return new SessionVerificationCancelInfo(
+            Reason: FfiConverterString.INSTANCE.Read(stream),
+            CancelCode: FfiConverterString.INSTANCE.Read(stream),
+            CancelledByUs: FfiConverterBoolean.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(SessionVerificationCancelInfo value)
+    {
+        return 0
+            + FfiConverterString.INSTANCE.AllocationSize(value.Reason)
+            + FfiConverterString.INSTANCE.AllocationSize(value.CancelCode)
+            + FfiConverterBoolean.INSTANCE.AllocationSize(value.CancelledByUs);
+    }
+
+    public override void Write(SessionVerificationCancelInfo value, BigEndianStream stream)
+    {
+        FfiConverterString.INSTANCE.Write(value.Reason, stream);
+        FfiConverterString.INSTANCE.Write(value.CancelCode, stream);
+        FfiConverterBoolean.INSTANCE.Write(value.CancelledByUs, stream);
     }
 }
 
@@ -56196,13 +58205,13 @@ class FfiConverterTypeSimplePushRule : FfiConverterRustBuffer<SimplePushRule>
 /// The underlying [`SpaceRoom`]
 /// </param>
 /// <param name="Level">
-/// The level of the space filter in the tree/hierarchy.
-/// At this point in time the filters are limited to the first 2 levels.
+/// The level of the space filter in the tree/hierarchy. At this point in
+/// time the filters are limited to the first 2 levels.
 /// </param>
 /// <param name="Descendants">
-/// The room identifiers of the descendants of this space.
-/// For top level spaces (level 0) these will be direct descendants while
-/// for first level spaces they will be all other descendants, recursively.
+/// The room identifiers of the descendants of this space. For top level
+/// spaces (level 0) these will be direct descendants while for first level
+/// spaces they will be all other descendants, recursively.
 /// </param>
 public record SpaceFilter(
     /// <summary>
@@ -56210,14 +58219,14 @@ public record SpaceFilter(
     /// </summary>
     SpaceRoom SpaceRoom,
     /// <summary>
-    /// The level of the space filter in the tree/hierarchy.
-    /// At this point in time the filters are limited to the first 2 levels.
+    /// The level of the space filter in the tree/hierarchy. At this point in
+    /// time the filters are limited to the first 2 levels.
     /// </summary>
     byte Level,
     /// <summary>
-    /// The room identifiers of the descendants of this space.
-    /// For top level spaces (level 0) these will be direct descendants while
-    /// for first level spaces they will be all other descendants, recursively.
+    /// The room identifiers of the descendants of this space. For top level
+    /// spaces (level 0) these will be direct descendants while for first level
+    /// spaces they will be all other descendants, recursively.
     /// </summary>
     string[] Descendants
 ) { }
@@ -56252,8 +58261,8 @@ class FfiConverterTypeSpaceFilter : FfiConverterRustBuffer<SpaceFilter>
 }
 
 /// <summary>
-/// Structure representing a room in a space and aggregated information
-/// relevant to the UI layer.
+/// Structure representing a room in a space and aggregated information relevant
+/// to the UI layer.
 /// </summary>
 /// <param name="RoomId">
 /// The ID of the room.
@@ -56292,8 +58301,8 @@ class FfiConverterTypeSpaceFilter : FfiConverterRustBuffer<SpaceFilter>
 /// <param name="IsDirect">
 /// Whether this room is a direct room.
 ///
-/// Only set if the room is known to the client otherwise we
-/// assume DMs shouldn't be exposed publicly in spaces.
+/// Only set if the room is known to the client otherwise we assume DMs
+/// shouldn't be exposed publicly in spaces.
 /// </param>
 /// <param name="ChildrenCount">
 /// The number of children room this has, if a space.
@@ -56308,9 +58317,8 @@ class FfiConverterTypeSpaceFilter : FfiConverterRustBuffer<SpaceFilter>
 /// The via parameters of the room.
 /// </param>
 /// <param name="IsDm">
-/// Whether this room is a DM, if known.
-/// Note this value can be calculated following some assumptions and is not
-/// guaranteed to be accurate.
+/// Whether this room is a DM, if known. Note this value can be calculated
+/// following some assumptions and is not guaranteed to be accurate.
 /// </param>
 public record SpaceRoom(
     /// <summary>
@@ -56361,8 +58369,8 @@ public record SpaceRoom(
     /// <summary>
     /// Whether this room is a direct room.
     ///
-    /// Only set if the room is known to the client otherwise we
-    /// assume DMs shouldn't be exposed publicly in spaces.
+    /// Only set if the room is known to the client otherwise we assume DMs
+    /// shouldn't be exposed publicly in spaces.
     /// </summary>
     bool? IsDirect,
     /// <summary>
@@ -56382,9 +58390,8 @@ public record SpaceRoom(
     /// </summary>
     string[] Via,
     /// <summary>
-    /// Whether this room is a DM, if known.
-    /// Note this value can be calculated following some assumptions and is not
-    /// guaranteed to be accurate.
+    /// Whether this room is a DM, if known. Note this value can be calculated
+    /// following some assumptions and is not guaranteed to be accurate.
     /// </summary>
     bool? IsDm
 ) { }
@@ -56464,12 +58471,12 @@ class FfiConverterTypeSpaceRoom : FfiConverterRustBuffer<SpaceRoom>
 /// Settings for [`Encryption::start_dehydrated_devices`].
 /// </summary>
 /// <param name="CreateNewKey">
-/// Force generation of a fresh random pickle key on start, replacing
-/// any existing entry in Secret Storage and the local cache.
+/// Force generation of a fresh random pickle key on start, replacing any
+/// existing entry in Secret Storage and the local cache.
 /// </param>
 /// <param name="Rehydrate">
-/// Whether to attempt to rehydrate the existing dehydrated device, if
-/// any, before creating the next one.
+/// Whether to attempt to rehydrate the existing dehydrated device, if any,
+/// before creating the next one.
 /// </param>
 /// <param name="OnlyIfKeyCached">
 /// If `true`, the call becomes a no-op when no pickle key is cached
@@ -56477,13 +58484,13 @@ class FfiConverterTypeSpaceRoom : FfiConverterRustBuffer<SpaceRoom>
 /// </param>
 public record StartDehydratedDevicesSettings(
     /// <summary>
-    /// Force generation of a fresh random pickle key on start, replacing
-    /// any existing entry in Secret Storage and the local cache.
+    /// Force generation of a fresh random pickle key on start, replacing any
+    /// existing entry in Secret Storage and the local cache.
     /// </summary>
     bool CreateNewKey = false,
     /// <summary>
-    /// Whether to attempt to rehydrate the existing dehydrated device, if
-    /// any, before creating the next one.
+    /// Whether to attempt to rehydrate the existing dehydrated device, if any,
+    /// before creating the next one.
     /// </summary>
     bool Rehydrate = true,
     /// <summary>
@@ -56524,6 +58531,186 @@ class FfiConverterTypeStartDehydratedDevicesSettings : FfiConverterRustBuffer<St
 }
 
 /// <summary>
+/// A sticky event that is currently live in a room.
+/// </summary>
+/// <param name="Key">
+/// The key under which the event is tracked.
+/// </param>
+/// <param name="EventId">
+/// The event ID.
+/// </param>
+/// <param name="ExpiresAtMs">
+/// When the event stops being sticky, in milliseconds since the Unix epoch.
+/// </param>
+/// <param name="EventJson">
+/// The event as a JSON string, decrypted if it was encrypted.
+/// </param>
+/// <param name="EncryptionInfo">
+/// The encryption info of the event, if it was encrypted.
+/// </param>
+public record StickyEvent(
+    /// <summary>
+    /// The key under which the event is tracked.
+    /// </summary>
+    StickyKey Key,
+    /// <summary>
+    /// The event ID.
+    /// </summary>
+    string EventId,
+    /// <summary>
+    /// When the event stops being sticky, in milliseconds since the Unix epoch.
+    /// </summary>
+    ulong ExpiresAtMs,
+    /// <summary>
+    /// The event as a JSON string, decrypted if it was encrypted.
+    /// </summary>
+    string EventJson,
+    /// <summary>
+    /// The encryption info of the event, if it was encrypted.
+    /// </summary>
+    EventEncryptionInfo? EncryptionInfo
+) { }
+
+class FfiConverterTypeStickyEvent : FfiConverterRustBuffer<StickyEvent>
+{
+    public static FfiConverterTypeStickyEvent INSTANCE = new FfiConverterTypeStickyEvent();
+
+    public override StickyEvent Read(BigEndianStream stream)
+    {
+        return new StickyEvent(
+            Key: FfiConverterTypeStickyKey.INSTANCE.Read(stream),
+            EventId: FfiConverterString.INSTANCE.Read(stream),
+            ExpiresAtMs: FfiConverterUInt64.INSTANCE.Read(stream),
+            EventJson: FfiConverterString.INSTANCE.Read(stream),
+            EncryptionInfo: FfiConverterOptionalTypeEventEncryptionInfo.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(StickyEvent value)
+    {
+        return 0
+            + FfiConverterTypeStickyKey.INSTANCE.AllocationSize(value.Key)
+            + FfiConverterString.INSTANCE.AllocationSize(value.EventId)
+            + FfiConverterUInt64.INSTANCE.AllocationSize(value.ExpiresAtMs)
+            + FfiConverterString.INSTANCE.AllocationSize(value.EventJson)
+            + FfiConverterOptionalTypeEventEncryptionInfo.INSTANCE.AllocationSize(value.EncryptionInfo);
+    }
+
+    public override void Write(StickyEvent value, BigEndianStream stream)
+    {
+        FfiConverterTypeStickyKey.INSTANCE.Write(value.Key, stream);
+        FfiConverterString.INSTANCE.Write(value.EventId, stream);
+        FfiConverterUInt64.INSTANCE.Write(value.ExpiresAtMs, stream);
+        FfiConverterString.INSTANCE.Write(value.EventJson, stream);
+        FfiConverterOptionalTypeEventEncryptionInfo.INSTANCE.Write(value.EncryptionInfo, stream);
+    }
+}
+
+/// <summary>
+/// A sticky event that is no longer live in a room.
+/// </summary>
+/// <param name="Key">
+/// The key the event was tracked under.
+/// </param>
+/// <param name="Reason">
+/// Why it is no longer live.
+/// </param>
+public record StickyEventRemoval(
+    /// <summary>
+    /// The key the event was tracked under.
+    /// </summary>
+    StickyKey Key,
+    /// <summary>
+    /// Why it is no longer live.
+    /// </summary>
+    RemovalReason Reason
+) { }
+
+class FfiConverterTypeStickyEventRemoval : FfiConverterRustBuffer<StickyEventRemoval>
+{
+    public static FfiConverterTypeStickyEventRemoval INSTANCE = new FfiConverterTypeStickyEventRemoval();
+
+    public override StickyEventRemoval Read(BigEndianStream stream)
+    {
+        return new StickyEventRemoval(
+            Key: FfiConverterTypeStickyKey.INSTANCE.Read(stream),
+            Reason: FfiConverterTypeRemovalReason.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(StickyEventRemoval value)
+    {
+        return 0
+            + FfiConverterTypeStickyKey.INSTANCE.AllocationSize(value.Key)
+            + FfiConverterTypeRemovalReason.INSTANCE.AllocationSize(value.Reason);
+    }
+
+    public override void Write(StickyEventRemoval value, BigEndianStream stream)
+    {
+        FfiConverterTypeStickyKey.INSTANCE.Write(value.Key, stream);
+        FfiConverterTypeRemovalReason.INSTANCE.Write(value.Reason, stream);
+    }
+}
+
+/// <summary>
+/// The key under which a sticky event is tracked in a room.
+///
+/// A room holds at most one live sticky event per key.
+/// </summary>
+/// <param name="Sender">
+/// The sender of the event.
+/// </param>
+/// <param name="EventType">
+/// The type of the event, e.g. `m.rtc.member`.
+/// </param>
+/// <param name="Key">
+/// The `content.sticky_key` of the event.
+/// </param>
+public record StickyKey(
+    /// <summary>
+    /// The sender of the event.
+    /// </summary>
+    string Sender,
+    /// <summary>
+    /// The type of the event, e.g. `m.rtc.member`.
+    /// </summary>
+    string EventType,
+    /// <summary>
+    /// The `content.sticky_key` of the event.
+    /// </summary>
+    string Key
+) { }
+
+class FfiConverterTypeStickyKey : FfiConverterRustBuffer<StickyKey>
+{
+    public static FfiConverterTypeStickyKey INSTANCE = new FfiConverterTypeStickyKey();
+
+    public override StickyKey Read(BigEndianStream stream)
+    {
+        return new StickyKey(
+            Sender: FfiConverterString.INSTANCE.Read(stream),
+            EventType: FfiConverterString.INSTANCE.Read(stream),
+            Key: FfiConverterString.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(StickyKey value)
+    {
+        return 0
+            + FfiConverterString.INSTANCE.AllocationSize(value.Sender)
+            + FfiConverterString.INSTANCE.AllocationSize(value.EventType)
+            + FfiConverterString.INSTANCE.AllocationSize(value.Key);
+    }
+
+    public override void Write(StickyKey value, BigEndianStream stream)
+    {
+        FfiConverterString.INSTANCE.Write(value.Sender, stream);
+        FfiConverterString.INSTANCE.Write(value.EventType, stream);
+        FfiConverterString.INSTANCE.Write(value.Key, stream);
+    }
+}
+
+/// <summary>
 /// Contains the disk size of the different stores, if known. It won't be
 /// available for in-memory stores.
 /// </summary>
@@ -56538,6 +58725,9 @@ class FfiConverterTypeStartDehydratedDevicesSettings : FfiConverterRustBuffer<St
 /// </param>
 /// <param name="MediaStore">
 /// The size of the MediaStore.
+/// </param>
+/// <param name="SearchIndex">
+/// The size of the search index.
 /// </param>
 public record StoreSizes(
     /// <summary>
@@ -56555,7 +58745,11 @@ public record StoreSizes(
     /// <summary>
     /// The size of the MediaStore.
     /// </summary>
-    ulong? MediaStore
+    ulong? MediaStore,
+    /// <summary>
+    /// The size of the search index.
+    /// </summary>
+    ulong? SearchIndex
 ) { }
 
 class FfiConverterTypeStoreSizes : FfiConverterRustBuffer<StoreSizes>
@@ -56568,7 +58762,8 @@ class FfiConverterTypeStoreSizes : FfiConverterRustBuffer<StoreSizes>
             CryptoStore: FfiConverterOptionalUInt64.INSTANCE.Read(stream),
             StateStore: FfiConverterOptionalUInt64.INSTANCE.Read(stream),
             EventCacheStore: FfiConverterOptionalUInt64.INSTANCE.Read(stream),
-            MediaStore: FfiConverterOptionalUInt64.INSTANCE.Read(stream)
+            MediaStore: FfiConverterOptionalUInt64.INSTANCE.Read(stream),
+            SearchIndex: FfiConverterOptionalUInt64.INSTANCE.Read(stream)
         );
     }
 
@@ -56578,7 +58773,8 @@ class FfiConverterTypeStoreSizes : FfiConverterRustBuffer<StoreSizes>
             + FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.CryptoStore)
             + FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.StateStore)
             + FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.EventCacheStore)
-            + FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.MediaStore);
+            + FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.MediaStore)
+            + FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.SearchIndex);
     }
 
     public override void Write(StoreSizes value, BigEndianStream stream)
@@ -56587,6 +58783,7 @@ class FfiConverterTypeStoreSizes : FfiConverterRustBuffer<StoreSizes>
         FfiConverterOptionalUInt64.INSTANCE.Write(value.StateStore, stream);
         FfiConverterOptionalUInt64.INSTANCE.Write(value.EventCacheStore, stream);
         FfiConverterOptionalUInt64.INSTANCE.Write(value.MediaStore, stream);
+        FfiConverterOptionalUInt64.INSTANCE.Write(value.SearchIndex, stream);
     }
 }
 
@@ -56760,16 +58957,16 @@ class FfiConverterTypeSyncResponseV2 : FfiConverterRustBuffer<SyncResponseV2>
 /// Settings for a sync v2 call.
 /// </summary>
 /// <param name="TimeoutMs">
-/// Timeout in milliseconds for the server long-poll.
-/// If not set, defaults to 30 seconds.
+/// Timeout in milliseconds for the server long-poll. If not set, defaults
+/// to 30 seconds.
 /// </param>
 /// <param name="FullState">
 /// Whether to request full state on the first sync.
 /// </param>
 public record SyncSettingsV2(
     /// <summary>
-    /// Timeout in milliseconds for the server long-poll.
-    /// If not set, defaults to 30 seconds.
+    /// Timeout in milliseconds for the server long-poll. If not set, defaults
+    /// to 30 seconds.
     /// </summary>
     ulong? TimeoutMs = null,
     /// <summary>
@@ -56887,14 +59084,14 @@ class FfiConverterTypeTextMessageContent : FfiConverterRustBuffer<TextMessageCon
 /// The latest event in the thread (i.e. the most recent reply), if
 /// available.
 ///
-/// Initially populated from the server's bundled thread summary and
-/// updated in real time as new events arrive via sync or back-pagination.
+/// Initially populated from the server's bundled thread summary and updated
+/// in real time as new events arrive via sync or back-pagination.
 /// </param>
 /// <param name="NumReplies">
 /// The number of replies in this thread (excluding the root event).
 ///
-/// Initially populated from the server's bundled thread summary and
-/// updated in real time as new events arrive via sync.
+/// Initially populated from the server's bundled thread summary and updated
+/// in real time as new events arrive via sync.
 /// </param>
 public record ThreadListItem(
     /// <summary>
@@ -56909,15 +59106,15 @@ public record ThreadListItem(
     /// The latest event in the thread (i.e. the most recent reply), if
     /// available.
     ///
-    /// Initially populated from the server's bundled thread summary and
-    /// updated in real time as new events arrive via sync or back-pagination.
+    /// Initially populated from the server's bundled thread summary and updated
+    /// in real time as new events arrive via sync or back-pagination.
     /// </summary>
     ThreadListItemEvent? LatestEvent,
     /// <summary>
     /// The number of replies in this thread (excluding the root event).
     ///
-    /// Initially populated from the server's bundled thread summary and
-    /// updated in real time as new events arrive via sync.
+    /// Initially populated from the server's bundled thread summary and updated
+    /// in real time as new events arrive via sync.
     /// </summary>
     uint NumReplies
 ) : IDisposable
@@ -57136,9 +59333,9 @@ class FfiConverterTypeThumbnailInfo : FfiConverterRustBuffer<ThumbnailInfo>
 /// How should we filter out events from the timeline?
 /// </param>
 /// <param name="InternalIdPrefix">
-/// An optional String that will be prepended to
-/// all the timeline item's internal IDs, making it possible to
-/// distinguish different timeline instances from each other.
+/// An optional String that will be prepended to all the timeline item's
+/// internal IDs, making it possible to distinguish different timeline
+/// instances from each other.
 /// </param>
 /// <param name="DateDividerMode">
 /// How often to insert date dividers
@@ -57164,9 +59361,9 @@ public record TimelineConfiguration(
     /// </summary>
     TimelineFilter Filter,
     /// <summary>
-    /// An optional String that will be prepended to
-    /// all the timeline item's internal IDs, making it possible to
-    /// distinguish different timeline instances from each other.
+    /// An optional String that will be prepended to all the timeline item's
+    /// internal IDs, making it possible to distinguish different timeline
+    /// instances from each other.
     /// </summary>
     string? InternalIdPrefix,
     /// <summary>
@@ -57255,7 +59452,7 @@ class FfiConverterTypeTimelineUniqueId : FfiConverterRustBuffer<TimelineUniqueId
 /// The type of the message.
 /// </param>
 /// <param name="SenderId">
-/// The user id that *claims* to have sent this message.
+/// The user id that _claims_ to have sent this message.
 ///
 /// This is unauthenticated. For an encrypted message, trust
 /// `encryption_info.sender_id` instead, which is cryptographically
@@ -57274,7 +59471,7 @@ public record ToDeviceMessage(
     /// </summary>
     string EventType,
     /// <summary>
-    /// The user id that *claims* to have sent this message.
+    /// The user id that _claims_ to have sent this message.
     ///
     /// This is unauthenticated. For an encrypted message, trust
     /// `encryption_info.sender_id` instead, which is cryptographically
@@ -57423,8 +59620,8 @@ class FfiConverterTypeTracingConfiguration : FfiConverterRustBuffer<TracingConfi
 /// Maximum total size of all log files combined in bytes.
 ///
 /// When the total size of all log files with the configured prefix and
-/// suffix exceeds this limit, the oldest files will be removed until
-/// the total is below the limit.
+/// suffix exceeds this limit, the oldest files will be removed until the
+/// total is below the limit.
 ///
 /// This is useful to prevent log files from consuming too much disk space
 /// over time, even with multiple rotated files.
@@ -57435,8 +59632,8 @@ class FfiConverterTypeTracingConfiguration : FfiConverterRustBuffer<TracingConfi
 /// Maximum age of log files in seconds.
 ///
 /// Log files older than this age will be automatically removed during
-/// cleanup. This is checked when the writer is created and during
-/// rotation operations.
+/// cleanup. This is checked when the writer is created and during rotation
+/// operations.
 ///
 /// Default: 1 week (7 * 24 * 60 * 60 seconds) if not specified.
 /// </param>
@@ -57459,8 +59656,8 @@ public record TracingFileConfiguration(
     /// Maximum total size of all log files combined in bytes.
     ///
     /// When the total size of all log files with the configured prefix and
-    /// suffix exceeds this limit, the oldest files will be removed until
-    /// the total is below the limit.
+    /// suffix exceeds this limit, the oldest files will be removed until the
+    /// total is below the limit.
     ///
     /// This is useful to prevent log files from consuming too much disk space
     /// over time, even with multiple rotated files.
@@ -57472,8 +59669,8 @@ public record TracingFileConfiguration(
     /// Maximum age of log files in seconds.
     ///
     /// Log files older than this age will be automatically removed during
-    /// cleanup. This is checked when the writer is created and during
-    /// rotation operations.
+    /// cleanup. This is checked when the writer is created and during rotation
+    /// operations.
     ///
     /// Default: 1 week (7 * 24 * 60 * 60 seconds) if not specified.
     /// </summary>
@@ -57543,14 +59740,44 @@ class FfiConverterTypeTransmissionProgress : FfiConverterRustBuffer<Transmission
     }
 }
 
+/// <param name="Session">
+/// The UIAA session token.
+/// </param>
+public record UiaaCrossSigningResetInfo(
+    /// <summary>
+    /// The UIAA session token.
+    /// </summary>
+    string Session
+) { }
+
+class FfiConverterTypeUiaaCrossSigningResetInfo : FfiConverterRustBuffer<UiaaCrossSigningResetInfo>
+{
+    public static FfiConverterTypeUiaaCrossSigningResetInfo INSTANCE = new FfiConverterTypeUiaaCrossSigningResetInfo();
+
+    public override UiaaCrossSigningResetInfo Read(BigEndianStream stream)
+    {
+        return new UiaaCrossSigningResetInfo(Session: FfiConverterString.INSTANCE.Read(stream));
+    }
+
+    public override int AllocationSize(UiaaCrossSigningResetInfo value)
+    {
+        return 0 + FfiConverterString.INSTANCE.AllocationSize(value.Session);
+    }
+
+    public override void Write(UiaaCrossSigningResetInfo value, BigEndianStream stream)
+    {
+        FfiConverterString.INSTANCE.Write(value.Session, stream);
+    }
+}
+
 /// <param name="EventId">
 /// The identifier of the event that couldn't get decrypted.
 /// </param>
 /// <param name="TimeToDecryptMs">
 /// If the event could be decrypted late (that is, the event was encrypted
-/// at first, but could be decrypted later on), then this indicates the
-/// time it took to decrypt the event. If it is not set, this is
-/// considered a definite UTD.
+/// at first, but could be decrypted later on), then this indicates the time
+/// it took to decrypt the event. If it is not set, this is considered a
+/// definite UTD.
 ///
 /// If set, this is in milliseconds.
 /// </param>
@@ -57561,7 +59788,7 @@ class FfiConverterTypeTransmissionProgress : FfiConverterRustBuffer<Transmission
 /// <param name="EventLocalAgeMillis">
 /// The difference between the event creation time (`origin_server_ts`) and
 /// the time our device was created. If negative, this event was sent
-/// *before* our device was created.
+/// _before_ our device was created.
 /// </param>
 /// <param name="UserTrustsOwnIdentity">
 /// Whether the user had verified their own identity at the point they
@@ -57581,9 +59808,9 @@ public record UnableToDecryptInfo(
     string EventId,
     /// <summary>
     /// If the event could be decrypted late (that is, the event was encrypted
-    /// at first, but could be decrypted later on), then this indicates the
-    /// time it took to decrypt the event. If it is not set, this is
-    /// considered a definite UTD.
+    /// at first, but could be decrypted later on), then this indicates the time
+    /// it took to decrypt the event. If it is not set, this is considered a
+    /// definite UTD.
     ///
     /// If set, this is in milliseconds.
     /// </summary>
@@ -57596,7 +59823,7 @@ public record UnableToDecryptInfo(
     /// <summary>
     /// The difference between the event creation time (`origin_server_ts`) and
     /// the time our device was created. If negative, this event was sent
-    /// *before* our device was created.
+    /// _before_ our device was created.
     /// </summary>
     long EventLocalAgeMillis,
     /// <summary>
@@ -57720,8 +59947,8 @@ class FfiConverterTypeUnstableVoiceContent : FfiConverterRustBuffer<UnstableVoic
 /// Optional Event ID to reply to.
 /// </param>
 /// <param name="ExtraContentJson">
-/// Optional additional top-level fields for the media event's content,
-/// as a serialized JSON object.
+/// Optional additional top-level fields for the media event's content, as a
+/// serialized JSON object.
 /// </param>
 public record UploadParameters(
     /// <summary>
@@ -57745,8 +59972,8 @@ public record UploadParameters(
     /// </summary>
     string? InReplyTo,
     /// <summary>
-    /// Optional additional top-level fields for the media event's content,
-    /// as a serialized JSON object.
+    /// Optional additional top-level fields for the media event's content, as a
+    /// serialized JSON object.
     /// </summary>
     string? ExtraContentJson = null
 ) { }
@@ -57869,8 +60096,9 @@ class FfiConverterTypeUserPowerLevelUpdate : FfiConverterRustBuffer<UserPowerLev
 /// <param name="Call">
 /// Set when the user is in a call (MSC4426 `m.call` profile field).
 ///
-/// `None` means the user is not in a call. `Some(UserCall { call_joined_ts:
-/// None })` means the user is in a call but the join time wasn't recorded.
+/// `None` means the user is not in a call.
+/// `Some(UserCall { call_joined_ts: None })` means the user is in a call
+/// but the join time wasn't recorded.
 /// </param>
 public record UserProfile(
     string UserId,
@@ -57883,8 +60111,9 @@ public record UserProfile(
     /// <summary>
     /// Set when the user is in a call (MSC4426 `m.call` profile field).
     ///
-    /// `None` means the user is not in a call. `Some(UserCall { call_joined_ts:
-    /// None })` means the user is in a call but the join time wasn't recorded.
+    /// `None` means the user is not in a call.
+    /// `Some(UserCall { call_joined_ts: None })` means the user is in a call
+    /// but the join time wasn't recorded.
     /// </summary>
     UserCall? Call
 ) { }
@@ -58180,6 +60409,14 @@ class FfiConverterTypeVideoMessageContent : FfiConverterRustBuffer<VideoMessageC
 /// This allows the widget to discover the RTC transports advertised by the
 /// homeserver (MSC4515).
 /// </param>
+/// <param name="RtcLivekitGetToken">
+/// This allows the widget to obtain a token to authenticate with a LiveKit
+/// SFU from the homeserver (MSC4533).
+/// </param>
+/// <param name="RtcLivekitDelegateDelayedLeave">
+/// This allows the widget to hand the delayed leave event of a MatrixRTC
+/// session over to the homeserver (MSC4533).
+/// </param>
 public record WidgetCapabilities(
     /// <summary>
     /// Types of the messages that a widget wants to be able to fetch.
@@ -58213,7 +60450,17 @@ public record WidgetCapabilities(
     /// This allows the widget to discover the RTC transports advertised by the
     /// homeserver (MSC4515).
     /// </summary>
-    bool RtcTransports
+    bool RtcTransports,
+    /// <summary>
+    /// This allows the widget to obtain a token to authenticate with a LiveKit
+    /// SFU from the homeserver (MSC4533).
+    /// </summary>
+    bool RtcLivekitGetToken,
+    /// <summary>
+    /// This allows the widget to hand the delayed leave event of a MatrixRTC
+    /// session over to the homeserver (MSC4533).
+    /// </summary>
+    bool RtcLivekitDelegateDelayedLeave
 ) { }
 
 class FfiConverterTypeWidgetCapabilities : FfiConverterRustBuffer<WidgetCapabilities>
@@ -58229,7 +60476,9 @@ class FfiConverterTypeWidgetCapabilities : FfiConverterRustBuffer<WidgetCapabili
             UpdateDelayedEvent: FfiConverterBoolean.INSTANCE.Read(stream),
             SendDelayedEvent: FfiConverterBoolean.INSTANCE.Read(stream),
             DownloadFiles: FfiConverterBoolean.INSTANCE.Read(stream),
-            RtcTransports: FfiConverterBoolean.INSTANCE.Read(stream)
+            RtcTransports: FfiConverterBoolean.INSTANCE.Read(stream),
+            RtcLivekitGetToken: FfiConverterBoolean.INSTANCE.Read(stream),
+            RtcLivekitDelegateDelayedLeave: FfiConverterBoolean.INSTANCE.Read(stream)
         );
     }
 
@@ -58242,7 +60491,9 @@ class FfiConverterTypeWidgetCapabilities : FfiConverterRustBuffer<WidgetCapabili
             + FfiConverterBoolean.INSTANCE.AllocationSize(value.UpdateDelayedEvent)
             + FfiConverterBoolean.INSTANCE.AllocationSize(value.SendDelayedEvent)
             + FfiConverterBoolean.INSTANCE.AllocationSize(value.DownloadFiles)
-            + FfiConverterBoolean.INSTANCE.AllocationSize(value.RtcTransports);
+            + FfiConverterBoolean.INSTANCE.AllocationSize(value.RtcTransports)
+            + FfiConverterBoolean.INSTANCE.AllocationSize(value.RtcLivekitGetToken)
+            + FfiConverterBoolean.INSTANCE.AllocationSize(value.RtcLivekitDelegateDelayedLeave);
     }
 
     public override void Write(WidgetCapabilities value, BigEndianStream stream)
@@ -58254,6 +60505,8 @@ class FfiConverterTypeWidgetCapabilities : FfiConverterRustBuffer<WidgetCapabili
         FfiConverterBoolean.INSTANCE.Write(value.SendDelayedEvent, stream);
         FfiConverterBoolean.INSTANCE.Write(value.DownloadFiles, stream);
         FfiConverterBoolean.INSTANCE.Write(value.RtcTransports, stream);
+        FfiConverterBoolean.INSTANCE.Write(value.RtcLivekitGetToken, stream);
+        FfiConverterBoolean.INSTANCE.Write(value.RtcLivekitDelegateDelayedLeave, stream);
     }
 }
 
@@ -58299,19 +60552,19 @@ class FfiConverterTypeWidgetDriverAndHandle : FfiConverterRustBuffer<WidgetDrive
 /// </param>
 /// <param name="InitAfterContentLoad">
 /// Whether or not the widget should be initialized on load message
-/// (`ContentLoad` message), or upon creation/attaching of the widget to
-/// the SDK's state machine that drives the API.
+/// (`ContentLoad` message), or upon creation/attaching of the widget to the
+/// SDK's state machine that drives the API.
 /// </param>
 /// <param name="RawUrl">
-/// This contains the url from the widget state event.
-/// In this url placeholders can be used to pass information from the client
-/// to the widget. Possible values are: `$widgetId`, `$parentUrl`,
-/// `$userId`, `$lang`, `$fontScale`, `$analyticsID`.
+/// This contains the url from the widget state event. In this url
+/// placeholders can be used to pass information from the client to the
+/// widget. Possible values are: `$widgetId`, `$parentUrl`, `$userId`,
+/// `$lang`, `$fontScale`, `$analyticsID`.
 ///
 /// # Examples
 ///
-/// e.g `http://widget.domain?username=$userId`
-/// will become: `http://widget.domain?username=@user_matrix_id:server.domain`.
+/// e.g `http://widget.domain?username=$userId` will become:
+/// `http://widget.domain?username=@user_matrix_id:server.domain`.
 /// </param>
 public record WidgetSettings(
     /// <summary>
@@ -58320,20 +60573,20 @@ public record WidgetSettings(
     string WidgetId,
     /// <summary>
     /// Whether or not the widget should be initialized on load message
-    /// (`ContentLoad` message), or upon creation/attaching of the widget to
-    /// the SDK's state machine that drives the API.
+    /// (`ContentLoad` message), or upon creation/attaching of the widget to the
+    /// SDK's state machine that drives the API.
     /// </summary>
     bool InitAfterContentLoad,
     /// <summary>
-    /// This contains the url from the widget state event.
-    /// In this url placeholders can be used to pass information from the client
-    /// to the widget. Possible values are: `$widgetId`, `$parentUrl`,
-    /// `$userId`, `$lang`, `$fontScale`, `$analyticsID`.
+    /// This contains the url from the widget state event. In this url
+    /// placeholders can be used to pass information from the client to the
+    /// widget. Possible values are: `$widgetId`, `$parentUrl`, `$userId`,
+    /// `$lang`, `$fontScale`, `$analyticsID`.
     ///
     /// # Examples
     ///
-    /// e.g `http://widget.domain?username=$userId`
-    /// will become: `http://widget.domain?username=@user_matrix_id:server.domain`.
+    /// e.g `http://widget.domain?username=$userId` will become:
+    /// `http://widget.domain?username=@user_matrix_id:server.domain`.
     /// </summary>
     string RawUrl
 ) { }
@@ -58934,12 +61187,157 @@ class FfiConverterTypeAssetType : FfiConverterRustBuffer<AssetType>
     }
 }
 
+/// <summary>
+/// What kind of attachment is being sent or edited in, with the metadata that
+/// kind needs.
+/// </summary>
+public record AttachmentKind : IDisposable
+{
+    public record Image(ImageInfo ImageInfo, UploadSource? ThumbnailSource) : AttachmentKind { }
+
+    public record Video(VideoInfo VideoInfo, UploadSource? ThumbnailSource) : AttachmentKind { }
+
+    public record Audio(AudioInfo AudioInfo) : AttachmentKind { }
+
+    public record Voice(AudioInfo AudioInfo, float[] Waveform) : AttachmentKind { }
+
+    public record File(FileInfo FileInfo) : AttachmentKind { }
+
+    public void Dispose()
+    {
+        switch (this)
+        {
+            case AttachmentKind.Image variant_value:
+                FFIObjectUtil.DisposeAll(variant_value.ImageInfo, variant_value.ThumbnailSource);
+                break;
+            case AttachmentKind.Video variant_value:
+                FFIObjectUtil.DisposeAll(variant_value.VideoInfo, variant_value.ThumbnailSource);
+                break;
+            case AttachmentKind.Audio variant_value:
+                FFIObjectUtil.DisposeAll(variant_value.AudioInfo);
+                break;
+            case AttachmentKind.Voice variant_value:
+                FFIObjectUtil.DisposeAll(variant_value.AudioInfo, variant_value.Waveform);
+                break;
+            case AttachmentKind.File variant_value:
+                FFIObjectUtil.DisposeAll(variant_value.FileInfo);
+                break;
+            default:
+                throw new InternalException(
+                    String.Format("invalid enum value '{0}' in AttachmentKind.Dispose()", this)
+                );
+        }
+    }
+}
+
+class FfiConverterTypeAttachmentKind : FfiConverterRustBuffer<AttachmentKind>
+{
+    public static FfiConverterRustBuffer<AttachmentKind> INSTANCE = new FfiConverterTypeAttachmentKind();
+
+    public override AttachmentKind Read(BigEndianStream stream)
+    {
+        var value = stream.ReadInt();
+        switch (value)
+        {
+            case 1:
+                return new AttachmentKind.Image(
+                    FfiConverterTypeImageInfo.INSTANCE.Read(stream),
+                    FfiConverterOptionalTypeUploadSource.INSTANCE.Read(stream)
+                );
+            case 2:
+                return new AttachmentKind.Video(
+                    FfiConverterTypeVideoInfo.INSTANCE.Read(stream),
+                    FfiConverterOptionalTypeUploadSource.INSTANCE.Read(stream)
+                );
+            case 3:
+                return new AttachmentKind.Audio(FfiConverterTypeAudioInfo.INSTANCE.Read(stream));
+            case 4:
+                return new AttachmentKind.Voice(
+                    FfiConverterTypeAudioInfo.INSTANCE.Read(stream),
+                    FfiConverterSequenceFloat.INSTANCE.Read(stream)
+                );
+            case 5:
+                return new AttachmentKind.File(FfiConverterTypeFileInfo.INSTANCE.Read(stream));
+            default:
+                throw new InternalException(
+                    String.Format("invalid enum value '{0}' in FfiConverterTypeAttachmentKind.Read()", value)
+                );
+        }
+    }
+
+    public override int AllocationSize(AttachmentKind value)
+    {
+        switch (value)
+        {
+            case AttachmentKind.Image variant_value:
+                return 4
+                    + FfiConverterTypeImageInfo.INSTANCE.AllocationSize(variant_value.ImageInfo)
+                    + FfiConverterOptionalTypeUploadSource.INSTANCE.AllocationSize(variant_value.ThumbnailSource);
+            case AttachmentKind.Video variant_value:
+                return 4
+                    + FfiConverterTypeVideoInfo.INSTANCE.AllocationSize(variant_value.VideoInfo)
+                    + FfiConverterOptionalTypeUploadSource.INSTANCE.AllocationSize(variant_value.ThumbnailSource);
+            case AttachmentKind.Audio variant_value:
+                return 4 + FfiConverterTypeAudioInfo.INSTANCE.AllocationSize(variant_value.AudioInfo);
+            case AttachmentKind.Voice variant_value:
+                return 4
+                    + FfiConverterTypeAudioInfo.INSTANCE.AllocationSize(variant_value.AudioInfo)
+                    + FfiConverterSequenceFloat.INSTANCE.AllocationSize(variant_value.Waveform);
+            case AttachmentKind.File variant_value:
+                return 4 + FfiConverterTypeFileInfo.INSTANCE.AllocationSize(variant_value.FileInfo);
+            default:
+                throw new InternalException(
+                    String.Format("invalid enum value '{0}' in FfiConverterTypeAttachmentKind.AllocationSize()", value)
+                );
+        }
+    }
+
+    public override void Write(AttachmentKind value, BigEndianStream stream)
+    {
+        switch (value)
+        {
+            case AttachmentKind.Image variant_value:
+                stream.WriteInt(1);
+                FfiConverterTypeImageInfo.INSTANCE.Write(variant_value.ImageInfo, stream);
+                FfiConverterOptionalTypeUploadSource.INSTANCE.Write(variant_value.ThumbnailSource, stream);
+                break;
+            case AttachmentKind.Video variant_value:
+                stream.WriteInt(2);
+                FfiConverterTypeVideoInfo.INSTANCE.Write(variant_value.VideoInfo, stream);
+                FfiConverterOptionalTypeUploadSource.INSTANCE.Write(variant_value.ThumbnailSource, stream);
+                break;
+            case AttachmentKind.Audio variant_value:
+                stream.WriteInt(3);
+                FfiConverterTypeAudioInfo.INSTANCE.Write(variant_value.AudioInfo, stream);
+                break;
+            case AttachmentKind.Voice variant_value:
+                stream.WriteInt(4);
+                FfiConverterTypeAudioInfo.INSTANCE.Write(variant_value.AudioInfo, stream);
+                FfiConverterSequenceFloat.INSTANCE.Write(variant_value.Waveform, stream);
+                break;
+            case AttachmentKind.File variant_value:
+                stream.WriteInt(5);
+                FfiConverterTypeFileInfo.INSTANCE.Write(variant_value.FileInfo, stream);
+                break;
+            default:
+                throw new InternalException(
+                    String.Format("invalid enum value '{0}' in FfiConverterTypeAttachmentKind.Write()", value)
+                );
+        }
+    }
+}
+
 public record AuthData
 {
     /// <summary>
     /// Password-based authentication (`m.login.password`).
     /// </summary>
     public record Password(AuthDataPasswordDetails PasswordDetails) : AuthData { }
+
+    /// <summary>
+    /// OAuth authentication (`m.oauth`).
+    /// </summary>
+    public record OAuth(string Session) : AuthData { }
 }
 
 class FfiConverterTypeAuthData : FfiConverterRustBuffer<AuthData>
@@ -58953,6 +61351,8 @@ class FfiConverterTypeAuthData : FfiConverterRustBuffer<AuthData>
         {
             case 1:
                 return new AuthData.Password(FfiConverterTypeAuthDataPasswordDetails.INSTANCE.Read(stream));
+            case 2:
+                return new AuthData.OAuth(FfiConverterString.INSTANCE.Read(stream));
             default:
                 throw new InternalException(
                     String.Format("invalid enum value '{0}' in FfiConverterTypeAuthData.Read()", value)
@@ -58967,6 +61367,8 @@ class FfiConverterTypeAuthData : FfiConverterRustBuffer<AuthData>
             case AuthData.Password variant_value:
                 return 4
                     + FfiConverterTypeAuthDataPasswordDetails.INSTANCE.AllocationSize(variant_value.PasswordDetails);
+            case AuthData.OAuth variant_value:
+                return 4 + FfiConverterString.INSTANCE.AllocationSize(variant_value.Session);
             default:
                 throw new InternalException(
                     String.Format("invalid enum value '{0}' in FfiConverterTypeAuthData.AllocationSize()", value)
@@ -58981,6 +61383,10 @@ class FfiConverterTypeAuthData : FfiConverterRustBuffer<AuthData>
             case AuthData.Password variant_value:
                 stream.WriteInt(1);
                 FfiConverterTypeAuthDataPasswordDetails.INSTANCE.Write(variant_value.PasswordDetails, stream);
+                break;
+            case AuthData.OAuth variant_value:
+                stream.WriteInt(2);
+                FfiConverterString.INSTANCE.Write(variant_value.Session, stream);
                 break;
             default:
                 throw new InternalException(
@@ -60020,7 +62426,7 @@ public record CrossSigningResetAuthType
     /// <summary>
     /// The homeserver requires user-interactive authentication.
     /// </summary>
-    public record Uiaa : CrossSigningResetAuthType { }
+    public record Uiaa(UiaaCrossSigningResetInfo Info) : CrossSigningResetAuthType { }
 
     /// <summary>
     /// OAuth is used for authentication and the user needs to open a URL to
@@ -60040,7 +62446,9 @@ class FfiConverterTypeCrossSigningResetAuthType : FfiConverterRustBuffer<CrossSi
         switch (value)
         {
             case 1:
-                return new CrossSigningResetAuthType.Uiaa();
+                return new CrossSigningResetAuthType.Uiaa(
+                    FfiConverterTypeUiaaCrossSigningResetInfo.INSTANCE.Read(stream)
+                );
             case 2:
                 return new CrossSigningResetAuthType.OAuth(
                     FfiConverterTypeOAuthCrossSigningResetInfo.INSTANCE.Read(stream)
@@ -60057,7 +62465,7 @@ class FfiConverterTypeCrossSigningResetAuthType : FfiConverterRustBuffer<CrossSi
         switch (value)
         {
             case CrossSigningResetAuthType.Uiaa variant_value:
-                return 4;
+                return 4 + FfiConverterTypeUiaaCrossSigningResetInfo.INSTANCE.AllocationSize(variant_value.Info);
             case CrossSigningResetAuthType.OAuth variant_value:
                 return 4 + FfiConverterTypeOAuthCrossSigningResetInfo.INSTANCE.AllocationSize(variant_value.Info);
             default:
@@ -60076,6 +62484,7 @@ class FfiConverterTypeCrossSigningResetAuthType : FfiConverterRustBuffer<CrossSi
         {
             case CrossSigningResetAuthType.Uiaa variant_value:
                 stream.WriteInt(1);
+                FfiConverterTypeUiaaCrossSigningResetInfo.INSTANCE.Write(variant_value.Info, stream);
                 break;
             case CrossSigningResetAuthType.OAuth variant_value:
                 stream.WriteInt(2);
@@ -61168,8 +63577,7 @@ public record ErrorKind
     /// `M_EXCLUSIVE`
     ///
     /// The resource being requested is reserved by an application service, or
-    /// the application service making the request has not created the
-    /// resource.
+    /// the application service making the request has not created the resource.
     /// </summary>
     public record Exclusive : ErrorKind { }
 
@@ -61277,9 +63685,9 @@ public record ErrorKind
     /// `M_RESOURCE_LIMIT_EXCEEDED`
     ///
     /// The request cannot be completed because the homeserver has reached a
-    /// resource limit imposed on it. For example, a homeserver held in a
-    /// shared hosting environment may reach a resource limit if it starts
-    /// using too much memory or disk space.
+    /// resource limit imposed on it. For example, a homeserver held in a shared
+    /// hosting environment may reach a resource limit if it starts using too
+    /// much memory or disk space.
     /// </summary>
     public record ResourceLimitExceeded(string AdminContact) : ErrorKind { }
 
@@ -61315,8 +63723,8 @@ public record ErrorKind
     /// `M_THREEPID_DENIED`
     ///
     /// The server does not permit this [third-party identifier]. This may
-    /// happen if the server only permits, for example, email addresses from
-    /// a particular domain.
+    /// happen if the server only permits, for example, email addresses from a
+    /// particular domain.
     ///
     /// [third-party identifier]: https://spec.matrix.org/latest/client-server-api/#adding-account-administrative-contact-information
     /// </summary>
@@ -61361,8 +63769,8 @@ public record ErrorKind
     /// `M_UNABLE_TO_AUTHORISE_JOIN`
     ///
     /// The room is [restricted] and none of the conditions can be validated by
-    /// the homeserver. This can happen if the homeserver does not know
-    /// about any of the rooms listed as conditions, for example.
+    /// the homeserver. This can happen if the homeserver does not know about
+    /// any of the rooms listed as conditions, for example.
     ///
     /// [restricted]: https://spec.matrix.org/latest/client-server-api/#restricted-rooms
     /// </summary>
@@ -61372,10 +63780,9 @@ public record ErrorKind
     /// `M_UNABLE_TO_GRANT_JOIN`
     ///
     /// A different server should be attempted for the join. This is typically
-    /// because the resident server can see that the joining user satisfies
-    /// one or more conditions, such as in the case of [restricted rooms],
-    /// but the resident server would be unable to meet the authorization
-    /// rules.
+    /// because the resident server can see that the joining user satisfies one
+    /// or more conditions, such as in the case of [restricted rooms], but the
+    /// resident server would be unable to meet the authorization rules.
     ///
     /// [restricted rooms]: https://spec.matrix.org/latest/client-server-api/#restricted-rooms
     /// </summary>
@@ -61410,8 +63817,8 @@ public record ErrorKind
     /// The server did not understand the request.
     ///
     /// This is expected to be returned with a 404 HTTP status code if the
-    /// endpoint is not implemented or a 405 HTTP status code if the
-    /// endpoint is implemented, but the incorrect HTTP method is used.
+    /// endpoint is not implemented or a 405 HTTP status code if the endpoint is
+    /// implemented, but the incorrect HTTP method is used.
     /// </summary>
     public record Unrecognized : ErrorKind { }
 
@@ -62274,17 +64681,28 @@ class FfiConverterTypeFocusEventError
 
 public record GalleryItemInfo : IDisposable
 {
-    public record Audio(AudioInfo AudioInfo, UploadSource Source, string? Caption, FormattedBody? FormattedCaption)
-        : GalleryItemInfo { }
+    public record Audio(
+        AudioInfo AudioInfo,
+        UploadSource Source,
+        string? Caption,
+        FormattedBody? FormattedCaption,
+        string? ExtraContentJson
+    ) : GalleryItemInfo { }
 
-    public record File(FileInfo FileInfo, UploadSource Source, string? Caption, FormattedBody? FormattedCaption)
-        : GalleryItemInfo { }
+    public record File(
+        FileInfo FileInfo,
+        UploadSource Source,
+        string? Caption,
+        FormattedBody? FormattedCaption,
+        string? ExtraContentJson
+    ) : GalleryItemInfo { }
 
     public record Image(
         ImageInfo ImageInfo,
         UploadSource Source,
         string? Caption,
         FormattedBody? FormattedCaption,
+        string? ExtraContentJson,
         UploadSource? ThumbnailSource
     ) : GalleryItemInfo { }
 
@@ -62293,6 +64711,7 @@ public record GalleryItemInfo : IDisposable
         UploadSource Source,
         string? Caption,
         FormattedBody? FormattedCaption,
+        string? ExtraContentJson,
         UploadSource? ThumbnailSource
     ) : GalleryItemInfo { }
 
@@ -62305,7 +64724,8 @@ public record GalleryItemInfo : IDisposable
                     variant_value.AudioInfo,
                     variant_value.Source,
                     variant_value.Caption,
-                    variant_value.FormattedCaption
+                    variant_value.FormattedCaption,
+                    variant_value.ExtraContentJson
                 );
                 break;
             case GalleryItemInfo.File variant_value:
@@ -62313,7 +64733,8 @@ public record GalleryItemInfo : IDisposable
                     variant_value.FileInfo,
                     variant_value.Source,
                     variant_value.Caption,
-                    variant_value.FormattedCaption
+                    variant_value.FormattedCaption,
+                    variant_value.ExtraContentJson
                 );
                 break;
             case GalleryItemInfo.Image variant_value:
@@ -62322,6 +64743,7 @@ public record GalleryItemInfo : IDisposable
                     variant_value.Source,
                     variant_value.Caption,
                     variant_value.FormattedCaption,
+                    variant_value.ExtraContentJson,
                     variant_value.ThumbnailSource
                 );
                 break;
@@ -62331,6 +64753,7 @@ public record GalleryItemInfo : IDisposable
                     variant_value.Source,
                     variant_value.Caption,
                     variant_value.FormattedCaption,
+                    variant_value.ExtraContentJson,
                     variant_value.ThumbnailSource
                 );
                 break;
@@ -62356,14 +64779,16 @@ class FfiConverterTypeGalleryItemInfo : FfiConverterRustBuffer<GalleryItemInfo>
                     FfiConverterTypeAudioInfo.INSTANCE.Read(stream),
                     FfiConverterTypeUploadSource.INSTANCE.Read(stream),
                     FfiConverterOptionalString.INSTANCE.Read(stream),
-                    FfiConverterOptionalTypeFormattedBody.INSTANCE.Read(stream)
+                    FfiConverterOptionalTypeFormattedBody.INSTANCE.Read(stream),
+                    FfiConverterOptionalString.INSTANCE.Read(stream)
                 );
             case 2:
                 return new GalleryItemInfo.File(
                     FfiConverterTypeFileInfo.INSTANCE.Read(stream),
                     FfiConverterTypeUploadSource.INSTANCE.Read(stream),
                     FfiConverterOptionalString.INSTANCE.Read(stream),
-                    FfiConverterOptionalTypeFormattedBody.INSTANCE.Read(stream)
+                    FfiConverterOptionalTypeFormattedBody.INSTANCE.Read(stream),
+                    FfiConverterOptionalString.INSTANCE.Read(stream)
                 );
             case 3:
                 return new GalleryItemInfo.Image(
@@ -62371,6 +64796,7 @@ class FfiConverterTypeGalleryItemInfo : FfiConverterRustBuffer<GalleryItemInfo>
                     FfiConverterTypeUploadSource.INSTANCE.Read(stream),
                     FfiConverterOptionalString.INSTANCE.Read(stream),
                     FfiConverterOptionalTypeFormattedBody.INSTANCE.Read(stream),
+                    FfiConverterOptionalString.INSTANCE.Read(stream),
                     FfiConverterOptionalTypeUploadSource.INSTANCE.Read(stream)
                 );
             case 4:
@@ -62379,6 +64805,7 @@ class FfiConverterTypeGalleryItemInfo : FfiConverterRustBuffer<GalleryItemInfo>
                     FfiConverterTypeUploadSource.INSTANCE.Read(stream),
                     FfiConverterOptionalString.INSTANCE.Read(stream),
                     FfiConverterOptionalTypeFormattedBody.INSTANCE.Read(stream),
+                    FfiConverterOptionalString.INSTANCE.Read(stream),
                     FfiConverterOptionalTypeUploadSource.INSTANCE.Read(stream)
                 );
             default:
@@ -62397,19 +64824,22 @@ class FfiConverterTypeGalleryItemInfo : FfiConverterRustBuffer<GalleryItemInfo>
                     + FfiConverterTypeAudioInfo.INSTANCE.AllocationSize(variant_value.AudioInfo)
                     + FfiConverterTypeUploadSource.INSTANCE.AllocationSize(variant_value.Source)
                     + FfiConverterOptionalString.INSTANCE.AllocationSize(variant_value.Caption)
-                    + FfiConverterOptionalTypeFormattedBody.INSTANCE.AllocationSize(variant_value.FormattedCaption);
+                    + FfiConverterOptionalTypeFormattedBody.INSTANCE.AllocationSize(variant_value.FormattedCaption)
+                    + FfiConverterOptionalString.INSTANCE.AllocationSize(variant_value.ExtraContentJson);
             case GalleryItemInfo.File variant_value:
                 return 4
                     + FfiConverterTypeFileInfo.INSTANCE.AllocationSize(variant_value.FileInfo)
                     + FfiConverterTypeUploadSource.INSTANCE.AllocationSize(variant_value.Source)
                     + FfiConverterOptionalString.INSTANCE.AllocationSize(variant_value.Caption)
-                    + FfiConverterOptionalTypeFormattedBody.INSTANCE.AllocationSize(variant_value.FormattedCaption);
+                    + FfiConverterOptionalTypeFormattedBody.INSTANCE.AllocationSize(variant_value.FormattedCaption)
+                    + FfiConverterOptionalString.INSTANCE.AllocationSize(variant_value.ExtraContentJson);
             case GalleryItemInfo.Image variant_value:
                 return 4
                     + FfiConverterTypeImageInfo.INSTANCE.AllocationSize(variant_value.ImageInfo)
                     + FfiConverterTypeUploadSource.INSTANCE.AllocationSize(variant_value.Source)
                     + FfiConverterOptionalString.INSTANCE.AllocationSize(variant_value.Caption)
                     + FfiConverterOptionalTypeFormattedBody.INSTANCE.AllocationSize(variant_value.FormattedCaption)
+                    + FfiConverterOptionalString.INSTANCE.AllocationSize(variant_value.ExtraContentJson)
                     + FfiConverterOptionalTypeUploadSource.INSTANCE.AllocationSize(variant_value.ThumbnailSource);
             case GalleryItemInfo.Video variant_value:
                 return 4
@@ -62417,6 +64847,7 @@ class FfiConverterTypeGalleryItemInfo : FfiConverterRustBuffer<GalleryItemInfo>
                     + FfiConverterTypeUploadSource.INSTANCE.AllocationSize(variant_value.Source)
                     + FfiConverterOptionalString.INSTANCE.AllocationSize(variant_value.Caption)
                     + FfiConverterOptionalTypeFormattedBody.INSTANCE.AllocationSize(variant_value.FormattedCaption)
+                    + FfiConverterOptionalString.INSTANCE.AllocationSize(variant_value.ExtraContentJson)
                     + FfiConverterOptionalTypeUploadSource.INSTANCE.AllocationSize(variant_value.ThumbnailSource);
             default:
                 throw new InternalException(
@@ -62435,6 +64866,7 @@ class FfiConverterTypeGalleryItemInfo : FfiConverterRustBuffer<GalleryItemInfo>
                 FfiConverterTypeUploadSource.INSTANCE.Write(variant_value.Source, stream);
                 FfiConverterOptionalString.INSTANCE.Write(variant_value.Caption, stream);
                 FfiConverterOptionalTypeFormattedBody.INSTANCE.Write(variant_value.FormattedCaption, stream);
+                FfiConverterOptionalString.INSTANCE.Write(variant_value.ExtraContentJson, stream);
                 break;
             case GalleryItemInfo.File variant_value:
                 stream.WriteInt(2);
@@ -62442,6 +64874,7 @@ class FfiConverterTypeGalleryItemInfo : FfiConverterRustBuffer<GalleryItemInfo>
                 FfiConverterTypeUploadSource.INSTANCE.Write(variant_value.Source, stream);
                 FfiConverterOptionalString.INSTANCE.Write(variant_value.Caption, stream);
                 FfiConverterOptionalTypeFormattedBody.INSTANCE.Write(variant_value.FormattedCaption, stream);
+                FfiConverterOptionalString.INSTANCE.Write(variant_value.ExtraContentJson, stream);
                 break;
             case GalleryItemInfo.Image variant_value:
                 stream.WriteInt(3);
@@ -62449,6 +64882,7 @@ class FfiConverterTypeGalleryItemInfo : FfiConverterRustBuffer<GalleryItemInfo>
                 FfiConverterTypeUploadSource.INSTANCE.Write(variant_value.Source, stream);
                 FfiConverterOptionalString.INSTANCE.Write(variant_value.Caption, stream);
                 FfiConverterOptionalTypeFormattedBody.INSTANCE.Write(variant_value.FormattedCaption, stream);
+                FfiConverterOptionalString.INSTANCE.Write(variant_value.ExtraContentJson, stream);
                 FfiConverterOptionalTypeUploadSource.INSTANCE.Write(variant_value.ThumbnailSource, stream);
                 break;
             case GalleryItemInfo.Video variant_value:
@@ -62457,6 +64891,7 @@ class FfiConverterTypeGalleryItemInfo : FfiConverterRustBuffer<GalleryItemInfo>
                 FfiConverterTypeUploadSource.INSTANCE.Write(variant_value.Source, stream);
                 FfiConverterOptionalString.INSTANCE.Write(variant_value.Caption, stream);
                 FfiConverterOptionalTypeFormattedBody.INSTANCE.Write(variant_value.FormattedCaption, stream);
+                FfiConverterOptionalString.INSTANCE.Write(variant_value.ExtraContentJson, stream);
                 FfiConverterOptionalTypeUploadSource.INSTANCE.Write(variant_value.ThumbnailSource, stream);
                 break;
             default:
@@ -62603,15 +65038,15 @@ public record GeneratedQrLoginProgress : IDisposable
     public record Starting : GeneratedQrLoginProgress { }
 
     /// <summary>
-    /// We have established the secure channel and now need to display the
-    /// QR code so that the existing device can scan it.
+    /// We have established the secure channel and now need to display the QR
+    /// code so that the existing device can scan it.
     /// </summary>
     public record QrReady(QrCodeData QrCode) : GeneratedQrLoginProgress { }
 
     /// <summary>
     /// The existing device has scanned the QR code and is displaying the
-    /// checkcode. We now need to ask the user to enter the checkcode so that
-    /// we can verify that the channel is indeed secure.
+    /// checkcode. We now need to ask the user to enter the checkcode so that we
+    /// can verify that the channel is indeed secure.
     /// </summary>
     public record QrScanned(CheckCodeSender CheckCodeSender) : GeneratedQrLoginProgress { }
 
@@ -62747,8 +65182,8 @@ class FfiConverterTypeGeneratedQrLoginProgress : FfiConverterRustBuffer<Generate
 }
 
 /// <summary>
-/// Enum describing the progress of granting login by generating a QR code to
-/// be scanned on the new device.
+/// Enum describing the progress of granting login by generating a QR code to be
+/// scanned on the new device.
 /// </summary>
 public record GrantGeneratedQrLoginProgress : IDisposable
 {
@@ -62758,15 +65193,15 @@ public record GrantGeneratedQrLoginProgress : IDisposable
     public record Starting : GrantGeneratedQrLoginProgress { }
 
     /// <summary>
-    /// We have established the secure channel and now need to display the
-    /// QR code so that the existing device can scan it.
+    /// We have established the secure channel and now need to display the QR
+    /// code so that the existing device can scan it.
     /// </summary>
     public record QrReady(QrCodeData QrCode) : GrantGeneratedQrLoginProgress { }
 
     /// <summary>
     /// The existing device has scanned the QR code and is displaying the
-    /// checkcode. We now need to ask the user to enter the checkcode so that
-    /// we can verify that the channel is indeed secure.
+    /// checkcode. We now need to ask the user to enter the checkcode so that we
+    /// can verify that the channel is indeed secure.
     /// </summary>
     public record QrScanned(CheckCodeSender CheckCodeSender) : GrantGeneratedQrLoginProgress { }
 
@@ -63074,16 +65509,15 @@ public record HistoryVisibility
     /// Previous events are accessible to newly joined members from the point
     /// they were invited onwards.
     ///
-    /// Events stop being accessible when the member' state changes to
-    /// something other than *invite* or *join*.
+    /// Events stop being accessible when the member' state changes to something
+    /// other than _invite_ or _join_.
     /// </summary>
     public record Invited : HistoryVisibility { }
 
     /// <summary>
     /// Previous events are accessible to newly joined members from the point
-    /// they joined the room onwards.
-    /// Events stop being accessible when the member' state changes to
-    /// something other than *join*.
+    /// they joined the room onwards. Events stop being accessible when the
+    /// member' state changes to something other than _join_.
     /// </summary>
     public record Joined : HistoryVisibility { }
 
@@ -63829,8 +66263,8 @@ public record JoinRule
 
     /// <summary>
     /// Users can join the room if they are invited, or if they meet any of the
-    /// conditions described in a set of [`AllowRule`]s, or they can request
-    /// an invite to the room.
+    /// conditions described in a set of [`AllowRule`]s, or they can request an
+    /// invite to the room.
     /// </summary>
     public record KnockRestricted(AllowRule[] Rules) : JoinRule { }
 
@@ -66338,8 +68772,8 @@ public record NotificationStatus : IDisposable
 
     /// <summary>
     /// The event has been filtered out, either because of the user's push
-    /// rules, or because the user which triggered it is ignored by the
-    /// current user.
+    /// rules, or because the user which triggered it is ignored by the current
+    /// user.
     /// </summary>
     public record EventFilteredOut : NotificationStatus { }
 
@@ -66543,7 +68977,8 @@ public record OAuthPrompt
     /// The Authorization Server should prompt the End-User to create a user
     /// account.
     ///
-    /// Defined in [Initiating User Registration via OpenID Connect](https://openid.net/specs/openid-connect-prompt-create-1_0.html).
+    /// Defined in
+    /// [Initiating User Registration via OpenID Connect](https://openid.net/specs/openid-connect-prompt-create-1_0.html).
     /// </summary>
     public record Create : OAuthPrompt { }
 
@@ -67741,8 +70176,7 @@ public record PushCondition
 
     /// <summary>
     /// Takes into account the current power levels in the room, ensuring the
-    /// sender of the event has high enough power to trigger the
-    /// notification.
+    /// sender of the event has high enough power to trigger the notification.
     /// </summary>
     public record SenderNotificationPermission(string Key) : PushCondition { }
 
@@ -68175,6 +70609,12 @@ public record QueueWedgeError
     public record CrossVerificationRequired : QueueWedgeError { }
 
     /// <summary>
+    /// The access token was rejected, and the request is waiting for the
+    /// session to have a working one again.
+    /// </summary>
+    public record ExpiredAccessToken : QueueWedgeError { }
+
+    /// <summary>
     /// Some media content to be sent has disappeared from the cache.
     /// </summary>
     public record MissingMediaContent : QueueWedgeError { }
@@ -68208,10 +70648,12 @@ class FfiConverterTypeQueueWedgeError : FfiConverterRustBuffer<QueueWedgeError>
             case 3:
                 return new QueueWedgeError.CrossVerificationRequired();
             case 4:
-                return new QueueWedgeError.MissingMediaContent();
+                return new QueueWedgeError.ExpiredAccessToken();
             case 5:
-                return new QueueWedgeError.InvalidMimeType(FfiConverterString.INSTANCE.Read(stream));
+                return new QueueWedgeError.MissingMediaContent();
             case 6:
+                return new QueueWedgeError.InvalidMimeType(FfiConverterString.INSTANCE.Read(stream));
+            case 7:
                 return new QueueWedgeError.GenericApiError(FfiConverterString.INSTANCE.Read(stream));
             default:
                 throw new InternalException(
@@ -68230,6 +70672,8 @@ class FfiConverterTypeQueueWedgeError : FfiConverterRustBuffer<QueueWedgeError>
             case QueueWedgeError.IdentityViolations variant_value:
                 return 4 + FfiConverterSequenceString.INSTANCE.AllocationSize(variant_value.Users);
             case QueueWedgeError.CrossVerificationRequired variant_value:
+                return 4;
+            case QueueWedgeError.ExpiredAccessToken variant_value:
                 return 4;
             case QueueWedgeError.MissingMediaContent variant_value:
                 return 4;
@@ -68259,15 +70703,18 @@ class FfiConverterTypeQueueWedgeError : FfiConverterRustBuffer<QueueWedgeError>
             case QueueWedgeError.CrossVerificationRequired variant_value:
                 stream.WriteInt(3);
                 break;
-            case QueueWedgeError.MissingMediaContent variant_value:
+            case QueueWedgeError.ExpiredAccessToken variant_value:
                 stream.WriteInt(4);
                 break;
-            case QueueWedgeError.InvalidMimeType variant_value:
+            case QueueWedgeError.MissingMediaContent variant_value:
                 stream.WriteInt(5);
+                break;
+            case QueueWedgeError.InvalidMimeType variant_value:
+                stream.WriteInt(6);
                 FfiConverterString.INSTANCE.Write(variant_value.MimeType, stream);
                 break;
             case QueueWedgeError.GenericApiError variant_value:
-                stream.WriteInt(6);
+                stream.WriteInt(7);
                 FfiConverterString.INSTANCE.Write(variant_value.Msg, stream);
                 break;
             default:
@@ -69109,15 +71556,14 @@ public record RoomHistoryVisibility
     /// they were invited onwards.
     ///
     /// Events stop being accessible when the member's state changes to
-    /// something other than *invite* or *join*.
+    /// something other than _invite_ or _join_.
     /// </summary>
     public record Invited : RoomHistoryVisibility { }
 
     /// <summary>
     /// Previous events are accessible to newly joined members from the point
-    /// they joined the room onwards.
-    /// Events stop being accessible when the member's state changes to
-    /// something other than *join*.
+    /// they joined the room onwards. Events stop being accessible when the
+    /// member's state changes to something other than _join_.
     /// </summary>
     public record Joined : RoomHistoryVisibility { }
 
@@ -70081,8 +72527,8 @@ public record RoomLoadSettings
     public record All : RoomLoadSettings { }
 
     /// <summary>
-    /// Load a single room from the `StateStore` into the in-memory state
-    /// store `BaseStateStore`.
+    /// Load a single room from the `StateStore` into the in-memory state store
+    /// `BaseStateStore`.
     ///
     /// Please, be careful with this option. Read the documentation of
     /// [`RoomLoadSettings`].
@@ -70425,8 +72871,8 @@ public record RoomSendQueueUpdate : IDisposable
     /// <summary>
     /// An error happened when an event was being sent.
     ///
-    /// The event has not been removed from the queue. All the send queues
-    /// will be disabled after this happens, and must be manually re-enabled.
+    /// The event has not been removed from the queue. All the send queues will
+    /// be disabled after this happens, and must be manually re-enabled.
     /// </summary>
     public record SendError(string TransactionId, QueueWedgeError Error, bool IsRecoverable) : RoomSendQueueUpdate { }
 
@@ -70954,6 +73400,84 @@ class FfiConverterTypeRtcNotificationType : FfiConverterRustBuffer<RtcNotificati
     }
 }
 
+/// <summary>
+/// Information about a MatrixRTC transport advertised by the homeserver.
+/// </summary>
+public record RtcTransport
+{
+    /// <summary>
+    /// A LiveKit RTC transport.
+    /// </summary>
+    public record LiveKit(string ServiceUrl) : RtcTransport { }
+
+    /// <summary>
+    /// A transport type the SDK doesn't know about, up for interpretation by
+    /// the consumer.
+    /// </summary>
+    public record Custom(string TransportType, string Data) : RtcTransport { }
+}
+
+class FfiConverterTypeRtcTransport : FfiConverterRustBuffer<RtcTransport>
+{
+    public static FfiConverterRustBuffer<RtcTransport> INSTANCE = new FfiConverterTypeRtcTransport();
+
+    public override RtcTransport Read(BigEndianStream stream)
+    {
+        var value = stream.ReadInt();
+        switch (value)
+        {
+            case 1:
+                return new RtcTransport.LiveKit(FfiConverterString.INSTANCE.Read(stream));
+            case 2:
+                return new RtcTransport.Custom(
+                    FfiConverterString.INSTANCE.Read(stream),
+                    FfiConverterString.INSTANCE.Read(stream)
+                );
+            default:
+                throw new InternalException(
+                    String.Format("invalid enum value '{0}' in FfiConverterTypeRtcTransport.Read()", value)
+                );
+        }
+    }
+
+    public override int AllocationSize(RtcTransport value)
+    {
+        switch (value)
+        {
+            case RtcTransport.LiveKit variant_value:
+                return 4 + FfiConverterString.INSTANCE.AllocationSize(variant_value.ServiceUrl);
+            case RtcTransport.Custom variant_value:
+                return 4
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.TransportType)
+                    + FfiConverterString.INSTANCE.AllocationSize(variant_value.Data);
+            default:
+                throw new InternalException(
+                    String.Format("invalid enum value '{0}' in FfiConverterTypeRtcTransport.AllocationSize()", value)
+                );
+        }
+    }
+
+    public override void Write(RtcTransport value, BigEndianStream stream)
+    {
+        switch (value)
+        {
+            case RtcTransport.LiveKit variant_value:
+                stream.WriteInt(1);
+                FfiConverterString.INSTANCE.Write(variant_value.ServiceUrl, stream);
+                break;
+            case RtcTransport.Custom variant_value:
+                stream.WriteInt(2);
+                FfiConverterString.INSTANCE.Write(variant_value.TransportType, stream);
+                FfiConverterString.INSTANCE.Write(variant_value.Data, stream);
+                break;
+            default:
+                throw new InternalException(
+                    String.Format("invalid enum value '{0}' in FfiConverterTypeRtcTransport.Write()", value)
+                );
+        }
+    }
+}
+
 public record RuleKind
 {
     /// <summary>
@@ -71438,6 +73962,104 @@ class FfiConverterTypeSecretStorageEncryptionAlgorithm : FfiConverterRustBuffer<
                         "invalid enum value '{0}' in FfiConverterTypeSecretStorageEncryptionAlgorithm.Write()",
                         value
                     )
+                );
+        }
+    }
+}
+
+/// <summary>
+/// Which pending send on an item [`Timeline::retry_send`] and
+/// [`Timeline::abort_send`] act on.
+/// </summary>
+public record SendTarget
+{
+    /// <summary>
+    /// The item itself, while it's a local echo.
+    ///
+    /// Note that aborting one that's already in flight queues a redaction for
+    /// it, without a reason; use `SendHandle::abort` if one is needed.
+    /// </summary>
+    public record Event : SendTarget { }
+
+    /// <summary>
+    /// Our pending edit of the item.
+    /// </summary>
+    public record Edit : SendTarget { }
+
+    /// <summary>
+    /// Our pending redaction of the item.
+    /// </summary>
+    public record Redaction : SendTarget { }
+
+    /// <summary>
+    /// Our pending reaction to the item with this key.
+    /// </summary>
+    public record Reaction(string Key) : SendTarget { }
+}
+
+class FfiConverterTypeSendTarget : FfiConverterRustBuffer<SendTarget>
+{
+    public static FfiConverterRustBuffer<SendTarget> INSTANCE = new FfiConverterTypeSendTarget();
+
+    public override SendTarget Read(BigEndianStream stream)
+    {
+        var value = stream.ReadInt();
+        switch (value)
+        {
+            case 1:
+                return new SendTarget.Event();
+            case 2:
+                return new SendTarget.Edit();
+            case 3:
+                return new SendTarget.Redaction();
+            case 4:
+                return new SendTarget.Reaction(FfiConverterString.INSTANCE.Read(stream));
+            default:
+                throw new InternalException(
+                    String.Format("invalid enum value '{0}' in FfiConverterTypeSendTarget.Read()", value)
+                );
+        }
+    }
+
+    public override int AllocationSize(SendTarget value)
+    {
+        switch (value)
+        {
+            case SendTarget.Event variant_value:
+                return 4;
+            case SendTarget.Edit variant_value:
+                return 4;
+            case SendTarget.Redaction variant_value:
+                return 4;
+            case SendTarget.Reaction variant_value:
+                return 4 + FfiConverterString.INSTANCE.AllocationSize(variant_value.Key);
+            default:
+                throw new InternalException(
+                    String.Format("invalid enum value '{0}' in FfiConverterTypeSendTarget.AllocationSize()", value)
+                );
+        }
+    }
+
+    public override void Write(SendTarget value, BigEndianStream stream)
+    {
+        switch (value)
+        {
+            case SendTarget.Event variant_value:
+                stream.WriteInt(1);
+                break;
+            case SendTarget.Edit variant_value:
+                stream.WriteInt(2);
+                break;
+            case SendTarget.Redaction variant_value:
+                stream.WriteInt(3);
+                break;
+            case SendTarget.Reaction variant_value:
+                stream.WriteInt(4);
+                FfiConverterString.INSTANCE.Write(variant_value.Key, stream);
+                break;
+            default:
+                throw new InternalException(
+                    String.Format("invalid enum value '{0}' in FfiConverterTypeSendTarget.Write()", value)
                 );
         }
     }
@@ -72441,6 +75063,94 @@ class FfiConverterTypeSteadyStateError
             default:
                 throw new InternalException(
                     String.Format("invalid error value '{0}' in FfiConverterTypeSteadyStateError.Write()", value)
+                );
+        }
+    }
+}
+
+/// <summary>
+/// A change to the sticky events of a room, as delivered to a
+/// [`StickyEventsListener`].
+///
+/// Consumers can use these updates to maintain a map of the live sticky events
+/// keyed by [`StickyKey`].
+/// </summary>
+public record StickyEventsUpdate
+{
+    /// <summary>
+    /// A full replacement of the map.
+    /// </summary>
+    public record Reset(StickyEvent[] Events) : StickyEventsUpdate { }
+
+    /// <summary>
+    /// An incremental change.
+    /// </summary>
+    public record Changes(StickyEvent[] Added, StickyEvent[] Updated, StickyEventRemoval[] Removed)
+        : StickyEventsUpdate { }
+}
+
+class FfiConverterTypeStickyEventsUpdate : FfiConverterRustBuffer<StickyEventsUpdate>
+{
+    public static FfiConverterRustBuffer<StickyEventsUpdate> INSTANCE = new FfiConverterTypeStickyEventsUpdate();
+
+    public override StickyEventsUpdate Read(BigEndianStream stream)
+    {
+        var value = stream.ReadInt();
+        switch (value)
+        {
+            case 1:
+                return new StickyEventsUpdate.Reset(FfiConverterSequenceTypeStickyEvent.INSTANCE.Read(stream));
+            case 2:
+                return new StickyEventsUpdate.Changes(
+                    FfiConverterSequenceTypeStickyEvent.INSTANCE.Read(stream),
+                    FfiConverterSequenceTypeStickyEvent.INSTANCE.Read(stream),
+                    FfiConverterSequenceTypeStickyEventRemoval.INSTANCE.Read(stream)
+                );
+            default:
+                throw new InternalException(
+                    String.Format("invalid enum value '{0}' in FfiConverterTypeStickyEventsUpdate.Read()", value)
+                );
+        }
+    }
+
+    public override int AllocationSize(StickyEventsUpdate value)
+    {
+        switch (value)
+        {
+            case StickyEventsUpdate.Reset variant_value:
+                return 4 + FfiConverterSequenceTypeStickyEvent.INSTANCE.AllocationSize(variant_value.Events);
+            case StickyEventsUpdate.Changes variant_value:
+                return 4
+                    + FfiConverterSequenceTypeStickyEvent.INSTANCE.AllocationSize(variant_value.Added)
+                    + FfiConverterSequenceTypeStickyEvent.INSTANCE.AllocationSize(variant_value.Updated)
+                    + FfiConverterSequenceTypeStickyEventRemoval.INSTANCE.AllocationSize(variant_value.Removed);
+            default:
+                throw new InternalException(
+                    String.Format(
+                        "invalid enum value '{0}' in FfiConverterTypeStickyEventsUpdate.AllocationSize()",
+                        value
+                    )
+                );
+        }
+    }
+
+    public override void Write(StickyEventsUpdate value, BigEndianStream stream)
+    {
+        switch (value)
+        {
+            case StickyEventsUpdate.Reset variant_value:
+                stream.WriteInt(1);
+                FfiConverterSequenceTypeStickyEvent.INSTANCE.Write(variant_value.Events, stream);
+                break;
+            case StickyEventsUpdate.Changes variant_value:
+                stream.WriteInt(2);
+                FfiConverterSequenceTypeStickyEvent.INSTANCE.Write(variant_value.Added, stream);
+                FfiConverterSequenceTypeStickyEvent.INSTANCE.Write(variant_value.Updated, stream);
+                FfiConverterSequenceTypeStickyEventRemoval.INSTANCE.Write(variant_value.Removed, stream);
+                break;
+            default:
+                throw new InternalException(
+                    String.Format("invalid enum value '{0}' in FfiConverterTypeStickyEventsUpdate.Write()", value)
                 );
         }
     }
@@ -73593,6 +76303,11 @@ public enum TraceLogPacks : int
     EventCache,
 
     /// <summary>
+    /// Enables all the logs relevant to the back-pagination queue.
+    /// </summary>
+    BackPagination,
+
+    /// <summary>
     /// Enables all the logs relevant to the send queue.
     /// </summary>
     SendQueue,
@@ -73635,16 +76350,18 @@ class FfiConverterTypeTraceLogPacks : FfiConverterRustBuffer<TraceLogPacks>
             case 1:
                 return TraceLogPacks.EventCache;
             case 2:
-                return TraceLogPacks.SendQueue;
+                return TraceLogPacks.BackPagination;
             case 3:
-                return TraceLogPacks.Timeline;
+                return TraceLogPacks.SendQueue;
             case 4:
-                return TraceLogPacks.NotificationClient;
+                return TraceLogPacks.Timeline;
             case 5:
-                return TraceLogPacks.SyncProfiling;
+                return TraceLogPacks.NotificationClient;
             case 6:
-                return TraceLogPacks.LatestEvents;
+                return TraceLogPacks.SyncProfiling;
             case 7:
+                return TraceLogPacks.LatestEvents;
+            case 8:
                 return TraceLogPacks.Search;
             default:
                 throw new InternalException(
@@ -73665,23 +76382,26 @@ class FfiConverterTypeTraceLogPacks : FfiConverterRustBuffer<TraceLogPacks>
             case TraceLogPacks.EventCache:
                 stream.WriteInt(1);
                 break;
-            case TraceLogPacks.SendQueue:
+            case TraceLogPacks.BackPagination:
                 stream.WriteInt(2);
                 break;
-            case TraceLogPacks.Timeline:
+            case TraceLogPacks.SendQueue:
                 stream.WriteInt(3);
                 break;
-            case TraceLogPacks.NotificationClient:
+            case TraceLogPacks.Timeline:
                 stream.WriteInt(4);
                 break;
-            case TraceLogPacks.SyncProfiling:
+            case TraceLogPacks.NotificationClient:
                 stream.WriteInt(5);
                 break;
-            case TraceLogPacks.LatestEvents:
+            case TraceLogPacks.SyncProfiling:
                 stream.WriteInt(6);
                 break;
-            case TraceLogPacks.Search:
+            case TraceLogPacks.LatestEvents:
                 stream.WriteInt(7);
+                break;
+            case TraceLogPacks.Search:
+                stream.WriteInt(8);
                 break;
             default:
                 throw new InternalException(
@@ -76385,8 +79105,8 @@ class FfiConverterTypeKnockRequestsListener : FfiConverter<KnockRequestsListener
 public interface LiveLocationsListener
 {
     /// <summary>
-    /// Called with a batch of [`LiveLocationShareUpdate`]s whenever the list
-    /// of active shares changes.
+    /// Called with a batch of [`LiveLocationShareUpdate`]s whenever the list of
+    /// active shares changes.
     /// </summary>
     void OnUpdate(LiveLocationShareUpdate[] @updates);
 }
@@ -78346,6 +81066,140 @@ class FfiConverterTypeRoomListServiceSyncIndicatorListener : FfiConverter<RoomLi
 }
 
 /// <summary>
+/// A listener for the message-like events of a single type, registered with
+/// [`Room::subscribe_to_message_like_events`].
+/// </summary>
+public interface RoomMessageLikeEventsListener
+{
+    void OnEvent(RoomMessageLikeEvent @event);
+}
+
+class UniffiCallbackInterfaceRoomMessageLikeEventsListener
+{
+    static void OnEvent(
+        ulong @uniffiHandle,
+        RustBuffer @event,
+        IntPtr @uniffiOutReturn,
+        ref UniffiRustCallStatus _uniffi_out_err
+    )
+    {
+        var handle = @uniffiHandle;
+        try
+        {
+            if (!FfiConverterTypeRoomMessageLikeEventsListener.INSTANCE.handleMap.TryGet(handle, out var uniffiObject))
+            {
+                throw new InternalException($"No callback in handlemap '{handle}'");
+            }
+            uniffiObject.OnEvent(FfiConverterTypeRoomMessageLikeEvent.INSTANCE.Lift(@event));
+
+            _uniffi_out_err.code = UniffiCallbackResponseStatus.SUCCESS;
+        }
+        catch (System.Exception e)
+        {
+            _uniffi_out_err.code = UniffiCallbackResponseStatus.UNEXPECTED_ERROR;
+            try
+            {
+                _uniffi_out_err.error_buf = FfiConverterString.INSTANCE.Lower(e.Message);
+            }
+            catch { }
+        }
+    }
+
+    static void UniffiFree(ulong @handle)
+    {
+        FfiConverterTypeRoomMessageLikeEventsListener.INSTANCE.handleMap.Remove(@handle);
+    }
+
+    static ulong UniffiClone(ulong @handle)
+    {
+        try
+        {
+            if (!FfiConverterTypeRoomMessageLikeEventsListener.INSTANCE.handleMap.TryGet(@handle, out var obj))
+            {
+                throw new InternalException($"No callback in handlemap '{@handle}'");
+            }
+            return FfiConverterTypeRoomMessageLikeEventsListener.INSTANCE.handleMap.Insert(obj);
+        }
+        catch (System.Exception)
+        {
+            return 0; // 0 is never a valid handle; ConcurrentHandleMap starts at 1
+        }
+    }
+
+    static _UniFFILib.UniffiCallbackInterfaceRoomMessageLikeEventsListenerMethod0 _m0 =
+        new _UniFFILib.UniffiCallbackInterfaceRoomMessageLikeEventsListenerMethod0(OnEvent);
+    static _UniFFILib.UniffiCallbackInterfaceFree _callback_interface_free = new _UniFFILib.UniffiCallbackInterfaceFree(
+        UniffiFree
+    );
+    static _UniFFILib.UniffiCallbackInterfaceClone _callback_interface_clone =
+        new _UniFFILib.UniffiCallbackInterfaceClone(UniffiClone);
+
+    private static GCHandle? _vtablePin;
+
+    public static void Register()
+    {
+        if (_vtablePin.HasValue)
+            return;
+        _UniFFILib.UniffiVTableCallbackInterfaceRoomMessageLikeEventsListener _vtable =
+            new _UniFFILib.UniffiVTableCallbackInterfaceRoomMessageLikeEventsListener
+            {
+                @onEvent = Marshal.GetFunctionPointerForDelegate(_m0),
+                @uniffiFree = Marshal.GetFunctionPointerForDelegate(_callback_interface_free),
+                @uniffiClone = Marshal.GetFunctionPointerForDelegate(_callback_interface_clone),
+            };
+
+        // Pin the vtable so the GC never moves it. The GCHandle is intentionally never freed —
+        // this pin must remain valid for the process lifetime.
+        _vtablePin = GCHandle.Alloc(_vtable, GCHandleType.Pinned);
+        _UniFFILib.uniffi_matrix_sdk_ffi_fn_init_callback_vtable_roommessagelikeeventslistener(
+            _vtablePin.Value.AddrOfPinnedObject()
+        );
+    }
+}
+
+// The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
+class FfiConverterTypeRoomMessageLikeEventsListener : FfiConverter<RoomMessageLikeEventsListener, ulong>
+{
+    public static FfiConverterTypeRoomMessageLikeEventsListener INSTANCE =
+        new FfiConverterTypeRoomMessageLikeEventsListener();
+
+    public ConcurrentHandleMap<RoomMessageLikeEventsListener> handleMap =
+        new ConcurrentHandleMap<RoomMessageLikeEventsListener>();
+
+    public override ulong Lower(RoomMessageLikeEventsListener value)
+    {
+        return handleMap.Insert(value);
+    }
+
+    public override RoomMessageLikeEventsListener Lift(ulong value)
+    {
+        if (handleMap.TryGet(value, out var uniffiCallback))
+        {
+            return uniffiCallback;
+        }
+        else
+        {
+            throw new InternalException($"No callback in handlemap '{value}'");
+        }
+    }
+
+    public override RoomMessageLikeEventsListener Read(BigEndianStream stream)
+    {
+        return Lift(stream.ReadULong());
+    }
+
+    public override int AllocationSize(RoomMessageLikeEventsListener value)
+    {
+        return 8;
+    }
+
+    public override void Write(RoomMessageLikeEventsListener value, BigEndianStream stream)
+    {
+        stream.WriteULong(Lower(value));
+    }
+}
+
+/// <summary>
 /// A listener for the room state events of a single type, registered with
 /// [`Room::subscribe_to_state_events`].
 /// </summary>
@@ -80176,6 +83030,137 @@ class FfiConverterTypeSpaceServiceSpaceFiltersListener : FfiConverter<SpaceServi
 }
 
 /// <summary>
+/// A listener for the sticky events of a room.
+/// </summary>
+public interface StickyEventsListener
+{
+    void OnUpdate(StickyEventsUpdate @update);
+}
+
+class UniffiCallbackInterfaceStickyEventsListener
+{
+    static void OnUpdate(
+        ulong @uniffiHandle,
+        RustBuffer @update,
+        IntPtr @uniffiOutReturn,
+        ref UniffiRustCallStatus _uniffi_out_err
+    )
+    {
+        var handle = @uniffiHandle;
+        try
+        {
+            if (!FfiConverterTypeStickyEventsListener.INSTANCE.handleMap.TryGet(handle, out var uniffiObject))
+            {
+                throw new InternalException($"No callback in handlemap '{handle}'");
+            }
+            uniffiObject.OnUpdate(FfiConverterTypeStickyEventsUpdate.INSTANCE.Lift(@update));
+
+            _uniffi_out_err.code = UniffiCallbackResponseStatus.SUCCESS;
+        }
+        catch (System.Exception e)
+        {
+            _uniffi_out_err.code = UniffiCallbackResponseStatus.UNEXPECTED_ERROR;
+            try
+            {
+                _uniffi_out_err.error_buf = FfiConverterString.INSTANCE.Lower(e.Message);
+            }
+            catch { }
+        }
+    }
+
+    static void UniffiFree(ulong @handle)
+    {
+        FfiConverterTypeStickyEventsListener.INSTANCE.handleMap.Remove(@handle);
+    }
+
+    static ulong UniffiClone(ulong @handle)
+    {
+        try
+        {
+            if (!FfiConverterTypeStickyEventsListener.INSTANCE.handleMap.TryGet(@handle, out var obj))
+            {
+                throw new InternalException($"No callback in handlemap '{@handle}'");
+            }
+            return FfiConverterTypeStickyEventsListener.INSTANCE.handleMap.Insert(obj);
+        }
+        catch (System.Exception)
+        {
+            return 0; // 0 is never a valid handle; ConcurrentHandleMap starts at 1
+        }
+    }
+
+    static _UniFFILib.UniffiCallbackInterfaceStickyEventsListenerMethod0 _m0 =
+        new _UniFFILib.UniffiCallbackInterfaceStickyEventsListenerMethod0(OnUpdate);
+    static _UniFFILib.UniffiCallbackInterfaceFree _callback_interface_free = new _UniFFILib.UniffiCallbackInterfaceFree(
+        UniffiFree
+    );
+    static _UniFFILib.UniffiCallbackInterfaceClone _callback_interface_clone =
+        new _UniFFILib.UniffiCallbackInterfaceClone(UniffiClone);
+
+    private static GCHandle? _vtablePin;
+
+    public static void Register()
+    {
+        if (_vtablePin.HasValue)
+            return;
+        _UniFFILib.UniffiVTableCallbackInterfaceStickyEventsListener _vtable =
+            new _UniFFILib.UniffiVTableCallbackInterfaceStickyEventsListener
+            {
+                @onUpdate = Marshal.GetFunctionPointerForDelegate(_m0),
+                @uniffiFree = Marshal.GetFunctionPointerForDelegate(_callback_interface_free),
+                @uniffiClone = Marshal.GetFunctionPointerForDelegate(_callback_interface_clone),
+            };
+
+        // Pin the vtable so the GC never moves it. The GCHandle is intentionally never freed —
+        // this pin must remain valid for the process lifetime.
+        _vtablePin = GCHandle.Alloc(_vtable, GCHandleType.Pinned);
+        _UniFFILib.uniffi_matrix_sdk_ffi_fn_init_callback_vtable_stickyeventslistener(
+            _vtablePin.Value.AddrOfPinnedObject()
+        );
+    }
+}
+
+// The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
+class FfiConverterTypeStickyEventsListener : FfiConverter<StickyEventsListener, ulong>
+{
+    public static FfiConverterTypeStickyEventsListener INSTANCE = new FfiConverterTypeStickyEventsListener();
+
+    public ConcurrentHandleMap<StickyEventsListener> handleMap = new ConcurrentHandleMap<StickyEventsListener>();
+
+    public override ulong Lower(StickyEventsListener value)
+    {
+        return handleMap.Insert(value);
+    }
+
+    public override StickyEventsListener Lift(ulong value)
+    {
+        if (handleMap.TryGet(value, out var uniffiCallback))
+        {
+            return uniffiCallback;
+        }
+        else
+        {
+            throw new InternalException($"No callback in handlemap '{value}'");
+        }
+    }
+
+    public override StickyEventsListener Read(BigEndianStream stream)
+    {
+        return Lift(stream.ReadULong());
+    }
+
+    public override int AllocationSize(StickyEventsListener value)
+    {
+        return 8;
+    }
+
+    public override void Write(StickyEventsListener value, BigEndianStream stream)
+    {
+        stream.WriteULong(Lower(value));
+    }
+}
+
+/// <summary>
 /// A listener for the sync loop.
 ///
 /// Called after each successful sync response when using
@@ -80313,8 +83298,8 @@ class FfiConverterTypeSyncListenerV2 : FfiConverter<SyncListenerV2, ulong>
 /// <summary>
 /// A listener for notifications generated from sync responses.
 ///
-/// This is called during sync for each event that triggers a notification
-/// based on the user's push rules.
+/// This is called during sync for each event that triggers a notification based
+/// on the user's push rules.
 /// </summary>
 public interface SyncNotificationListener
 {
@@ -83476,6 +86461,49 @@ class FfiConverterOptionalTypeRoomMemberWithSenderInfo : FfiConverterRustBuffer<
     }
 }
 
+class FfiConverterOptionalTypeSessionVerificationCancelInfo : FfiConverterRustBuffer<SessionVerificationCancelInfo?>
+{
+    public static FfiConverterOptionalTypeSessionVerificationCancelInfo INSTANCE =
+        new FfiConverterOptionalTypeSessionVerificationCancelInfo();
+
+    public override SessionVerificationCancelInfo? Read(BigEndianStream stream)
+    {
+        if (stream.ReadByte() == 0)
+        {
+            return null;
+        }
+        return FfiConverterTypeSessionVerificationCancelInfo.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(SessionVerificationCancelInfo? value)
+    {
+        if (value == null)
+        {
+            return 1;
+        }
+        else
+        {
+            return 1
+                + FfiConverterTypeSessionVerificationCancelInfo.INSTANCE.AllocationSize(
+                    (SessionVerificationCancelInfo)value
+                );
+        }
+    }
+
+    public override void Write(SessionVerificationCancelInfo? value, BigEndianStream stream)
+    {
+        if (value == null)
+        {
+            stream.WriteByte(0);
+        }
+        else
+        {
+            stream.WriteByte(1);
+            FfiConverterTypeSessionVerificationCancelInfo.INSTANCE.Write((SessionVerificationCancelInfo)value, stream);
+        }
+    }
+}
+
 class FfiConverterOptionalTypeSpaceRoom : FfiConverterRustBuffer<SpaceRoom?>
 {
     public static FfiConverterOptionalTypeSpaceRoom INSTANCE = new FfiConverterOptionalTypeSpaceRoom();
@@ -84028,45 +87056,6 @@ class FfiConverterOptionalTypeAssetType : FfiConverterRustBuffer<AssetType?>
         {
             stream.WriteByte(1);
             FfiConverterTypeAssetType.INSTANCE.Write((AssetType)value, stream);
-        }
-    }
-}
-
-class FfiConverterOptionalTypeAuthData : FfiConverterRustBuffer<AuthData?>
-{
-    public static FfiConverterOptionalTypeAuthData INSTANCE = new FfiConverterOptionalTypeAuthData();
-
-    public override AuthData? Read(BigEndianStream stream)
-    {
-        if (stream.ReadByte() == 0)
-        {
-            return null;
-        }
-        return FfiConverterTypeAuthData.INSTANCE.Read(stream);
-    }
-
-    public override int AllocationSize(AuthData? value)
-    {
-        if (value == null)
-        {
-            return 1;
-        }
-        else
-        {
-            return 1 + FfiConverterTypeAuthData.INSTANCE.AllocationSize((AuthData)value);
-        }
-    }
-
-    public override void Write(AuthData? value, BigEndianStream stream)
-    {
-        if (value == null)
-        {
-            stream.WriteByte(0);
-        }
-        else
-        {
-            stream.WriteByte(1);
-            FfiConverterTypeAuthData.INSTANCE.Write((AuthData)value, stream);
         }
     }
 }
@@ -85181,6 +88170,46 @@ class FfiConverterOptionalSequenceTypeRelationType : FfiConverterRustBuffer<Rela
         {
             stream.WriteByte(1);
             FfiConverterSequenceTypeRelationType.INSTANCE.Write((RelationType[])value, stream);
+        }
+    }
+}
+
+class FfiConverterOptionalSequenceTypeRtcTransport : FfiConverterRustBuffer<RtcTransport[]?>
+{
+    public static FfiConverterOptionalSequenceTypeRtcTransport INSTANCE =
+        new FfiConverterOptionalSequenceTypeRtcTransport();
+
+    public override RtcTransport[]? Read(BigEndianStream stream)
+    {
+        if (stream.ReadByte() == 0)
+        {
+            return null;
+        }
+        return FfiConverterSequenceTypeRtcTransport.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(RtcTransport[]? value)
+    {
+        if (value == null)
+        {
+            return 1;
+        }
+        else
+        {
+            return 1 + FfiConverterSequenceTypeRtcTransport.INSTANCE.AllocationSize((RtcTransport[])value);
+        }
+    }
+
+    public override void Write(RtcTransport[]? value, BigEndianStream stream)
+    {
+        if (value == null)
+        {
+            stream.WriteByte(0);
+        }
+        else
+        {
+            stream.WriteByte(1);
+            FfiConverterSequenceTypeRtcTransport.INSTANCE.Write((RtcTransport[])value, stream);
         }
     }
 }
@@ -86744,6 +89773,109 @@ class FfiConverterSequenceTypeSpaceRoom : FfiConverterRustBuffer<SpaceRoom[]>
     }
 }
 
+class FfiConverterSequenceTypeStickyEvent : FfiConverterRustBuffer<StickyEvent[]>
+{
+    public static FfiConverterSequenceTypeStickyEvent INSTANCE = new FfiConverterSequenceTypeStickyEvent();
+
+    public override StickyEvent[] Read(BigEndianStream stream)
+    {
+        var length = stream.ReadInt();
+        if (length == 0)
+        {
+            return [];
+        }
+
+        var result = new StickyEvent[length];
+        var readFn = FfiConverterTypeStickyEvent.INSTANCE.Read;
+        for (int i = 0; i < length; i++)
+        {
+            result[i] = readFn(stream);
+        }
+        return result;
+    }
+
+    public override int AllocationSize(StickyEvent[] value)
+    {
+        var sizeForLength = 4;
+
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null)
+        {
+            return sizeForLength;
+        }
+
+        var allocationSizeFn = FfiConverterTypeStickyEvent.INSTANCE.AllocationSize;
+        var sizeForItems = value.Sum(item => allocationSizeFn(item));
+        return sizeForLength + sizeForItems;
+    }
+
+    public override void Write(StickyEvent[] value, BigEndianStream stream)
+    {
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null)
+        {
+            stream.WriteInt(0);
+            return;
+        }
+
+        stream.WriteInt(value.Length);
+        var writerFn = FfiConverterTypeStickyEvent.INSTANCE.Write;
+        value.ForEach(item => writerFn(item, stream));
+    }
+}
+
+class FfiConverterSequenceTypeStickyEventRemoval : FfiConverterRustBuffer<StickyEventRemoval[]>
+{
+    public static FfiConverterSequenceTypeStickyEventRemoval INSTANCE =
+        new FfiConverterSequenceTypeStickyEventRemoval();
+
+    public override StickyEventRemoval[] Read(BigEndianStream stream)
+    {
+        var length = stream.ReadInt();
+        if (length == 0)
+        {
+            return [];
+        }
+
+        var result = new StickyEventRemoval[length];
+        var readFn = FfiConverterTypeStickyEventRemoval.INSTANCE.Read;
+        for (int i = 0; i < length; i++)
+        {
+            result[i] = readFn(stream);
+        }
+        return result;
+    }
+
+    public override int AllocationSize(StickyEventRemoval[] value)
+    {
+        var sizeForLength = 4;
+
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null)
+        {
+            return sizeForLength;
+        }
+
+        var allocationSizeFn = FfiConverterTypeStickyEventRemoval.INSTANCE.AllocationSize;
+        var sizeForItems = value.Sum(item => allocationSizeFn(item));
+        return sizeForLength + sizeForItems;
+    }
+
+    public override void Write(StickyEventRemoval[] value, BigEndianStream stream)
+    {
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null)
+        {
+            stream.WriteInt(0);
+            return;
+        }
+
+        stream.WriteInt(value.Length);
+        var writerFn = FfiConverterTypeStickyEventRemoval.INSTANCE.Write;
+        value.ForEach(item => writerFn(item, stream));
+    }
+}
+
 class FfiConverterSequenceTypeThreadListItem : FfiConverterRustBuffer<ThreadListItem[]>
 {
     public static FfiConverterSequenceTypeThreadListItem INSTANCE = new FfiConverterSequenceTypeThreadListItem();
@@ -87666,6 +90798,57 @@ class FfiConverterSequenceTypeRoomMessageEventMessageType : FfiConverterRustBuff
 
         stream.WriteInt(value.Length);
         var writerFn = FfiConverterTypeRoomMessageEventMessageType.INSTANCE.Write;
+        value.ForEach(item => writerFn(item, stream));
+    }
+}
+
+class FfiConverterSequenceTypeRtcTransport : FfiConverterRustBuffer<RtcTransport[]>
+{
+    public static FfiConverterSequenceTypeRtcTransport INSTANCE = new FfiConverterSequenceTypeRtcTransport();
+
+    public override RtcTransport[] Read(BigEndianStream stream)
+    {
+        var length = stream.ReadInt();
+        if (length == 0)
+        {
+            return [];
+        }
+
+        var result = new RtcTransport[length];
+        var readFn = FfiConverterTypeRtcTransport.INSTANCE.Read;
+        for (int i = 0; i < length; i++)
+        {
+            result[i] = readFn(stream);
+        }
+        return result;
+    }
+
+    public override int AllocationSize(RtcTransport[] value)
+    {
+        var sizeForLength = 4;
+
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null)
+        {
+            return sizeForLength;
+        }
+
+        var allocationSizeFn = FfiConverterTypeRtcTransport.INSTANCE.AllocationSize;
+        var sizeForItems = value.Sum(item => allocationSizeFn(item));
+        return sizeForLength + sizeForItems;
+    }
+
+    public override void Write(RtcTransport[] value, BigEndianStream stream)
+    {
+        // details/1-empty-list-as-default-method-parameter.md
+        if (value == null)
+        {
+            stream.WriteInt(0);
+            return;
+        }
+
+        stream.WriteInt(value.Length);
+        var writerFn = FfiConverterTypeRtcTransport.INSTANCE.Write;
         value.ForEach(item => writerFn(item, stream));
     }
 }
@@ -88930,6 +92113,31 @@ class FfiConverterTypeRoomMemberRole : FfiConverterRustBuffer<RoomMemberRole>
     }
 }
 
+class FfiConverterTypeSearchBackfillStrategy : FfiConverterRustBuffer<SearchBackfillStrategy>
+{
+    public static FfiConverterTypeSearchBackfillStrategy INSTANCE = new FfiConverterTypeSearchBackfillStrategy();
+
+    public override SearchBackfillStrategy Read(BigEndianStream stream)
+    {
+        return Matrix.RustSdk.Bindings.Sdk.FfiConverterTypeSearchBackfillStrategy.INSTANCE.Read(
+            new Matrix.RustSdk.Bindings.Sdk.BigEndianStream(stream.InnerStream)
+        );
+    }
+
+    public override int AllocationSize(SearchBackfillStrategy value)
+    {
+        return Matrix.RustSdk.Bindings.Sdk.FfiConverterTypeSearchBackfillStrategy.INSTANCE.AllocationSize(value);
+    }
+
+    public override void Write(SearchBackfillStrategy value, BigEndianStream stream)
+    {
+        Matrix.RustSdk.Bindings.Sdk.FfiConverterTypeSearchBackfillStrategy.INSTANCE.Write(
+            value,
+            new Matrix.RustSdk.Bindings.Sdk.BigEndianStream(stream.InnerStream)
+        );
+    }
+}
+
 class FfiConverterTypeDmRoomDefinition : FfiConverterRustBuffer<DmRoomDefinition>
 {
     public static FfiConverterTypeDmRoomDefinition INSTANCE = new FfiConverterTypeDmRoomDefinition();
@@ -88974,6 +92182,31 @@ class FfiConverterTypeEncryptionState : FfiConverterRustBuffer<EncryptionState>
     public override void Write(EncryptionState value, BigEndianStream stream)
     {
         Matrix.RustSdk.Bindings.Base.FfiConverterTypeEncryptionState.INSTANCE.Write(
+            value,
+            new Matrix.RustSdk.Bindings.Base.BigEndianStream(stream.InnerStream)
+        );
+    }
+}
+
+class FfiConverterTypeRemovalReason : FfiConverterRustBuffer<RemovalReason>
+{
+    public static FfiConverterTypeRemovalReason INSTANCE = new FfiConverterTypeRemovalReason();
+
+    public override RemovalReason Read(BigEndianStream stream)
+    {
+        return Matrix.RustSdk.Bindings.Base.FfiConverterTypeRemovalReason.INSTANCE.Read(
+            new Matrix.RustSdk.Bindings.Base.BigEndianStream(stream.InnerStream)
+        );
+    }
+
+    public override int AllocationSize(RemovalReason value)
+    {
+        return Matrix.RustSdk.Bindings.Base.FfiConverterTypeRemovalReason.INSTANCE.AllocationSize(value);
+    }
+
+    public override void Write(RemovalReason value, BigEndianStream stream)
+    {
+        Matrix.RustSdk.Bindings.Base.FfiConverterTypeRemovalReason.INSTANCE.Write(
             value,
             new Matrix.RustSdk.Bindings.Base.BigEndianStream(stream.InnerStream)
         );
@@ -90046,8 +93279,8 @@ public static class MatrixSdkFfiMethods
     }
 
     /// <summary>
-    /// Parse a matrix entity from a given URI, be it either
-    /// a `matrix.to` link or a `matrix:` URI
+    /// Parse a matrix entity from a given URI, be it either a `matrix.to` link or a
+    /// `matrix:` URI
     /// </summary>
     public static MatrixEntity? ParseMatrixEntityFrom(string @uri)
     {
@@ -90109,13 +93342,14 @@ public static class MatrixSdkFfiMethods
     }
 
     /// <summary>
-    /// Create the actual url that can be used to setup the WebView or IFrame
-    /// that contains the widget.
+    /// Create the actual url that can be used to setup the WebView or IFrame that
+    /// contains the widget.
     ///
     /// # Arguments
-    /// * `widget_settings` - The widget settings to generate the url for.
-    /// * `room` - A Matrix room which is used to query the logged in username
-    /// * `props` - Properties from the client that can be used by a widget to adapt
+    ///
+    /// - `widget_settings` - The widget settings to generate the url for.
+    /// - `room` - A Matrix room which is used to query the logged in username
+    /// - `props` - Properties from the client that can be used by a widget to adapt
     /// to the client. e.g. language, font-scale...
     /// </summary>
     /// <exception cref="ParseException"></exception>
@@ -90193,18 +93427,17 @@ public static class MatrixSdkFfiMethods
     }
 
     /// <summary>
-    /// `WidgetSettings` are usually created from a state event.
-    /// (currently unimplemented)
+    /// `WidgetSettings` are usually created from a state event. (currently
+    /// unimplemented)
     ///
-    /// In some cases the client wants to create custom `WidgetSettings`
-    /// for specific rooms based on other conditions.
-    /// This function returns a `WidgetSettings` object which can be used
-    /// to setup a widget using `run_client_widget_api`
-    /// and to generate the correct url for the widget.
+    /// In some cases the client wants to create custom `WidgetSettings` for
+    /// specific rooms based on other conditions. This function returns a
+    /// `WidgetSettings` object which can be used to setup a widget using
+    /// `run_client_widget_api` and to generate the correct url for the widget.
     ///
     /// # Arguments
     ///
-    /// * `props` - A struct containing the configuration parameters for a element
+    /// - `props` - A struct containing the configuration parameters for a element
     /// call widget.
     /// </summary>
     /// <exception cref="ParseException"></exception>

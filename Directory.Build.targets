@@ -24,6 +24,11 @@
     />
   </Target>
 
+  <!-- the snapshots of the tests are in the test projects, Matrix.RustSdk.Testing.Snapshot finds them with this -->
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <AssemblyMetadata Include="ProjectDirectory" Value="$(MSBuildProjectDirectory)" />
+  </ItemGroup>
+
   <!--
     Projects setting ExactProjectReferenceVersions pack their project references as exact version dependencies
     ([1.2.3]) instead of minimum version dependencies (>= 1.2.3).

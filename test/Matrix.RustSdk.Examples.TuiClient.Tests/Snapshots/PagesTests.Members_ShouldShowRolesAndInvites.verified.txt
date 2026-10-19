@@ -1,0 +1,4 @@
+Members of Book club (2)
+ Alice  @alice:example.org  (admin)
+ @bob:example.org  (ignored)
+ Carol  @carol:example.org  (invited)

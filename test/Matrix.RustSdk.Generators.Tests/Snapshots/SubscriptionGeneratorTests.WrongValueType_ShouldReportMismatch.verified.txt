@@ -1,0 +1,2 @@
+// ----- MRSG003 Error at 8:52 -----
+The listener of 'SubscribeToTypingNotifications' receives string[], the declaration has to return IAsyncEnumerable<string[]>

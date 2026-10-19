@@ -11,6 +11,9 @@ env:
   # upstream's size optimized profile (opt-level "s" + LTO), additionally strip the symbol table to keep the package small
   CARGO_PROFILE: small-release-stripped
   CARGO_PROFILE_SMALL_RELEASE_STRIPPED_STRIP: symbols
+  # Testcontainers would pull its cleanup container (ryuk) from Docker Hub, which rate limits the shared runners. The
+  # tests dispose their containers, the runner is thrown away afterwards anyway.
+  TESTCONTAINERS_RYUK_DISABLED: "true"
 
 jobs:
   native:
@@ -61,7 +64,7 @@ jobs:
           submodules: recursive
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
+        uses: dtolnay/rust-toolchain@686976e191b89faba57d3206551f0f330d8cb249 # stable
         with:
           targets: ${{ matrix.target }}
 
@@ -144,7 +147,7 @@ jobs:
 
       # only used by the rust cache on the host, the build itself uses the toolchain of the alpine image
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
+        uses: dtolnay/rust-toolchain@686976e191b89faba57d3206551f0f330d8cb249 # stable
 
       - name: Rust cache
         uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2
@@ -154,19 +157,31 @@ jobs:
           workspaces: |
             external/matrix-rust-sdk
 
+      # the official image from Google's Docker Hub mirror: Docker Hub rate limits anonymous pulls per IP, which the
+      # shared runners exceed, and ECR Public's mirror throttled the arm64 runners too. Retry in case the mirror has a
+      # hiccup as well.
+      - name: Pull rust image
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            docker pull mirror.gcr.io/library/rust:1-alpine && exit 0
+            echo "pull failed (attempt $attempt), retrying in $((attempt * 10))s"
+            sleep $((attempt * 10))
+          done
+          exit 1
+
       - name: Build matrix-sdk-ffi
         run: >-
           docker run --rm -v "$PWD:/work" -w /work -v "$HOME/.cargo:/cargo" -e CARGO_HOME=/cargo
           -e CARGO_TERM_COLOR -e CARGO_PROFILE -e CARGO_PROFILE_SMALL_RELEASE_STRIPPED_STRIP
           -e TARGET=${{ matrix.target }} -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)"
-          rust:1-alpine .github/scripts/build-musl.sh
+          mirror.gcr.io/library/rust:1-alpine .github/scripts/build-musl.sh
 
       # test the exact library that ends up in the package, docker is available so all tests run
       - name: Test native library
         run: >-
           docker run --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -v "$PWD:/work" -w /work
           -e NATIVE_LIBRARY_PATH="../../external/matrix-rust-sdk/target/${{ matrix.target }}/$CARGO_PROFILE/libmatrix_sdk_ffi.so"
-          -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)"
+          -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" -e TESTCONTAINERS_RYUK_DISABLED
           mcr.microsoft.com/dotnet/sdk:10.0-alpine .github/scripts/test-musl.sh
 
       - name: Collect native library
@@ -194,10 +209,10 @@ jobs:
 
       # the packages contain the licenses of matrix-rust-sdk and all crates linked into the native libraries
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@89b12181fb390509a0842a86cc55eeb8eb928c1d # stable
+        uses: dtolnay/rust-toolchain@686976e191b89faba57d3206551f0f330d8cb249 # stable
 
       - name: Install cargo-about
-        uses: taiki-e/install-action@f7e5d7c961414b23f5b25b2da9294395d08513ad # v2
+        uses: taiki-e/install-action@8cca0918f8471c33515202b73f56ab27f2bed283 # v2
         with:
           # keep in sync with devenv, so the notices match local builds
           tool: cargo-about@0.9.0

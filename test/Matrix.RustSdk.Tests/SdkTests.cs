@@ -91,9 +91,11 @@ public class SdkTests(Homeserver homeserver)
         const string sendCapability = "org.matrix.msc2762.send.event:m.room.message";
         Room room = LoggedInClient.Rooms().Single();
         DelayedCapabilitiesProvider provider = new();
+#pragma warning disable S1075 // the widget is never loaded, the test talks to the driver directly
         using WidgetDriverAndHandle widget = MatrixSdkFfiMethods.MakeWidgetDriver(
             new WidgetSettings(widgetId, InitAfterContentLoad: false, RawUrl: "https://widget.example.org")
         );
+#pragma warning restore S1075
         Task run = widget.Driver.Run(room, provider);
 
         // Act

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Documentation shared by the message helpers, included with <include file="…" path="docs/…/*"/>. -->
+<docs>
+  <!-- the Send…Async helpers of Timeline -->
+  <send>
+    <param name="inReplyTo">
+      The id of the event to reply to, <see langword="null" /> sends a message to the room. The reply stays in the
+      thread of that event and mentions its sender, like replies in Element do.
+    </param>
+    <returns>
+      A task that completes once the message is queued. For replies the SDK loads the replied-to event first, which can
+      take a request to the server.
+    </returns>
+    <remarks>
+      <para>
+        The message is added to the send queue of the room and shows up in the timeline right away as a local echo,
+        the SDK sends it in the background and retries when the connection fails. Whether it was sent shows in the
+        <see cref="P:Matrix.RustSdk.Bindings.EventTimelineItem.LocalSendState" /> of the echo, errors are also reported
+        by <see cref="M:Matrix.RustSdk.Bindings.RoomExtensions.WatchSendQueueUpdatesAsync(Matrix.RustSdk.Bindings.Room,System.Threading.CancellationToken)" />.
+        Use <see cref="M:Matrix.RustSdk.Bindings.Timeline.Send(Matrix.RustSdk.Bindings.RoomMessageEventContentWithoutRelation)" />
+        and <see cref="M:Matrix.RustSdk.Bindings.Timeline.SendReply(Matrix.RustSdk.Bindings.RoomMessageEventContentWithoutRelation,System.String)" />
+        instead when you need the <see cref="T:Matrix.RustSdk.Bindings.SendHandle" /> to abort or retry sending.
+      </para>
+    </remarks>
+    <exception cref="T:System.ArgumentException"><paramref name="inReplyTo" /> isn't an event id.</exception>
+    <exception cref="T:Matrix.RustSdk.Bindings.ClientException">
+      The message couldn't be queued, for example because the event to reply to wasn't found or is a state event.
+    </exception>
+  </send>
+</docs>

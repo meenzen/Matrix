@@ -1,2 +1,6 @@
 [bindings.csharp]
 access_modifier = "public"
+
+# C# members can't have the name of their enclosing type (CS0542)
+[bindings.csharp.rename.matrix_sdk_ffi]
+"StickyKey.sticky_key" = "key"

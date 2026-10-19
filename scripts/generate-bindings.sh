@@ -36,9 +36,8 @@ CRATES=$(find "$UNIFFI_OUTPUT/discover" -name '*.cs' -printf '%f\n' | sed 's/\.c
 for CRATE in $CRATES; do
   CONFIG=$UNIFFI_OUTPUT/$CRATE.toml
   {
-    cat "$UNIFFI_CONFIG"
-    echo
-    echo "namespace = \"$(namespace_for "$CRATE")\""
+    # insert the namespace into [bindings.csharp], uniffi.toml may contain other tables after it
+    sed "/^\[bindings\.csharp\]$/a namespace = \"$(namespace_for "$CRATE")\"" "$UNIFFI_CONFIG"
     echo
     echo "[bindings.csharp.external_packages]"
     for OTHER in $CRATES; do

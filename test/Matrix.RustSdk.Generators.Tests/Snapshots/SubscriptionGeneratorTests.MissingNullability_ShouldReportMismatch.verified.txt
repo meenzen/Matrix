@@ -1,0 +1,2 @@
+// ----- MRSG003 Error at 8:64 -----
+The listener of 'SubscribeToMediaPreviewConfig' receives Matrix.RustSdk.Bindings.MediaPreviewConfig?, the declaration has to return IAsyncEnumerable<Matrix.RustSdk.Bindings.MediaPreviewConfig?>

@@ -639,6 +639,76 @@ class BigEndianStream
         return result;
     }
 
+    // Reads a UTF-8 string of `length` bytes. Streams over RustBuffer memory
+    // are decoded in place, avoiding an intermediate byte[] copy.
+    public string ReadUtf8String(int length)
+    {
+        stream.CheckRemaining(length);
+        if (length >= 0 && stream is UnmanagedMemoryStream unmanagedStream && unmanagedStream.CanRead)
+        {
+            unsafe
+            {
+                var start = unmanagedStream.PositionPointer;
+                var result = System.Text.Encoding.UTF8.GetString(start, length);
+                unmanagedStream.PositionPointer = start + length;
+                return result;
+            }
+        }
+        return System.Text.Encoding.UTF8.GetString(ReadBytes(length));
+    }
+
+    // Writes a big-endian length prefix followed by the UTF-8 bytes. Streams
+    // over RustBuffer memory are encoded in place, avoiding an intermediate
+    // byte[] copy.
+    public void WriteUtf8String(string value)
+    {
+        if (value == null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+
+        if (stream is UnmanagedMemoryStream unmanagedStream && unmanagedStream.CanWrite)
+        {
+            // Bytes left for the string itself, after its 4-byte length prefix.
+            var available = unmanagedStream.Length - unmanagedStream.Position - 4;
+
+            // UTF-8 needs at most 3 bytes per UTF-16 code unit, so the exact
+            // byte count is only computed when that worst case might not fit.
+            if (
+                available >= 0
+                && (available >= 3L * value.Length || available >= System.Text.Encoding.UTF8.GetByteCount(value))
+            )
+            {
+                unsafe
+                {
+                    var start = unmanagedStream.PositionPointer;
+                    int length;
+                    fixed (char* chars = value)
+                    {
+                        length = System.Text.Encoding.UTF8.GetBytes(
+                            chars,
+                            value.Length,
+                            start + 4,
+                            (int)Math.Min(available, int.MaxValue)
+                        );
+                    }
+                    // The length is only known after encoding, so it goes into the
+                    // 4 bytes reserved before the string, big-endian like WriteInt.
+                    // `available >= 0` guarantees those bytes are inside the stream.
+                    start[0] = (byte)(length >> 24);
+                    start[1] = (byte)(length >> 16);
+                    start[2] = (byte)(length >> 8);
+                    start[3] = (byte)length;
+                    unmanagedStream.PositionPointer = start + 4 + length;
+                }
+                return;
+            }
+        }
+        var bytes = System.Text.Encoding.UTF8.GetBytes(value);
+        WriteInt(bytes.Length);
+        WriteBytes(bytes);
+    }
+
     public byte ReadByte() => (byte)stream.ReadUint32(bytesToRead: 1);
 
     public ushort ReadUShort() => (ushort)stream.ReadUint32(bytesToRead: 2);
@@ -1565,8 +1635,10 @@ class FfiConverterString : FfiConverter<string, RustBuffer>
     {
         try
         {
-            var bytes = value.AsStream().ReadBytes(Convert.ToInt32(value.len));
-            return System.Text.Encoding.UTF8.GetString(bytes);
+            unsafe
+            {
+                return System.Text.Encoding.UTF8.GetString((byte*)value.data.ToPointer(), Convert.ToInt32(value.len));
+            }
         }
         finally
         {
@@ -1577,16 +1649,33 @@ class FfiConverterString : FfiConverter<string, RustBuffer>
     public override string Read(BigEndianStream stream)
     {
         var length = stream.ReadInt();
-        var bytes = stream.ReadBytes(length);
-        return System.Text.Encoding.UTF8.GetString(bytes);
+        return stream.ReadUtf8String(length);
     }
 
     public override RustBuffer Lower(string value)
     {
-        var bytes = System.Text.Encoding.UTF8.GetBytes(value);
-        var rbuf = RustBuffer.Alloc(bytes.Length);
-        rbuf.AsWriteableStream().WriteBytes(bytes);
-        return rbuf;
+        var rustBuffer = RustBuffer.Alloc(System.Text.Encoding.UTF8.GetByteCount(value));
+        try
+        {
+            unsafe
+            {
+                fixed (char* chars = value)
+                {
+                    System.Text.Encoding.UTF8.GetBytes(
+                        chars,
+                        value.Length,
+                        (byte*)rustBuffer.data.ToPointer(),
+                        Convert.ToInt32(rustBuffer.len)
+                    );
+                }
+            }
+            return rustBuffer;
+        }
+        catch
+        {
+            RustBuffer.Free(rustBuffer);
+            throw;
+        }
     }
 
     // TODO(CS)
@@ -1602,9 +1691,7 @@ class FfiConverterString : FfiConverter<string, RustBuffer>
 
     public override void Write(string value, BigEndianStream stream)
     {
-        var bytes = System.Text.Encoding.UTF8.GetBytes(value);
-        stream.WriteInt(bytes.Length);
-        stream.WriteBytes(bytes);
+        stream.WriteUtf8String(value);
     }
 }
 
@@ -1779,8 +1866,8 @@ class FfiConverterTypeOAuthAuthorizationData : FfiConverter<OAuthAuthorizationDa
 
 /// <summary>
 /// A set of common power levels required for various operations within a room,
-/// that can be applied as a single operation. When updating these
-/// settings, any levels that are `None` will remain unchanged.
+/// that can be applied as a single operation. When updating these settings, any
+/// levels that are `None` will remain unchanged.
 /// </summary>
 /// <param name="Ban">
 /// The level required to ban a user.
@@ -2023,17 +2110,17 @@ class FfiConverterTypeTileServerInfo : FfiConverterRustBuffer<TileServerInfo>
 /// Configuration parameters, to create a new virtual Element Call widget.
 ///
 /// If `intent` is provided the appropriate default values for all other
-/// parameters will be used by element call.
-/// In most cases its enough to only set the intent. Use the other properties
-/// only if you want to deviate from the `intent` defaults.
+/// parameters will be used by element call. In most cases its enough to only
+/// set the intent. Use the other properties only if you want to deviate from
+/// the `intent` defaults.
 ///
-/// Set [`docs/url-params.md`](https://github.com/element-hq/element-call/blob/livekit/docs/url-params.md)
+/// Set
+/// [`docs/url-params.md`](https://github.com/element-hq/element-call/blob/livekit/docs/url-params.md)
 /// to find out more about the parameters and their defaults.
 /// </summary>
 /// <param name="Intent">
-/// The intent of showing the call.
-/// If the user wants to start a call or join an existing one.
-/// Controls if the lobby is skipped or not.
+/// The intent of showing the call. If the user wants to start a call or
+/// join an existing one. Controls if the lobby is skipped or not.
 /// </param>
 /// <param name="SkipLobby">
 /// Skip the lobby when joining a call.
@@ -2050,8 +2137,8 @@ class FfiConverterTypeTileServerInfo : FfiConverterRustBuffer<TileServerInfo>
 /// Default: `true`
 /// </param>
 /// <param name="Preload">
-/// If set, the lobby will be skipped and the widget will join the
-/// call on the `io.element.join` action.
+/// If set, the lobby will be skipped and the widget will join the call on
+/// the `io.element.join` action.
 ///
 /// Default: `false`
 /// </param>
@@ -2079,9 +2166,8 @@ class FfiConverterTypeTileServerInfo : FfiConverterRustBuffer<TileServerInfo>
 /// </param>
 public record VirtualElementCallWidgetConfig(
     /// <summary>
-    /// The intent of showing the call.
-    /// If the user wants to start a call or join an existing one.
-    /// Controls if the lobby is skipped or not.
+    /// The intent of showing the call. If the user wants to start a call or
+    /// join an existing one. Controls if the lobby is skipped or not.
     /// </summary>
     Intent? Intent,
     /// <summary>
@@ -2102,8 +2188,8 @@ public record VirtualElementCallWidgetConfig(
     /// </summary>
     bool? HideHeader = null,
     /// <summary>
-    /// If set, the lobby will be skipped and the widget will join the
-    /// call on the `io.element.join` action.
+    /// If set, the lobby will be skipped and the widget will join the call on
+    /// the `io.element.join` action.
     ///
     /// Default: `false`
     /// </summary>
@@ -2191,9 +2277,9 @@ class FfiConverterTypeVirtualElementCallWidgetConfig : FfiConverterRustBuffer<Vi
 /// <summary>
 /// Properties to create a new virtual Element Call widget.
 ///
-/// All these are required to start the widget in the first place.
-/// This is different from the `VirtualElementCallWidgetConfiguration` which
-/// configures the widgets behavior.
+/// All these are required to start the widget in the first place. This is
+/// different from the `VirtualElementCallWidgetConfiguration` which configures
+/// the widgets behavior.
 /// </summary>
 /// <param name="ElementCallUrl">
 /// The url to the app.
@@ -2209,16 +2295,16 @@ class FfiConverterTypeVirtualElementCallWidgetConfig : FfiConverterRustBuffer<Vi
 /// Use `EncryptionSystem::Unencrypted` to disable encryption.
 /// </param>
 /// <param name="ParentUrl">
-/// The url that is used as the target for the PostMessages sent
-/// by the widget (to the client).
+/// The url that is used as the target for the PostMessages sent by the
+/// widget (to the client).
 ///
 /// For a web app client this is the client url. In case of using other
-/// platforms the client most likely is setup up to listen to
-/// postmessages in the same webview the widget is hosted. In this case
-/// the `parent_url` is set to the url of the webview with the widget. Be
-/// aware that this means that the widget will receive its own postmessage
-/// messages. The `matrix-widget-api` (js) ignores those so this works but
-/// it might break custom implementations.
+/// platforms the client most likely is setup up to listen to postmessages
+/// in the same webview the widget is hosted. In this case the `parent_url`
+/// is set to the url of the webview with the widget. Be aware that this
+/// means that the widget will receive its own postmessage messages. The
+/// `matrix-widget-api` (js) ignores those so this works but it might break
+/// custom implementations.
 ///
 /// Defaults to `element_call_url` for the non-iframe (dedicated webview)
 /// usecase.
@@ -2235,24 +2321,25 @@ class FfiConverterTypeVirtualElementCallWidgetConfig : FfiConverterRustBuffer<Vi
 /// Can be used to pass a PostHog id to element call.
 /// </param>
 /// <param name="PosthogApiHost">
-/// The host of the posthog api.
-/// This is only used by the embedded package of Element Call.
+/// The host of the posthog api. This is only used by the embedded package
+/// of Element Call.
 /// </param>
 /// <param name="PosthogApiKey">
-/// The key for the posthog api.
-/// This is only used by the embedded package of Element Call.
+/// The key for the posthog api. This is only used by the embedded package
+/// of Element Call.
 /// </param>
 /// <param name="RageshakeSubmitUrl">
-/// The url to use for submitting rageshakes.
-/// This is only used by the embedded package of Element Call.
+/// The url to use for submitting rageshakes. This is only used by the
+/// embedded package of Element Call.
 /// </param>
 /// <param name="SentryDsn">
 /// Sentry [DSN](https://docs.sentry.io/concepts/key-terms/dsn-explainer/)
 /// This is only used by the embedded package of Element Call.
 /// </param>
 /// <param name="SentryEnvironment">
-/// Sentry [environment](https://docs.sentry.io/concepts/key-terms/key-terms/)
-/// This is only used by the embedded package of Element Call.
+/// Sentry
+/// [environment](https://docs.sentry.io/concepts/key-terms/key-terms/) This
+/// is only used by the embedded package of Element Call.
 /// </param>
 /// <remarks>
 /// <b>UniFFI Warning:</b> Optional parameters have been reordered because
@@ -2277,16 +2364,16 @@ public record VirtualElementCallWidgetProperties(
     /// </summary>
     EncryptionSystem Encryption,
     /// <summary>
-    /// The url that is used as the target for the PostMessages sent
-    /// by the widget (to the client).
+    /// The url that is used as the target for the PostMessages sent by the
+    /// widget (to the client).
     ///
     /// For a web app client this is the client url. In case of using other
-    /// platforms the client most likely is setup up to listen to
-    /// postmessages in the same webview the widget is hosted. In this case
-    /// the `parent_url` is set to the url of the webview with the widget. Be
-    /// aware that this means that the widget will receive its own postmessage
-    /// messages. The `matrix-widget-api` (js) ignores those so this works but
-    /// it might break custom implementations.
+    /// platforms the client most likely is setup up to listen to postmessages
+    /// in the same webview the widget is hosted. In this case the `parent_url`
+    /// is set to the url of the webview with the widget. Be aware that this
+    /// means that the widget will receive its own postmessage messages. The
+    /// `matrix-widget-api` (js) ignores those so this works but it might break
+    /// custom implementations.
     ///
     /// Defaults to `element_call_url` for the non-iframe (dedicated webview)
     /// usecase.
@@ -2307,18 +2394,18 @@ public record VirtualElementCallWidgetProperties(
     /// </summary>
     string? PosthogUserId = null,
     /// <summary>
-    /// The host of the posthog api.
-    /// This is only used by the embedded package of Element Call.
+    /// The host of the posthog api. This is only used by the embedded package
+    /// of Element Call.
     /// </summary>
     string? PosthogApiHost = null,
     /// <summary>
-    /// The key for the posthog api.
-    /// This is only used by the embedded package of Element Call.
+    /// The key for the posthog api. This is only used by the embedded package
+    /// of Element Call.
     /// </summary>
     string? PosthogApiKey = null,
     /// <summary>
-    /// The url to use for submitting rageshakes.
-    /// This is only used by the embedded package of Element Call.
+    /// The url to use for submitting rageshakes. This is only used by the
+    /// embedded package of Element Call.
     /// </summary>
     string? RageshakeSubmitUrl = null,
     /// <summary>
@@ -2327,8 +2414,9 @@ public record VirtualElementCallWidgetProperties(
     /// </summary>
     string? SentryDsn = null,
     /// <summary>
-    /// Sentry [environment](https://docs.sentry.io/concepts/key-terms/key-terms/)
-    /// This is only used by the embedded package of Element Call.
+    /// Sentry
+    /// [environment](https://docs.sentry.io/concepts/key-terms/key-terms/) This
+    /// is only used by the embedded package of Element Call.
     /// </summary>
     string? SentryEnvironment = null
 ) { }
@@ -2485,14 +2573,12 @@ public record EncryptionSystem
     public record Unencrypted : EncryptionSystem { }
 
     /// <summary>
-    /// Equivalent to the element call url parameters:
-    /// `perParticipantE2EE=true`
+    /// Equivalent to the element call url parameters: `perParticipantE2EE=true`
     /// </summary>
     public record PerParticipantKeys : EncryptionSystem { }
 
     /// <summary>
-    /// Equivalent to the element call url parameters:
-    /// `password={secret}`
+    /// Equivalent to the element call url parameters: `password={secret}`
     /// </summary>
     public record SharedSecret(string Secret) : EncryptionSystem { }
 }
@@ -2664,8 +2750,8 @@ public enum Intent : int
     StartCallDmVoice,
 
     /// <summary>
-    /// The user wants to join an existing  voice call that is a "Direct
-    /// Message" (DM) room.
+    /// The user wants to join an existing voice call that is a "Direct Message"
+    /// (DM) room.
     /// </summary>
     JoinExistingDmVoice,
 }
@@ -3236,6 +3322,67 @@ class FfiConverterTypeRoomMemberRole : FfiConverterRustBuffer<RoomMemberRole>
             default:
                 throw new InternalException(
                     String.Format("invalid enum value '{0}' in FfiConverterTypeRoomMemberRole.Write()", value)
+                );
+        }
+    }
+}
+
+/// <summary>
+/// How aggressively a search backfill runs.
+/// </summary>
+public enum SearchBackfillStrategy : int
+{
+    /// <summary>
+    /// The app is in the foreground: pause between paginations so this doesn't
+    /// compete with interactive traffic.
+    /// </summary>
+    Foreground,
+
+    /// <summary>
+    /// A time-boxed background task (e.g. iOS `BGAppRefreshTask`) where there's
+    /// no interactive traffic to protect.
+    /// </summary>
+    Background,
+}
+
+class FfiConverterTypeSearchBackfillStrategy : FfiConverterRustBuffer<SearchBackfillStrategy>
+{
+    public static FfiConverterTypeSearchBackfillStrategy INSTANCE = new FfiConverterTypeSearchBackfillStrategy();
+
+    public override SearchBackfillStrategy Read(BigEndianStream stream)
+    {
+        var value = stream.ReadInt();
+        switch (value)
+        {
+            case 1:
+                return SearchBackfillStrategy.Foreground;
+            case 2:
+                return SearchBackfillStrategy.Background;
+            default:
+                throw new InternalException(
+                    String.Format("invalid enum value '{0}' in FfiConverterTypeSearchBackfillStrategy.Read()", value)
+                );
+        }
+    }
+
+    public override int AllocationSize(SearchBackfillStrategy value)
+    {
+        return 4;
+    }
+
+    public override void Write(SearchBackfillStrategy value, BigEndianStream stream)
+    {
+        switch (value)
+        {
+            case SearchBackfillStrategy.Foreground:
+                stream.WriteInt(1);
+                break;
+            case SearchBackfillStrategy.Background:
+                stream.WriteInt(2);
+                break;
+            default:
+                throw new InternalException(
+                    String.Format("invalid enum value '{0}' in FfiConverterTypeSearchBackfillStrategy.Write()", value)
                 );
         }
     }

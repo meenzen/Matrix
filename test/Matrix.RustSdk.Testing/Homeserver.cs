@@ -37,7 +37,9 @@ public sealed class Homeserver : IAsyncInitializer, IAsyncDisposable
     /// <summary>
     /// The URL of the client-server API reachable from the host. Plain http, the container only listens locally.
     /// </summary>
-    public string Url => $"http://{Container.Hostname}:{Container.GetMappedPublicPort(Port)}"; // NOSONAR
+#pragma warning disable S5332 // plain http, see above
+    public string Url => $"http://{Container.Hostname}:{Container.GetMappedPublicPort(Port)}";
+#pragma warning restore S5332
 
     /// <summary>
     /// A HTTP client for the client-server API, for requests the tests make without the SDK.

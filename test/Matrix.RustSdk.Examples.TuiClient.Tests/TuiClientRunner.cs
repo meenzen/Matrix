@@ -29,7 +29,7 @@ public sealed class TuiClientRunner : IAsyncDisposable
     /// </summary>
     public Task Completion { get; }
 
-    public static async Task<TuiClientRunner> StartAsync(LoginOptions options)
+    public static async Task<TuiClientRunner> StartAsync(LoginOptions options, ClientSettings? settings = null)
     {
         // otherwise the driver would take over the terminal the tests run in, if there is one
         Environment.SetEnvironmentVariable("DisableRealDriverIO", "1");
@@ -44,7 +44,7 @@ public sealed class TuiClientRunner : IAsyncDisposable
                 app.Driver!.SetScreenSize(120, 30);
                 started.SetResult(app);
                 // runs the main loop on this thread until the client exits, like Program.cs does
-                await TuiClient.RunAsync(app, options, stop.Token);
+                await TuiClient.RunAsync(app, options, settings, stop.Token);
             }
             catch (Exception e)
             {
@@ -63,6 +63,14 @@ public sealed class TuiClientRunner : IAsyncDisposable
     public Task PressAsync(Key key) => OnMainLoopAsync(() => _app.InjectKey(key));
 
     /// <summary>
+    /// Double clicks the left mouse button at a position on the screen.
+    /// </summary>
+    public Task DoubleClickAsync(int x, int y) =>
+        OnMainLoopAsync(() =>
+            _app.InjectSequence(InputInjectionExtensions.LeftButtonDoubleClick(new System.Drawing.Point(x, y)))
+        );
+
+    /// <summary>
     /// Types <paramref name="text"/> key by key.
     /// </summary>
     public async Task TypeAsync(string text)
@@ -71,6 +79,16 @@ public sealed class TuiClientRunner : IAsyncDisposable
         {
             await PressAsync(new Key(c));
         }
+    }
+
+    /// <summary>
+    /// Types a <c>:</c> command and presses Enter, from normal mode.
+    /// </summary>
+    public async Task CommandAsync(string command)
+    {
+        await PressAsync(new Key(':'));
+        await TypeAsync(command);
+        await PressAsync(Key.Enter);
     }
 
     /// <summary>
@@ -102,6 +120,57 @@ public sealed class TuiClientRunner : IAsyncDisposable
                     return screen.Contains(text, StringComparison.Ordinal);
                 },
                 $"\"{text}\" to show up"
+            );
+        }
+        catch (TimeoutException e)
+        {
+            throw new TimeoutException($"{e.Message} The screen was:\n{screen}", e);
+        }
+    }
+
+    /// <summary>
+    /// Waits until a part of the screen matches <paramref name="pattern"/>.
+    /// </summary>
+    public async Task WaitForMatchAsync(string pattern)
+    {
+        System.Text.RegularExpressions.Regex regex = new(
+            pattern,
+            System.Text.RegularExpressions.RegexOptions.None,
+            TimeSpan.FromSeconds(1)
+        );
+        string screen = "";
+        try
+        {
+            await Poll.UntilAsync(
+                async () =>
+                {
+                    screen = await GetScreenAsync();
+                    return regex.IsMatch(screen);
+                },
+                $"/{pattern}/ to show up"
+            );
+        }
+        catch (TimeoutException e)
+        {
+            throw new TimeoutException($"{e.Message} The screen was:\n{screen}", e);
+        }
+    }
+
+    /// <summary>
+    /// Waits until the screen no longer shows <paramref name="text"/>.
+    /// </summary>
+    public async Task WaitForTextGoneAsync(string text)
+    {
+        string screen = "";
+        try
+        {
+            await Poll.UntilAsync(
+                async () =>
+                {
+                    screen = await GetScreenAsync();
+                    return !screen.Contains(text, StringComparison.Ordinal);
+                },
+                $"\"{text}\" to disappear"
             );
         }
         catch (TimeoutException e)

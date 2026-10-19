@@ -18,7 +18,7 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <!-- the matrix-rust-sdk release the bindings are generated from, has to match the external/matrix-rust-sdk submodule -->
-    <MatrixSdkFfiTag>matrix-sdk-ffi/20260925</MatrixSdkFfiTag>
+    <MatrixSdkFfiTag>matrix-sdk-ffi/20261015</MatrixSdkFfiTag>
     <PackageReleaseNotes>Built from matrix-rust-sdk $(MatrixSdkFfiTag): https://github.com/matrix-org/matrix-rust-sdk/tree/$(MatrixSdkFfiTag)</PackageReleaseNotes>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
   </PropertyGroup>
@@ -28,9 +28,12 @@
   <ItemGroup>
     <PackageReference Include="Nerdbank.GitVersioning" Condition="!Exists('packages.config')">
       <PrivateAssets>all</PrivateAssets>
-      <Version>3.10.94</Version>
     </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="18.7.23">
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="SonarAnalyzer.CSharp">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

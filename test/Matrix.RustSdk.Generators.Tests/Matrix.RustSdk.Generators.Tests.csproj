@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- TUnit runs on Microsoft.Testing.Platform, test projects are executables -->
+    <OutputType>Exe</OutputType>
+    <!-- S2696: tests chained with [DependsOn] share their state in static fields, TUnit creates an instance per test -->
+    <NoWarn>$(NoWarn);VSTHRD200;S2696</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="TUnit" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Matrix.RustSdk.Generators\Matrix.RustSdk.Generators.csproj" />
+    <!-- only the metadata of the bindings is used, the test compilations reference it -->
+    <ProjectReference Include="..\..\src\Matrix.RustSdk.Bindings\Matrix.RustSdk.Bindings.csproj" />
+    <ProjectReference Include="..\Matrix.RustSdk.Testing\Matrix.RustSdk.Testing.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- the test compilations contain the runtime part of the generated code, like Matrix.RustSdk does -->
+    <None
+      Include="..\..\src\Matrix.RustSdk\Subscriptions\*.cs"
+      Link="Runtime\%(Filename)%(Extension)"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+    <None
+      Include="..\..\src\Matrix.RustSdk\VectorDiff.cs"
+      Link="Runtime\VectorDiff.cs"
+      CopyToOutputDirectory="PreserveNewest"
+    />
+  </ItemGroup>
+</Project>

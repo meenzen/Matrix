@@ -1,0 +1,2 @@
+// ----- MRSG004 Error at 12:54 -----
+'Room' has no instance method 'Id' returning string[] or a task of it that takes the extra parameters of the subscription

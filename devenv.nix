@@ -11,8 +11,12 @@
     # https://github.com/NordSecurity/uniffi-bindgen-cs/pull/176 (version 0.12.0), patches/uniffi-bindgen-cs/*.patch
     # are applied on top. The version is only used for the release notes (.github/scripts/create-release.sh).
     UNIFFI_BINDGEN_CS_VERSION = "0.12.0";
-    UNIFFI_BINDGEN_CS_REV = "0fc022aa1d73fb1dda91a778b63f2824d7dca58b";
+    UNIFFI_BINDGEN_CS_REV = "cf0aa7a8fb59358a846708730a58a02bf206ac05";
     UNIFFI_RS_VERSION = "0.32.0";
+    # apphosts prefer DOTNET_ROOT_<ARCH> over DOTNET_ROOT, a value inherited from outside the shell (e.g. a system wide
+    # .NET on NixOS) makes them load that runtime, which can be linked against a different glibc than the apphost
+    DOTNET_ROOT_X64 = config.env.DOTNET_ROOT;
+    DOTNET_ROOT_ARM64 = config.env.DOTNET_ROOT;
   };
 
   # https://devenv.sh/packages/

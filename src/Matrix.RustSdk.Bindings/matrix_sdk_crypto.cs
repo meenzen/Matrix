@@ -639,6 +639,76 @@ class BigEndianStream
         return result;
     }
 
+    // Reads a UTF-8 string of `length` bytes. Streams over RustBuffer memory
+    // are decoded in place, avoiding an intermediate byte[] copy.
+    public string ReadUtf8String(int length)
+    {
+        stream.CheckRemaining(length);
+        if (length >= 0 && stream is UnmanagedMemoryStream unmanagedStream && unmanagedStream.CanRead)
+        {
+            unsafe
+            {
+                var start = unmanagedStream.PositionPointer;
+                var result = System.Text.Encoding.UTF8.GetString(start, length);
+                unmanagedStream.PositionPointer = start + length;
+                return result;
+            }
+        }
+        return System.Text.Encoding.UTF8.GetString(ReadBytes(length));
+    }
+
+    // Writes a big-endian length prefix followed by the UTF-8 bytes. Streams
+    // over RustBuffer memory are encoded in place, avoiding an intermediate
+    // byte[] copy.
+    public void WriteUtf8String(string value)
+    {
+        if (value == null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+
+        if (stream is UnmanagedMemoryStream unmanagedStream && unmanagedStream.CanWrite)
+        {
+            // Bytes left for the string itself, after its 4-byte length prefix.
+            var available = unmanagedStream.Length - unmanagedStream.Position - 4;
+
+            // UTF-8 needs at most 3 bytes per UTF-16 code unit, so the exact
+            // byte count is only computed when that worst case might not fit.
+            if (
+                available >= 0
+                && (available >= 3L * value.Length || available >= System.Text.Encoding.UTF8.GetByteCount(value))
+            )
+            {
+                unsafe
+                {
+                    var start = unmanagedStream.PositionPointer;
+                    int length;
+                    fixed (char* chars = value)
+                    {
+                        length = System.Text.Encoding.UTF8.GetBytes(
+                            chars,
+                            value.Length,
+                            start + 4,
+                            (int)Math.Min(available, int.MaxValue)
+                        );
+                    }
+                    // The length is only known after encoding, so it goes into the
+                    // 4 bytes reserved before the string, big-endian like WriteInt.
+                    // `available >= 0` guarantees those bytes are inside the stream.
+                    start[0] = (byte)(length >> 24);
+                    start[1] = (byte)(length >> 16);
+                    start[2] = (byte)(length >> 8);
+                    start[3] = (byte)length;
+                    unmanagedStream.PositionPointer = start + 4 + length;
+                }
+                return;
+            }
+        }
+        var bytes = System.Text.Encoding.UTF8.GetBytes(value);
+        WriteInt(bytes.Length);
+        WriteBytes(bytes);
+    }
+
     public byte ReadByte() => (byte)stream.ReadUint32(bytesToRead: 1);
 
     public ushort ReadUShort() => (ushort)stream.ReadUint32(bytesToRead: 2);
@@ -1490,8 +1560,10 @@ class FfiConverterString : FfiConverter<string, RustBuffer>
     {
         try
         {
-            var bytes = value.AsStream().ReadBytes(Convert.ToInt32(value.len));
-            return System.Text.Encoding.UTF8.GetString(bytes);
+            unsafe
+            {
+                return System.Text.Encoding.UTF8.GetString((byte*)value.data.ToPointer(), Convert.ToInt32(value.len));
+            }
         }
         finally
         {
@@ -1502,16 +1574,33 @@ class FfiConverterString : FfiConverter<string, RustBuffer>
     public override string Read(BigEndianStream stream)
     {
         var length = stream.ReadInt();
-        var bytes = stream.ReadBytes(length);
-        return System.Text.Encoding.UTF8.GetString(bytes);
+        return stream.ReadUtf8String(length);
     }
 
     public override RustBuffer Lower(string value)
     {
-        var bytes = System.Text.Encoding.UTF8.GetBytes(value);
-        var rbuf = RustBuffer.Alloc(bytes.Length);
-        rbuf.AsWriteableStream().WriteBytes(bytes);
-        return rbuf;
+        var rustBuffer = RustBuffer.Alloc(System.Text.Encoding.UTF8.GetByteCount(value));
+        try
+        {
+            unsafe
+            {
+                fixed (char* chars = value)
+                {
+                    System.Text.Encoding.UTF8.GetBytes(
+                        chars,
+                        value.Length,
+                        (byte*)rustBuffer.data.ToPointer(),
+                        Convert.ToInt32(rustBuffer.len)
+                    );
+                }
+            }
+            return rustBuffer;
+        }
+        catch
+        {
+            RustBuffer.Free(rustBuffer);
+            throw;
+        }
     }
 
     // TODO(CS)
@@ -1527,9 +1616,7 @@ class FfiConverterString : FfiConverter<string, RustBuffer>
 
     public override void Write(string value, BigEndianStream stream)
     {
-        var bytes = System.Text.Encoding.UTF8.GetBytes(value);
-        stream.WriteInt(bytes.Length);
-        stream.WriteBytes(bytes);
+        stream.WriteUtf8String(value);
     }
 }
 
@@ -2037,20 +2124,19 @@ public enum CollectStrategy : int
     AllDevices,
 
     /// <summary>
-    /// Share with all devices, except errors for *verified* users cause sharing
+    /// Share with all devices, except errors for _verified_ users cause sharing
     /// to fail with an error.
     ///
-    /// In this strategy, if a verified user has an unsigned device,
-    /// key sharing will fail with a
-    /// [`SessionRecipientCollectionError::VerifiedUserHasUnsignedDevice`].
-    /// If a verified user has replaced their identity, key
-    /// sharing will fail with a
+    /// In this strategy, if a verified user has an unsigned device, key sharing
+    /// will fail with a
+    /// [`SessionRecipientCollectionError::VerifiedUserHasUnsignedDevice`]. If a
+    /// verified user has replaced their identity, key sharing will fail with a
     /// [`SessionRecipientCollectionError::VerifiedUserChangedIdentity`].
     ///
     /// Otherwise, keys are shared with unsigned devices as normal.
     ///
-    /// Once the problematic devices are blacklisted or whitelisted the
-    /// caller can retry to share a second time.
+    /// Once the problematic devices are blacklisted or whitelisted the caller
+    /// can retry to share a second time.
     ///
     /// Not recommended, per the guidance of [MSC4153].
     ///
@@ -2060,8 +2146,8 @@ public enum CollectStrategy : int
 
     /// <summary>
     /// Share based on identity. Only distribute to devices signed by their
-    /// owner. If a user has no published identity he will not receive
-    /// any room keys.
+    /// owner. If a user has no published identity he will not receive any room
+    /// keys.
     ///
     /// This is the recommended strategy: it is compliant with the guidance of
     /// [MSC4153].
@@ -2158,16 +2244,16 @@ public enum IdentityState : int
 
     /// <summary>
     /// Either this is the first identity we have seen for this user, or the
-    /// user has acknowledged a change of identity explicitly e.g. by
-    /// clicking OK on a notification.
+    /// user has acknowledged a change of identity explicitly e.g. by clicking
+    /// OK on a notification.
     /// </summary>
     Pinned,
 
     /// <summary>
     /// The user's identity has changed since it was pinned. The user should be
-    /// notified about this and given the opportunity to acknowledge the
-    /// change, which will make the new identity pinned.
-    /// When the user acknowledges the change, the app should call
+    /// notified about this and given the opportunity to acknowledge the change,
+    /// which will make the new identity pinned. When the user acknowledges the
+    /// change, the app should call
     /// [`crate::OtherUserIdentity::pin_current_master_key`].
     /// </summary>
     PinViolation,
@@ -2352,8 +2438,8 @@ public class LoginQrCodeDecodeException : UniffiException
     }
 
     /// <summary>
-    /// The QR code data contains an invalid intent, we expect the login
-    /// intent or the reciprocate intent.
+    /// The QR code data contains an invalid intent, we expect the login intent
+    /// or the reciprocate intent.
     /// </summary>
     public class InvalidIntent : LoginQrCodeDecodeException
     {
@@ -2455,6 +2541,83 @@ class FfiConverterTypeLoginQrCodeDecodeError
             default:
                 throw new InternalException(
                     String.Format("invalid error value '{0}' in FfiConverterTypeLoginQrCodeDecodeError.Write()", value)
+                );
+        }
+    }
+}
+
+/// <summary>
+/// Error type for the creation of a new [`QrCodeData`] struct.
+/// </summary>
+public class QrCodeCreationException : UniffiException
+{
+    QrCodeCreationException(string message)
+        : base(message) { }
+
+    // Each variant is a nested class
+    // Flat enums carries a string error message, so no special implementation is necessary.
+
+    /// <summary>
+    /// The base URL of the homeserver needs to be at most [`u8::MAX`] bytes
+    /// long, otherwise it doesn't fit into the QR code.
+    /// </summary>
+    public class TooLongBaseUrl : QrCodeCreationException
+    {
+        public TooLongBaseUrl(string message)
+            : base(message) { }
+    }
+
+    /// <summary>
+    /// The rendezvous ID of the channel needs to be at most [`u8::MAX`] bytes
+    /// long, otherwise it doesn't fit into the QR code.
+    /// </summary>
+    public class TooLongRendezvousId : QrCodeCreationException
+    {
+        public TooLongRendezvousId(string message)
+            : base(message) { }
+    }
+}
+
+class FfiConverterTypeQrCodeCreationError
+    : FfiConverterRustBuffer<QrCodeCreationException>,
+        CallStatusErrorHandler<QrCodeCreationException>
+{
+    public static FfiConverterTypeQrCodeCreationError INSTANCE = new FfiConverterTypeQrCodeCreationError();
+
+    public override QrCodeCreationException Read(BigEndianStream stream)
+    {
+        var value = stream.ReadInt();
+        switch (value)
+        {
+            case 1:
+                return new QrCodeCreationException.TooLongBaseUrl(FfiConverterString.INSTANCE.Read(stream));
+            case 2:
+                return new QrCodeCreationException.TooLongRendezvousId(FfiConverterString.INSTANCE.Read(stream));
+            default:
+                throw new InternalException(
+                    String.Format("invalid error value '{0}' in FfiConverterTypeQrCodeCreationError.Read()", value)
+                );
+        }
+    }
+
+    public override int AllocationSize(QrCodeCreationException value)
+    {
+        return 4 + FfiConverterString.INSTANCE.AllocationSize(value.Message);
+    }
+
+    public override void Write(QrCodeCreationException value, BigEndianStream stream)
+    {
+        switch (value)
+        {
+            case QrCodeCreationException.TooLongBaseUrl:
+                stream.WriteInt(1);
+                break;
+            case QrCodeCreationException.TooLongRendezvousId:
+                stream.WriteInt(2);
+                break;
+            default:
+                throw new InternalException(
+                    String.Format("invalid error value '{0}' in FfiConverterTypeQrCodeCreationError.Write()", value)
                 );
         }
     }
@@ -2609,8 +2772,7 @@ class FfiConverterTypeSignatureState : FfiConverterRustBuffer<SignatureState>
 }
 
 /// <summary>
-/// The trust level in the sender's device that is required to decrypt an
-/// event.
+/// The trust level in the sender's device that is required to decrypt an event.
 /// </summary>
 public enum TrustRequirement : int
 {
@@ -2726,9 +2888,9 @@ public enum UtdCause : int
     /// signed by its owner, and we were unable to securely find the device.
     ///
     /// This could be because the device has since been deleted, because we
-    /// haven't yet downloaded it from the server, or because the session
-    /// data was obtained from an insecure source (imported from a file,
-    /// obtained from a legacy (asymmetric) backup, unsafe key forward, etc.)
+    /// haven't yet downloaded it from the server, or because the session data
+    /// was obtained from an insecure source (imported from a file, obtained
+    /// from a legacy (asymmetric) backup, unsafe key forward, etc.)
     /// </summary>
     UnknownDevice,
 
@@ -2739,9 +2901,8 @@ public enum UtdCause : int
     ///
     /// Device-historical means that the message was sent before the current
     /// device existed (but the current user was probably a member of the room
-    /// at the time the message was sent). Not to
-    /// be confused with pre-join or pre-invite messages (see
-    /// [`UtdCause::SentBeforeWeJoined`] for that).
+    /// at the time the message was sent). Not to be confused with pre-join or
+    /// pre-invite messages (see [`UtdCause::SentBeforeWeJoined`] for that).
     ///
     /// Expected message to user: "History is not available on this device".
     /// </summary>
@@ -2757,10 +2918,10 @@ public enum UtdCause : int
 
     /// <summary>
     /// The keys for this event are missing, likely because the sender was
-    /// unable to share them (e.g., failure to establish an Olm 1:1
-    /// channel). Alternatively, the sender may have deliberately excluded
-    /// this device by cherry-picking and blocking it, in which case, no action
-    /// can be taken on our side.
+    /// unable to share them (e.g., failure to establish an Olm 1:1 channel).
+    /// Alternatively, the sender may have deliberately excluded this device by
+    /// cherry-picking and blocking it, in which case, no action can be taken on
+    /// our side.
     /// </summary>
     WithheldBySender,
 
@@ -2771,9 +2932,8 @@ public enum UtdCause : int
     ///
     /// Device-historical means that the message was sent before the current
     /// device existed (but the current user was probably a member of the room
-    /// at the time the message was sent). Not to
-    /// be confused with pre-join or pre-invite messages (see
-    /// [`UtdCause::SentBeforeWeJoined`] for that).
+    /// at the time the message was sent). Not to be confused with pre-join or
+    /// pre-invite messages (see [`UtdCause::SentBeforeWeJoined`] for that).
     ///
     /// Expected message to user: "You need to verify this device".
     /// </summary>

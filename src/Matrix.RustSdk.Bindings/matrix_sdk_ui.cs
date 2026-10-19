@@ -639,6 +639,76 @@ class BigEndianStream
         return result;
     }
 
+    // Reads a UTF-8 string of `length` bytes. Streams over RustBuffer memory
+    // are decoded in place, avoiding an intermediate byte[] copy.
+    public string ReadUtf8String(int length)
+    {
+        stream.CheckRemaining(length);
+        if (length >= 0 && stream is UnmanagedMemoryStream unmanagedStream && unmanagedStream.CanRead)
+        {
+            unsafe
+            {
+                var start = unmanagedStream.PositionPointer;
+                var result = System.Text.Encoding.UTF8.GetString(start, length);
+                unmanagedStream.PositionPointer = start + length;
+                return result;
+            }
+        }
+        return System.Text.Encoding.UTF8.GetString(ReadBytes(length));
+    }
+
+    // Writes a big-endian length prefix followed by the UTF-8 bytes. Streams
+    // over RustBuffer memory are encoded in place, avoiding an intermediate
+    // byte[] copy.
+    public void WriteUtf8String(string value)
+    {
+        if (value == null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+
+        if (stream is UnmanagedMemoryStream unmanagedStream && unmanagedStream.CanWrite)
+        {
+            // Bytes left for the string itself, after its 4-byte length prefix.
+            var available = unmanagedStream.Length - unmanagedStream.Position - 4;
+
+            // UTF-8 needs at most 3 bytes per UTF-16 code unit, so the exact
+            // byte count is only computed when that worst case might not fit.
+            if (
+                available >= 0
+                && (available >= 3L * value.Length || available >= System.Text.Encoding.UTF8.GetByteCount(value))
+            )
+            {
+                unsafe
+                {
+                    var start = unmanagedStream.PositionPointer;
+                    int length;
+                    fixed (char* chars = value)
+                    {
+                        length = System.Text.Encoding.UTF8.GetBytes(
+                            chars,
+                            value.Length,
+                            start + 4,
+                            (int)Math.Min(available, int.MaxValue)
+                        );
+                    }
+                    // The length is only known after encoding, so it goes into the
+                    // 4 bytes reserved before the string, big-endian like WriteInt.
+                    // `available >= 0` guarantees those bytes are inside the stream.
+                    start[0] = (byte)(length >> 24);
+                    start[1] = (byte)(length >> 16);
+                    start[2] = (byte)(length >> 8);
+                    start[3] = (byte)length;
+                    unmanagedStream.PositionPointer = start + 4 + length;
+                }
+                return;
+            }
+        }
+        var bytes = System.Text.Encoding.UTF8.GetBytes(value);
+        WriteInt(bytes.Length);
+        WriteBytes(bytes);
+    }
+
     public byte ReadByte() => (byte)stream.ReadUint32(bytesToRead: 1);
 
     public ushort ReadUShort() => (ushort)stream.ReadUint32(bytesToRead: 2);
@@ -1454,8 +1524,10 @@ class FfiConverterString : FfiConverter<string, RustBuffer>
     {
         try
         {
-            var bytes = value.AsStream().ReadBytes(Convert.ToInt32(value.len));
-            return System.Text.Encoding.UTF8.GetString(bytes);
+            unsafe
+            {
+                return System.Text.Encoding.UTF8.GetString((byte*)value.data.ToPointer(), Convert.ToInt32(value.len));
+            }
         }
         finally
         {
@@ -1466,16 +1538,33 @@ class FfiConverterString : FfiConverter<string, RustBuffer>
     public override string Read(BigEndianStream stream)
     {
         var length = stream.ReadInt();
-        var bytes = stream.ReadBytes(length);
-        return System.Text.Encoding.UTF8.GetString(bytes);
+        return stream.ReadUtf8String(length);
     }
 
     public override RustBuffer Lower(string value)
     {
-        var bytes = System.Text.Encoding.UTF8.GetBytes(value);
-        var rbuf = RustBuffer.Alloc(bytes.Length);
-        rbuf.AsWriteableStream().WriteBytes(bytes);
-        return rbuf;
+        var rustBuffer = RustBuffer.Alloc(System.Text.Encoding.UTF8.GetByteCount(value));
+        try
+        {
+            unsafe
+            {
+                fixed (char* chars = value)
+                {
+                    System.Text.Encoding.UTF8.GetBytes(
+                        chars,
+                        value.Length,
+                        (byte*)rustBuffer.data.ToPointer(),
+                        Convert.ToInt32(rustBuffer.len)
+                    );
+                }
+            }
+            return rustBuffer;
+        }
+        catch
+        {
+            RustBuffer.Free(rustBuffer);
+            throw;
+        }
     }
 
     // TODO(CS)
@@ -1491,9 +1580,7 @@ class FfiConverterString : FfiConverter<string, RustBuffer>
 
     public override void Write(string value, BigEndianStream stream)
     {
-        var bytes = System.Text.Encoding.UTF8.GetBytes(value);
-        stream.WriteInt(bytes.Length);
-        stream.WriteBytes(bytes);
+        stream.WriteUtf8String(value);
     }
 }
 
@@ -1747,8 +1834,8 @@ class FfiConverterTypeMembershipChangeFilter : FfiConverterRustBuffer<Membership
 /// different for this high-level UI API.
 ///
 /// This is implemented this way so that it's impossible to filter by “group”
-/// and by “people” at the same time: these criteria are mutually
-/// exclusive by design per filter.
+/// and by “people” at the same time: these criteria are mutually exclusive by
+/// design per filter.
 /// </summary>
 public enum RoomListFilterCategory : int
 {
@@ -2200,8 +2287,8 @@ public record TimelineEventCondition
     public record MembershipChange(MembershipChangeFilter V1) : TimelineEventCondition { }
 
     /// <summary>
-    /// The event is an `m.room.member` event that represents a profile
-    /// change (displayname or avatar URL).
+    /// The event is an `m.room.member` event that represents a profile change
+    /// (displayname or avatar URL).
     /// </summary>
     public record ProfileChange : TimelineEventCondition { }
 
@@ -2379,8 +2466,8 @@ class FfiConverterTypeTimelineEventFilter : FfiConverterRustBuffer<TimelineEvent
 }
 
 /// <summary>
-/// Options for controlling the behaviour of [`TimelineFocus::Event`]
-/// for threaded events.
+/// Options for controlling the behaviour of [`TimelineFocus::Event`] for
+/// threaded events.
 /// </summary>
 public record TimelineEventFocusThreadMode
 {
@@ -2389,16 +2476,15 @@ public record TimelineEventFocusThreadMode
     ///
     /// When the focused event is part of a thread, the timeline will be focused
     /// on that thread's root. Otherwise, the timeline will treat the target
-    /// event itself as the thread root. Threaded events will never be
-    /// hidden.
+    /// event itself as the thread root. Threaded events will never be hidden.
     /// </summary>
     public record ForceThread : TimelineEventFocusThreadMode { }
 
     /// <summary>
     /// Automatically determine if the target event is part of a thread or not.
     ///
-    /// If the event is part of a thread, the timeline
-    /// will be filtered to on-thread events.
+    /// If the event is part of a thread, the timeline will be filtered to
+    /// on-thread events.
     /// </summary>
     public record Automatic(bool HideThreadedEvents) : TimelineEventFocusThreadMode { }
 }

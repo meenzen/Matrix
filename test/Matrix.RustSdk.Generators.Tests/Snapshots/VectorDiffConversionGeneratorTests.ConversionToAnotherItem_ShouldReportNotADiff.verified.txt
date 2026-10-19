@@ -1,0 +1,2 @@
+// ----- MRSG006 Error at 8:54 -----
+'Matrix.RustSdk.Bindings.RoomListEntriesUpdate' can't be converted to VectorDiff<Matrix.RustSdk.Bindings.TimelineItem>: it is a diff of Matrix.RustSdk.Bindings.Room
