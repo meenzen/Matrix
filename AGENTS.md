@@ -137,6 +137,9 @@ obvious:
   runtime like apps), their logs are in `bin/<configuration>/net10.0/logs`. Without it the SDK runs on a single thread,
   which can't keep up with several clients in parallel. The example apps call `MatrixSdk.Initialize` in `Program.cs`,
   which their tests don't run.
+- The tuwunel image is pinned in `Homeserver.cs`, Renovate updates it with a regex manager (`renovate.json`). Read
+  the release notes on updates, new features can need configuration: the tests disable the login rate limits with
+  `TUWUNEL_RATE_LIMITING__LOGIN__*` environment variables (`__` separates nested config sections).
 - Shared test setup lives in `test/Matrix.RustSdk.Testing`: `Homeserver` is shared per test session
   (`[ClassDataSource<Homeserver>(Shared = SharedType.PerTestSession)]`), tests register their own users with
   `CreateUserAsync` because they run in parallel. Tests that build on each other's state are chained with
