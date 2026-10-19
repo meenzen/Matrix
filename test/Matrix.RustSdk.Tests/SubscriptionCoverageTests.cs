@@ -21,7 +21,15 @@ public class SubscriptionCoverageTests
         ["RoomListLoadingStateResult.StateStream"] =
             "the listener is passed to RoomList.LoadingState, hand written: RoomList.WatchLoadingStateAsync",
         ["Client.SetDelegate"] = "ClientDelegate has two methods, it isn't a stream",
+        ["Client.RunSearchBackfill"] = "background task without a listener, not a stream",
+        ["Client.SubscribeToCustomToDeviceMessages"] = NewIn20261015,
+        ["Room.SubscribeToMessageLikeEvents"] = NewIn20261015,
+        ["Room.SubscribeToStateEvents"] = NewIn20261015,
+        ["Room.SubscribeToStickyEvents"] = NewIn20261015,
     };
+
+    private const string NewIn20261015 =
+        "new in matrix-sdk-ffi/20261015, the helper follows in a separate pull request";
 
     private const string QrLogin =
         "interactive flow, the call waits for the app to react to the progress (check code, confirmation): candidate "

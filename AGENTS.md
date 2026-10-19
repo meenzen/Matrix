@@ -64,8 +64,10 @@ obvious:
   crates with `external_packages`. New crates are discovered automatically.
 - The push rule enum `Action` shadows `System.Action` in the generated async helpers. Renaming it via `uniffi.toml`
   makes uniffi-bindgen-cs panic, so the script qualifies the delegate with `sed` after generation.
-- uniffi 0.31 keys renames in `uniffi.toml` by module path (`[bindings.csharp.rename.<crate>]`), the
-  uniffi-bindgen-cs docs show an outdated format.
+- uniffi 0.31 keys renames in `uniffi.toml` by module path (`[bindings.csharp.rename.<crate>]`, entries like
+  `"Record.field" = "name"`), the uniffi-bindgen-cs docs show an outdated format. C# members can't have the name of
+  their type (CS0542), such fields need a rename (`StickyKey.sticky_key`). The script inserts the per-crate `namespace`
+  after the `[bindings.csharp]` header, so other tables can follow it.
 - uniffi-bindgen-cs generates `internal` types by default, `uniffi.toml` sets `access_modifier = "public"`.
 - uniffi-bindgen-cs formats the output by calling `csharpier format`, devenv provides a `csharpier` wrapper script.
 

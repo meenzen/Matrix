@@ -7,8 +7,12 @@
 }: {
   # https://devenv.sh/basics/
   env = {
-    UNIFFI_BINDGEN_CS_VERSION = "0.11.1";
-    UNIFFI_RS_VERSION = "0.31.0";
+    # No uniffi-bindgen-cs release supports uniffi 0.32 yet, the revision is the commit of the open upgrade pull request
+    # https://github.com/NordSecurity/uniffi-bindgen-cs/pull/176 (version 0.12.0), patches/uniffi-bindgen-cs/*.patch
+    # are applied on top. The version is only used for the release notes (.github/scripts/create-release.sh).
+    UNIFFI_BINDGEN_CS_VERSION = "0.12.0";
+    UNIFFI_BINDGEN_CS_REV = "cf0aa7a8fb59358a846708730a58a02bf206ac05";
+    UNIFFI_RS_VERSION = "0.32.0";
     # apphosts prefer DOTNET_ROOT_<ARCH> over DOTNET_ROOT, a value inherited from outside the shell (e.g. a system wide
     # .NET on NixOS) makes them load that runtime, which can be linked against a different glibc than the apphost
     DOTNET_ROOT_X64 = config.env.DOTNET_ROOT;
@@ -47,8 +51,21 @@
   tasks = {
     "dotnet:tool:restore".exec = "dotnet tool restore";
     "cargo:install:bindgen" = {
-      exec = "cargo install --git https://github.com/NordSecurity/uniffi-bindgen-cs --tag v$UNIFFI_BINDGEN_CS_VERSION+v$UNIFFI_RS_VERSION";
-      status = ''$DEVENV_STATE/cargo-install/bin/uniffi-bindgen-cs --version | grep -q -F "$UNIFFI_BINDGEN_CS_VERSION+v$UNIFFI_RS_VERSION"'';
+      exec = ''
+        set -euo pipefail
+        SRC=$DEVENV_STATE/uniffi-bindgen-cs
+        rm -rf "$SRC"
+        git init -q "$SRC"
+        git -C "$SRC" fetch -q --depth 1 https://github.com/NordSecurity/uniffi-bindgen-cs "$UNIFFI_BINDGEN_CS_REV"
+        git -C "$SRC" checkout -q FETCH_HEAD
+        for PATCH in "$DEVENV_ROOT"/patches/uniffi-bindgen-cs/*.patch; do
+          git -C "$SRC" apply "$PATCH"
+        done
+        cargo install --locked --force --path "$SRC/bindgen"
+        echo "$UNIFFI_BINDGEN_CS_REV $(cat "$DEVENV_ROOT"/patches/uniffi-bindgen-cs/*.patch | sha256sum)" >"$SRC.stamp"
+      '';
+      # reinstall when the commit or the patches change
+      status = ''[ "$(cat "$DEVENV_STATE/uniffi-bindgen-cs.stamp")" = "$UNIFFI_BINDGEN_CS_REV $(cat "$DEVENV_ROOT"/patches/uniffi-bindgen-cs/*.patch | sha256sum)" ]'';
     };
     "devenv:enterShell".after = [
       "dotnet:tool:restore"

@@ -71,7 +71,7 @@ public static class TimelineEntries
             Media = media,
             Reactions =
             [
-                .. (msgLike?.Reactions ?? []).Select(r => new ReactionSummary(
+                .. item.Reactions.Select(r => new ReactionSummary(
                     r.Key,
                     r.Senders.Length,
                     r.Senders.Any(s => s.SenderId == ownUserId)
