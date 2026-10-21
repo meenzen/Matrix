@@ -37,11 +37,14 @@ Only builds of `main` (and `vX.Y` servicing branches) get clean versions, other 
 packages are only published from `main`.
 
 The packages follow [SemVer](https://semver.org) with a `0.x` major version. The bindings mirror the upstream
-`matrix-sdk-ffi` API, which has breaking changes in almost every release, so:
+`matrix-sdk-ffi` API, which has breaking changes in almost every release. A release that only changes docs, checksums
+or behavior keeps the bindings API (the generated `*.cs` have no changed signatures and the `PublicApiTests` snapshot
+is unchanged), so:
 
 | Change                                                         | Version bump                              |
 |----------------------------------------------------------------|-------------------------------------------|
-| Updating to a new `matrix-sdk-ffi` release                     | minor, e.g. `0.1` → `0.2` in version.json |
+| A new `matrix-sdk-ffi` release that changes the bindings API   | minor, e.g. `0.1` → `0.2` in version.json |
+| A new `matrix-sdk-ffi` release with the same bindings API      | patch, automatic via the git height       |
 | Fixes to packaging, CI or the bindings generation, same API    | patch, automatic via the git height       |
 | A stable, hand-written API in `Matrix.RustSdk`                 | consider `1.0`                            |
 
@@ -181,5 +184,7 @@ keeps an issue for each open with the uniffi versions and whether they are compa
 
    Fix generator or API issues, see the known issues in [AGENTS.md](AGENTS.md). The tests may need updates for upstream
    API changes.
-6. Bump the minor version in `version.json` (e.g. `0.1` → `0.2`), the bindings API changes with every SDK update.
+6. Bump the minor version in `version.json` (e.g. `0.1` → `0.2`) if the bindings API changed. If the generated code
+   only differs in docs and checksums, leave it, the update is a patch release (see [Versioning](#versioning)). The
+   checksums don't make it breaking, the native packages depend on the exact bindings version.
 7. Open a pull request, CI builds and tests the native libraries for all platforms.
