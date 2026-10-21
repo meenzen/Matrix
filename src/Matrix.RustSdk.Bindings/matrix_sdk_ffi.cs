@@ -24360,10 +24360,10 @@ static class _UniFFILib
         {
             var checksum =
                 _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontrollerdelegate_did_accept_verification_request();
-            if (checksum != 61041)
+            if (checksum != 14352)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontrollerdelegate_did_accept_verification_request` checksum `61041`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_sessionverificationcontrollerdelegate_did_accept_verification_request` checksum `14352`, library returned `{checksum}`"
                 );
             }
         }
@@ -82015,6 +82015,10 @@ class FfiConverterTypeSendQueueRoomUpdateListener : FfiConverter<SendQueueRoomUp
 public interface SessionVerificationControllerDelegate
 {
     void DidReceiveVerificationRequest(SessionVerificationRequestDetails @details);
+
+    /// <summary>
+    /// The other side accepted a verification request we sent.
+    /// </summary>
     void DidAcceptVerificationRequest();
     void DidStartSasVerification();
     void DidReceiveVerificationData(SessionVerificationData @data);
