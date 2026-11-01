@@ -36,6 +36,8 @@ Applications that only use the bindings leave out `Matrix.RustSdk`, the native p
 | `Matrix.RustSdk.Bindings.Native.MacOS`   | native libraries for `osx-x64`, `osx-arm64`                                           |
 | `Matrix.RustSdk.Bindings.Native.All`     | all native packages                                                                   |
 
+WebAssembly (Blazor) isn't supported yet, see [docs/wasm.md](docs/wasm.md) for the current state.
+
 The native libraries only work with the bindings of the exact same version, and the helpers are compiled against them,
 so `Matrix.RustSdk` and the native packages depend on exactly that version of `Matrix.RustSdk.Bindings`. The glibc
 libraries require glibc 2.35 or newer (Ubuntu 22.04, Debian 12, RHEL 10), the musl libraries `libgcc` (installed with
