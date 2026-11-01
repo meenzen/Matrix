@@ -1,0 +1,43 @@
+From db59bdf260372a642ae4685d5f44a668c4d76359 Mon Sep 17 00:00:00 2001
+From: bojancrevar <bojan.crevar@gorules.io>
+Date: Tue, 24 Feb 2026 10:51:28 +0100
+Subject: [PATCH] Fix async callback interface return types
+
+CallbackInterfaceTemplate.cs generated sync return types (e.g., string)
+instead of Task<T> for async callback interface methods. Replace the
+manual return type matching with the cs::return_type(meth) macro already
+used by ObjectTemplate.cs, which correctly wraps async return types in
+Task<T>/Task.
+
+Add regression test fixture and C# tests covering async return, async
+void, async throws, and async void throws.
+
+Fixes #165
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>
+Signed-off-by: bojancrevar <bojan.crevar@gorules.io>
+---
+ bindgen/templates/CallbackInterfaceTemplate.cs | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
+diff --git a/bindgen/templates/CallbackInterfaceTemplate.cs b/bindgen/templates/CallbackInterfaceTemplate.cs
+index 19e10cf..b35a280 100644
+--- a/bindgen/templates/CallbackInterfaceTemplate.cs
++++ b/bindgen/templates/CallbackInterfaceTemplate.cs
+@@ -17,12 +17,7 @@
+     {%- for meth in cbi.methods() %}
+     {%- call cs::docstring(meth, 4) %}
+     {%- call cs::method_throws_annotation(meth.throws_type()) %}
+-    {%- match meth.return_type() %}
+-    {%- when Some with (return_type) %}
+-    {{ return_type|type_name(ci) }} {{ meth.name()|fn_name }}({% call cs::arg_list_decl(meth) %});
+-    {%- else %}
+-    void {{ meth.name()|fn_name }}({% call cs::arg_list_decl(meth) %});
+-    {%- endmatch %}
++    {% call cs::return_type(meth) %} {{ meth.name()|fn_name }}({% call cs::arg_list_decl(meth) %});
+     {%- endfor %}
+ }
+ 
+-- 
+2.55.0
+

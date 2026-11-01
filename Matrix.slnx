@@ -7,8 +7,10 @@
   <Project Path="src/Matrix.RustSdk.Bindings.Native.MacOS/Matrix.RustSdk.Bindings.Native.MacOS.csproj" />
   <Project Path="src/Matrix.RustSdk.Bindings.Native.Windows/Matrix.RustSdk.Bindings.Native.Windows.csproj" />
   <Project Path="src/Matrix.RustSdk/Matrix.RustSdk.csproj" />
+  <Project Path="src/Matrix.RustSdk.Generators/Matrix.RustSdk.Generators.csproj" />
   <Project Path="test/Matrix.RustSdk.Examples.EchoBot.Tests/Matrix.RustSdk.Examples.EchoBot.Tests.csproj" />
   <Project Path="test/Matrix.RustSdk.Examples.TuiClient.Tests/Matrix.RustSdk.Examples.TuiClient.Tests.csproj" />
+  <Project Path="test/Matrix.RustSdk.Generators.Tests/Matrix.RustSdk.Generators.Tests.csproj" />
   <Project Path="test/Matrix.RustSdk.Testing/Matrix.RustSdk.Testing.csproj" />
   <Project Path="test/Matrix.RustSdk.Tests/Matrix.RustSdk.Tests.csproj" />
 </Solution>

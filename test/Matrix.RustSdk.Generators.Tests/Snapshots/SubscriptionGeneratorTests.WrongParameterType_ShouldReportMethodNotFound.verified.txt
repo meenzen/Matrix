@@ -1,0 +1,2 @@
+// ----- MRSG002 Error at 8:54 -----
+'Client' has no instance method 'SubscribeToRoomInfo' returning a TaskHandle that takes a single method listener and string? roomId

@@ -1,0 +1,2 @@
+// ----- MRSG003 Error at 8:65 -----
+The listener of 'SubscribeToSendQueueUpdates' receives (string, Matrix.RustSdk.Bindings.RoomSendQueueUpdate), the declaration has to return IAsyncEnumerable<(string, Matrix.RustSdk.Bindings.RoomSendQueueUpdate)>

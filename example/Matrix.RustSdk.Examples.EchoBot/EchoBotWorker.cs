@@ -1,4 +1,3 @@
-using System.Threading.Channels;
 using Matrix.RustSdk.Bindings;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -8,50 +7,79 @@ using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 namespace Matrix.RustSdk.Examples.EchoBot;
 
 /// <summary>
-/// Logs in, joins every room the bot is invited to and sends text messages of other users back into the room.
+/// Logs in or restores the stored session, joins every room the bot is invited to and answers text messages of other users with the same text, see
+/// <see cref="RoomEcho"/>.
 /// </summary>
 public sealed partial class EchoBotWorker(IOptions<EchoBotOptions> options, ILogger<EchoBotWorker> logger)
     : BackgroundService
 {
     private static readonly TimeSpan RetryDelay = TimeSpan.FromSeconds(5);
 
-    // the timelines of the joined rooms, only used by the sync loop
-    private readonly Dictionary<string, RoomTimeline> _rooms = [];
-
-    // messages received by the timeline listeners, the echo loop sends them back
-    private readonly Channel<ReceivedMessage> _messages = Channel.CreateUnbounded<ReceivedMessage>(
-        new UnboundedChannelOptions { SingleReader = true }
-    );
+    // the echo loops of the joined rooms, only used by the sync loop
+    private readonly Dictionary<string, RoomEcho> _rooms = [];
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         EchoBotOptions settings = options.Value;
 
-        // the bindings don't support cancellation, WaitAsync stops waiting for the SDK when the host shuts down
-        using Client client = await new ClientBuilder()
-            .ServerNameOrHomeserverUrl(settings.Homeserver)
-            .InMemoryStore()
-            .Build()
-            .WaitAsync(stoppingToken);
-        await client
-            .Login(settings.Username, settings.Password, settings.DeviceName, deviceId: null)
-            .WaitAsync(stoppingToken);
-        LogLoggedIn(client.UserId());
+        // restores the session stored in the data directory, or logs in and stores it. The bindings don't support
+        // cancellation, the token only stops waiting for the SDK when the host shuts down
+        await using StoredClient stored = await StoredClient.LoginOrRestoreAsync(
+            new ClientStoreOptions
+            {
+                DataDirectory = settings.DataDirectory,
+                // the bot syncs with SyncOnceV2, it doesn't need a homeserver with simplified sliding sync
+                ConfigureClient = builder => builder.SlidingSyncVersionBuilder(SlidingSyncVersionBuilder.None),
+            },
+            new PasswordCredentials
+            {
+                Homeserver = settings.Homeserver,
+                Username = settings.Username,
+                Password = settings.Password,
+                DeviceName = settings.DeviceName,
+            },
+            stoppingToken
+        );
+        Client client = stored.Client;
+        if (stored.IsRestored)
+        {
+            LogRestored(client.UserId(), client.DeviceId());
+        }
+        else
+        {
+            LogLoggedIn(client.UserId(), client.DeviceId());
+        }
 
-        Task echoing = EchoAsync();
         try
         {
-            await SyncAsync(client, stoppingToken);
+            // a restored session syncs from where it stopped, rooms only show up in a response when something happens
+            // in them, and a timeline created after that response would treat its messages as history
+            foreach (string roomId in GetJoinedRoomIds(client))
+            {
+                await ListenAsync(client, roomId);
+            }
+
+            // the homeserver can end the session (logout in another client, password change), syncing is pointless then
+            using CancellationTokenSource running = CancellationTokenSource.CreateLinkedTokenSource(
+                stoppingToken,
+                stored.SessionEnded
+            );
+            await SyncAsync(client, running.Token);
+            // the sync loop also ends without an exception when it notices the cancellation
+            stored.SessionEnded.ThrowIfCancellationRequested();
+        }
+        catch (OperationCanceledException) when (stored.SessionEnded.IsCancellationRequested)
+        {
+            // stops the host, the next start logs in again
+            throw new InvalidOperationException(
+                "The homeserver ended the session of the bot, restart it to log in again."
+            );
         }
         finally
         {
-            // lets the echo loop send the remaining messages and stop
-            _messages.Writer.Complete();
-            await echoing;
-
-            foreach (RoomTimeline room in _rooms.Values)
+            foreach (RoomEcho room in _rooms.Values)
             {
-                room.Dispose();
+                await room.DisposeAsync();
             }
             _rooms.Clear();
             LogStopped();
@@ -78,21 +106,37 @@ public sealed partial class EchoBotWorker(IOptions<EchoBotOptions> options, ILog
 
             foreach (string roomId in response.Rooms.Invited)
             {
-                await JoinAsync(client, roomId).WaitAsync(cancellationToken);
+                // not cancelled, a join abandoned while the bot stops would add a room after the cleanup
+                await JoinAsync(client, roomId);
             }
             foreach (string roomId in response.Rooms.Joined)
             {
-                await ListenAsync(client, roomId).WaitAsync(cancellationToken);
+                await ListenAsync(client, roomId);
             }
-            foreach (string roomId in response.Rooms.Left)
+            foreach (string roomId in response.Rooms.Left.Where(_rooms.ContainsKey))
             {
-                if (_rooms.Remove(roomId, out RoomTimeline? room))
+                RoomEcho room = _rooms[roomId];
+                _rooms.Remove(roomId);
+                await room.DisposeAsync();
+                LogLeft(roomId);
+            }
+        }
+    }
+
+    private static List<string> GetJoinedRoomIds(Client client)
+    {
+        List<string> roomIds = [];
+        foreach (Room room in client.Rooms())
+        {
+            using (room)
+            {
+                if (room.Membership() == Membership.Joined)
                 {
-                    room.Dispose();
-                    LogLeft(roomId);
+                    roomIds.Add(room.Id());
                 }
             }
         }
+        return roomIds;
     }
 
     private async Task JoinAsync(Client client, string roomId)
@@ -114,15 +158,22 @@ public sealed partial class EchoBotWorker(IOptions<EchoBotOptions> options, ILog
             return;
         }
 
-        // listen right away, otherwise messages sent before the next sync would count as history
+        // echo right away, the messages of the next sync are new
         await ListenAsync(client, roomId);
     }
 
     private async Task ListenAsync(Client client, string roomId)
     {
-        if (_rooms.ContainsKey(roomId))
+        if (_rooms.TryGetValue(roomId, out RoomEcho? existing))
         {
-            return;
+            if (existing.IsEchoing)
+            {
+                return;
+            }
+
+            // the echo loop failed, start a new one, messages that arrived in between are history then
+            _rooms.Remove(roomId);
+            await existing.DisposeAsync();
         }
 
         using Room? room = client.GetRoom(roomId);
@@ -133,7 +184,7 @@ public sealed partial class EchoBotWorker(IOptions<EchoBotOptions> options, ILog
 
         try
         {
-            _rooms[roomId] = await RoomTimeline.CreateAsync(room, _messages.Writer, logger);
+            _rooms[roomId] = await RoomEcho.StartAsync(room, logger);
         }
         catch (ClientException e)
         {
@@ -141,29 +192,11 @@ public sealed partial class EchoBotWorker(IOptions<EchoBotOptions> options, ILog
         }
     }
 
-    private async Task EchoAsync()
-    {
-        await foreach (ReceivedMessage message in _messages.Reader.ReadAllAsync())
-        {
-            LogEchoing(message.Sender, message.RoomId);
-            try
-            {
-                using RoomMessageEventContentWithoutRelation content = MatrixSdkFfiMethods.MessageEventContentNew(
-                    new MessageType.Text(new TextMessageContent(message.Body, Formatted: null))
-                );
-                // queues the message, the SDK sends it in the background
-                using SendHandle _ = await message.Timeline.Send(content);
-            }
-            // the timeline is disposed when the bot left the room in the meantime
-            catch (Exception e) when (e is ClientException or ObjectDisposedException)
-            {
-                LogEchoFailed(e, message.RoomId);
-            }
-        }
-    }
+    [LoggerMessage(LogLevel.Information, "Logged in as {UserId} on device {DeviceId}")]
+    private partial void LogLoggedIn(string userId, string deviceId);
 
-    [LoggerMessage(LogLevel.Information, "Logged in as {UserId}")]
-    private partial void LogLoggedIn(string userId);
+    [LoggerMessage(LogLevel.Information, "Restored the session of {UserId} on device {DeviceId}")]
+    private partial void LogRestored(string userId, string deviceId);
 
     [LoggerMessage(LogLevel.Information, "Stopped")]
     private partial void LogStopped();
@@ -182,10 +215,4 @@ public sealed partial class EchoBotWorker(IOptions<EchoBotOptions> options, ILog
 
     [LoggerMessage(LogLevel.Warning, "Opening the timeline of {RoomId} failed")]
     private partial void LogTimelineFailed(Exception exception, string roomId);
-
-    [LoggerMessage(LogLevel.Information, "Echoing a message of {Sender} in {RoomId}")]
-    private partial void LogEchoing(string sender, string roomId);
-
-    [LoggerMessage(LogLevel.Warning, "Echoing a message in {RoomId} failed")]
-    private partial void LogEchoFailed(Exception exception, string roomId);
 }

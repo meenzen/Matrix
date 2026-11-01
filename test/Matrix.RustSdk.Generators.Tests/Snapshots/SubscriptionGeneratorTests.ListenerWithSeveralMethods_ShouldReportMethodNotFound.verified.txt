@@ -1,0 +1,2 @@
+// ----- MRSG002 Error at 8:50 -----
+'Client' has no instance method 'SetDelegate' returning a TaskHandle that takes a single method listener and no other parameters

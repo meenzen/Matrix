@@ -1,0 +1,2 @@
+// ----- MRSG006 Error at 8:46 -----
+'Matrix.RustSdk.Bindings.RoomInfo' can't be converted to VectorDiff<Matrix.RustSdk.Bindings.Room>: it has no variant Append, Clear, PushFront, PushBack, PopFront, PopBack, Insert, Set, Remove, Truncate, Reset

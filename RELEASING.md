@@ -4,18 +4,23 @@
 
 | Package                                  | Contents                                                                |
 |------------------------------------------|-------------------------------------------------------------------------|
+| `Matrix.RustSdk`                         | the helpers on top of the bindings, depends on the bindings             |
 | `Matrix.RustSdk.Bindings`                | the generated C# bindings, no native libraries                          |
 | `Matrix.RustSdk.Bindings.Native.Linux`   | `linux-x64`, `linux-arm64`, `linux-musl-x64`, `linux-musl-arm64`        |
 | `Matrix.RustSdk.Bindings.Native.Windows` | `win-x64`, `win-arm64`                                                  |
 | `Matrix.RustSdk.Bindings.Native.MacOS`   | `osx-x64`, `osx-arm64`                                                  |
 | `Matrix.RustSdk.Bindings.Native.All`     | depends on all native packages                                          |
-| `Matrix.RustSdk`                         | not published yet (`IsPackable=false`) until it provides helpers        |
 
 All packages are built from the same commit and share one version. The native packages depend on **exactly** that
 version of `Matrix.RustSdk.Bindings` (`[x.y.z]`, see `ExactProjectReferenceVersions` in `Directory.Build.targets`):
 uniffi verifies API checksums when the native library is loaded, so bindings and native libraries of different versions
 never work together. The exact dependency turns such a mismatch into a NuGet restore error instead of a runtime
-exception.
+exception. `Matrix.RustSdk` depends on exactly that version of the bindings as well: it is compiled against them, and
+their API changes with every matrix-sdk-ffi update, so newer bindings would fail at runtime with missing members.
+
+`Matrix.RustSdk` packs its XML documentation, and unlike the rest of the repository it fails the build for public
+members without docs (CS1591). Its public API is snapshotted by `PublicApiTests`, a changed snapshot is a change of the
+published API.
 
 ## Versioning
 
@@ -32,11 +37,14 @@ Only builds of `main` (and `vX.Y` servicing branches) get clean versions, other 
 packages are only published from `main`.
 
 The packages follow [SemVer](https://semver.org) with a `0.x` major version. The bindings mirror the upstream
-`matrix-sdk-ffi` API, which has breaking changes in almost every release, so:
+`matrix-sdk-ffi` API, which has breaking changes in almost every release. A release that only changes docs, checksums
+or behavior keeps the bindings API (the generated `*.cs` have no changed signatures and the `PublicApiTests` snapshot
+is unchanged), so:
 
 | Change                                                         | Version bump                              |
 |----------------------------------------------------------------|-------------------------------------------|
-| Updating to a new `matrix-sdk-ffi` release                     | minor, e.g. `0.1` → `0.2` in version.json |
+| A new `matrix-sdk-ffi` release that changes the bindings API   | minor, e.g. `0.1` → `0.2` in version.json |
+| A new `matrix-sdk-ffi` release with the same bindings API      | patch, automatic via the git height       |
 | Fixes to packaging, CI or the bindings generation, same API    | patch, automatic via the git height       |
 | A stable, hand-written API in `Matrix.RustSdk`                 | consider `1.0`                            |
 
@@ -56,8 +64,9 @@ that it matches the `external/matrix-rust-sdk` submodule (`scripts/check-sdk-ver
    [trusted publishing](#trusted-publishing). Configure required reviewers on the `production` environment to get an
    approval step before the push. Afterwards the `release` job creates the `v<version>` tag and the GitHub release,
    see [GitHub releases](#github-releases).
-4. Verify the release: reference the native package from a small console app on the platforms you care about, e.g.
-   Windows, macOS and an Alpine container, and create a client (see `test/Matrix.RustSdk.Tests/NativeLibraryTests.cs`).
+4. Verify the release: reference `Matrix.RustSdk` and the native package from a small console app on the platforms you
+   care about, e.g. Windows, macOS and an Alpine container, and create a client (see
+   `test/Matrix.RustSdk.Tests/NativeLibraryTests.cs`).
 
 ### GitHub releases
 
@@ -160,9 +169,10 @@ keeps an issue for each open with the uniffi versions and whether they are compa
    ./scripts/check-sdk-version.sh
    ```
 
-4. If a newer uniffi-bindgen-cs is needed, update `UNIFFI_BINDGEN_CS_VERSION` and `UNIFFI_RS_VERSION` in `devenv.nix`,
-   devenv installs it when entering the shell. Also check the `rust-version` of matrix-rust-sdk, devenv uses the latest
-   stable Rust.
+4. If a newer uniffi-bindgen-cs is needed, update `UNIFFI_BINDGEN_CS_VERSION`, `UNIFFI_BINDGEN_CS_REV` (the commit to
+   build) and `UNIFFI_RS_VERSION` in `devenv.nix`, devenv builds it when entering the shell. The patches in
+   `patches/uniffi-bindgen-cs` are applied on top, remove the ones that are included upstream. Also check the
+   `rust-version` of matrix-rust-sdk, devenv uses the latest stable Rust.
 5. Regenerate the bindings, check the licenses of the new dependencies and run the tests:
 
    ```bash
@@ -174,5 +184,7 @@ keeps an issue for each open with the uniffi versions and whether they are compa
 
    Fix generator or API issues, see the known issues in [AGENTS.md](AGENTS.md). The tests may need updates for upstream
    API changes.
-6. Bump the minor version in `version.json` (e.g. `0.1` → `0.2`), the bindings API changes with every SDK update.
+6. Bump the minor version in `version.json` (e.g. `0.1` → `0.2`) if the bindings API changed. If the generated code
+   only differs in docs and checksums, leave it, the update is a patch release (see [Versioning](#versioning)). The
+   checksums don't make it breaking, the native packages depend on the exact bindings version.
 7. Open a pull request, CI builds and tests the native libraries for all platforms.

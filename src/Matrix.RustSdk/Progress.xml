@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Documentation shared by the helpers taking an IProgress<T>, included with <include file="…" path="docs/…/*"/>. -->
+<docs>
+  <progress>
+    <param name="progress">
+      Receives the progress, <see langword="null" /> if it isn't needed. <see cref="T:System.Progress`1" /> calls its
+      handler on the <see cref="T:System.Threading.SynchronizationContext" /> it was created on, so UI apps can update
+      their controls in it.
+    </param>
+  </progress>
+  <remarks>
+    <para>
+      The SDK calls <see cref="M:System.IProgress`1.Report(`0)" /> on one of its threads, one call at a time, and waits
+      for it: it must return quickly and must not wait for the task the helper returned. It is never called once the
+      returned task completed, a handler <see cref="T:System.Progress`1" /> posted before can still run afterwards. The
+      progress is informational: the SDK skips updates when the receiver falls behind and can drop the last one when the
+      operation finishes, the returned task tells when and how it finished.
+    </para>
+    <para>
+      An exception thrown by <see cref="M:System.IProgress`1.Report(`0)" /> ends the reporting, it doesn't abort the
+      operation. The returned task throws it once the operation finished, unless the operation failed itself.
+    </para>
+  </remarks>
+</docs>

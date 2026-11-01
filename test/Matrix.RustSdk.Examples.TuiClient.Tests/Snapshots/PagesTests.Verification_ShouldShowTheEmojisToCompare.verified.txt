@@ -1,0 +1,9 @@
+Verification
+
+ Compare these with what Alice, Phone (ABCDEF) shows:
+
+   🐶  Dog
+   🔑  Key
+   🎸  Guitar
+
+ Do they match? y: they match, n: they don't.

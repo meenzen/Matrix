@@ -1,0 +1,23 @@
+using Matrix.RustSdk.Subscriptions;
+
+namespace Matrix.RustSdk.Bindings;
+
+/// <summary>
+/// Helpers for <see cref="RoomDirectorySearch"/>.
+/// </summary>
+public static partial class RoomDirectorySearchExtensions
+{
+    /// <summary>
+    /// Watches the results of the search. Yields the changes in batches, starting with a
+    /// <see cref="VectorDiff{T}.Reset"/>.
+    /// </summary>
+    /// <param name="roomDirectorySearch">The room directory search.</param>
+    /// <include file="Subscriptions/Subscriptions.xml" path="docs/cancellationToken/*"/>
+    /// <remarks><include file="Subscriptions/Subscriptions.xml" path="docs/stream/*"/></remarks>
+    /// <remarks><include file="Subscriptions/Subscriptions.xml" path="docs/diffs/*"/></remarks>
+    [Subscription(nameof(RoomDirectorySearch.Results), SubscriptionBuffer.All)]
+    public static partial IAsyncEnumerable<VectorDiff<RoomDescription>[]> WatchResultDiffsAsync(
+        this RoomDirectorySearch roomDirectorySearch,
+        CancellationToken cancellationToken = default
+    );
+}
