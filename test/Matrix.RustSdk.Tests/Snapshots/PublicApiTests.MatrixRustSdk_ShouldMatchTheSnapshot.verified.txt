@@ -10,6 +10,7 @@ namespace Matrix.RustSdk.Bindings
         public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.ToDeviceMessage> WatchCustomToDeviceMessagesAsync(this Matrix.RustSdk.Bindings.Client client, string[] eventTypes, System.Threading.CancellationToken cancellationToken = default) { }
         public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.DuplicateOneTimeKeyErrorMessage?> WatchDuplicateKeyUploadErrorsAsync(this Matrix.RustSdk.Bindings.Client client, System.Threading.CancellationToken cancellationToken = default) { }
         public static System.Collections.Generic.IAsyncEnumerable<string[]> WatchIgnoredUsersAsync(this Matrix.RustSdk.Bindings.Client client, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.InvitePermissionState> WatchInvitePermissionAsync(this Matrix.RustSdk.Bindings.Client client, System.Threading.CancellationToken cancellationToken = default) { }
         public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.MediaPreviewConfig?> WatchMediaPreviewConfigAsync(this Matrix.RustSdk.Bindings.Client client, System.Threading.CancellationToken cancellationToken = default) { }
         public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.BeaconInfoUpdate> WatchOwnBeaconInfoUpdatesAsync(this Matrix.RustSdk.Bindings.Client client, System.Threading.CancellationToken cancellationToken = default) { }
         public static System.Collections.Generic.IAsyncEnumerable<Matrix.RustSdk.Bindings.UserProfile> WatchOwnProfileAsync(this Matrix.RustSdk.Bindings.Client client, System.Threading.CancellationToken cancellationToken = default) { }
@@ -23,6 +24,7 @@ namespace Matrix.RustSdk.Bindings
                 "RoomId",
                 "Update"})]
         public static System.Collections.Generic.IAsyncEnumerable<System.ValueTuple<string, Matrix.RustSdk.Bindings.RoomSendQueueUpdate>> WatchSendQueueUpdatesAsync(this Matrix.RustSdk.Bindings.Client client, System.Threading.CancellationToken cancellationToken = default) { }
+        public static System.Collections.Generic.IAsyncEnumerable<ulong> WatchTotalUnreadNotificationsAsync(this Matrix.RustSdk.Bindings.Client client, System.TimeSpan minInterval, System.Threading.CancellationToken cancellationToken = default) { }
     }
     public static class EncryptionExtensions
     {

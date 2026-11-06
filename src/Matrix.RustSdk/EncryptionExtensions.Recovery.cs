@@ -40,7 +40,7 @@ public static partial class EncryptionExtensions
     /// backup this device doesn't use, created by another device: recover with its recovery key
     /// (<see cref="Encryption.Recover"/>) or replace it (<see cref="Encryption.ResetRecoveryKey"/>).
     /// </exception>
-    public static Task<string> EnableRecoveryAsync(
+    public static async Task<string> EnableRecoveryAsync(
         this Encryption encryption,
         string? passphrase = null,
         bool waitForBackupsToUpload = false,
@@ -49,9 +49,13 @@ public static partial class EncryptionExtensions
     {
         ArgumentNullException.ThrowIfNull(encryption);
         ProgressReporter<EnableRecoveryProgress> reporter = new(progress);
-        return reporter.RunAsync(() =>
-            encryption.EnableRecovery(waitForBackupsToUpload, passphrase, new RecoveryProgressListener(reporter))
-        );
+        // null lets the SDK generate a random key
+        using SecretStorageKey? key = passphrase is null ? null : SecretStorageKey.NewFromPassphrase(passphrase);
+        return await reporter
+            .RunAsync(() =>
+                encryption.EnableRecovery(waitForBackupsToUpload, key, new RecoveryProgressListener(reporter))
+            )
+            .ConfigureAwait(false);
     }
 
     /// <summary>

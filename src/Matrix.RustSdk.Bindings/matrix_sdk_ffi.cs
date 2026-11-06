@@ -1004,6 +1004,14 @@ static class _UniFFILib
     );
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void UniffiCallbackInterfaceInvitePermissionListenerMethod0(
+        ulong @uniffiHandle,
+        RustBuffer @invitePermission,
+        IntPtr @uniffiOutReturn,
+        ref UniffiRustCallStatus _uniffi_out_err
+    );
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void UniffiCallbackInterfaceMediaPreviewConfigListenerMethod0(
         ulong @uniffiHandle,
         RustBuffer @mediaPreviewConfig,
@@ -1067,6 +1075,14 @@ static class _UniFFILib
     public delegate void UniffiCallbackInterfaceToDeviceMessageListenerMethod0(
         ulong @uniffiHandle,
         RustBuffer @message,
+        IntPtr @uniffiOutReturn,
+        ref UniffiRustCallStatus _uniffi_out_err
+    );
+
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void UniffiCallbackInterfaceTotalUnreadNotificationsListenerMethod0(
+        ulong @uniffiHandle,
+        ulong @count,
         IntPtr @uniffiOutReturn,
         ref UniffiRustCallStatus _uniffi_out_err
     );
@@ -1502,6 +1518,14 @@ static class _UniFFILib
     }
 
     [StructLayout(LayoutKind.Sequential)]
+    public struct UniffiVTableCallbackInterfaceInvitePermissionListener
+    {
+        public IntPtr @uniffiFree;
+        public IntPtr @uniffiClone;
+        public IntPtr @onChange;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
     public struct UniffiVTableCallbackInterfaceMediaPreviewConfigListener
     {
         public IntPtr @uniffiFree;
@@ -1563,6 +1587,14 @@ static class _UniFFILib
         public IntPtr @uniffiFree;
         public IntPtr @uniffiClone;
         public IntPtr @onMessage;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct UniffiVTableCallbackInterfaceTotalUnreadNotificationsListener
+    {
+        public IntPtr @uniffiFree;
+        public IntPtr @uniffiClone;
+        public IntPtr @onUpdate;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -1927,6 +1959,7 @@ static class _UniFFILib
         UniffiCallbackInterfaceGrantQrLoginProgressListener.Register();
         UniffiCallbackInterfaceIdentityStatusChangeListener.Register();
         UniffiCallbackInterfaceIgnoredUsersListener.Register();
+        UniffiCallbackInterfaceInvitePermissionListener.Register();
         UniffiCallbackInterfaceKnockRequestsListener.Register();
         UniffiCallbackInterfaceLiveLocationsListener.Register();
         UniffiCallbackInterfaceMediaPreviewConfigListener.Register();
@@ -1964,6 +1997,7 @@ static class _UniFFILib
         UniffiCallbackInterfaceThreadListPaginationStateListener.Register();
         UniffiCallbackInterfaceTimelineListener.Register();
         UniffiCallbackInterfaceToDeviceMessageListener.Register();
+        UniffiCallbackInterfaceTotalUnreadNotificationsListener.Register();
         UniffiCallbackInterfaceTypingNotificationsListener.Register();
         UniffiCallbackInterfaceUnableToDecryptDelegate.Register();
         UniffiCallbackInterfaceVerificationStateListener.Register();
@@ -2477,6 +2511,16 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_client_get_invite_permission(ulong @ptr);
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     ulong uniffi_matrix_sdk_ffi_fn_method_client_get_max_media_upload_size(ulong @ptr);
 
 #if NET8_0_OR_GREATER
@@ -2638,6 +2682,16 @@ static class _UniFFILib
     public static extern
 #endif
     ulong uniffi_matrix_sdk_ffi_fn_method_client_get_url_preview(ulong @ptr, RustBuffer @url, RustBuffer @ts);
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_client_has_encrypted_rooms(ulong @ptr, RustBuffer @timeout);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -2953,6 +3007,21 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_client_observe_total_unread_notifications(
+        ulong @ptr,
+        ulong @listener,
+        RustBuffer @minInterval,
+        ref UniffiRustCallStatus _uniffi_out_err
+    );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     ulong uniffi_matrix_sdk_ffi_fn_method_client_optimize_stores(ulong @ptr);
 
 #if NET8_0_OR_GREATER
@@ -3237,6 +3306,16 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_client_set_invite_permission(ulong @ptr, RustBuffer @action);
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     ulong uniffi_matrix_sdk_ffi_fn_method_client_set_media_preview_display_policy(ulong @ptr, RustBuffer @policy);
 
 #if NET8_0_OR_GREATER
@@ -3377,6 +3456,16 @@ static class _UniFFILib
         ulong @listener,
         ref UniffiRustCallStatus _uniffi_out_err
     );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_client_subscribe_to_invite_permission(ulong @ptr, ulong @listener);
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -4410,7 +4499,7 @@ static class _UniFFILib
     ulong uniffi_matrix_sdk_ffi_fn_method_encryption_enable_recovery(
         ulong @ptr,
         sbyte @waitForBackupsToUpload,
-        RustBuffer @passphrase,
+        RustBuffer @key,
         ulong @progressListener
     );
 
@@ -4684,6 +4773,62 @@ static class _UniFFILib
     public static extern
 #endif
     ulong uniffi_matrix_sdk_ffi_fn_method_identityresethandle_reset(ulong @ptr, RustBuffer @auth);
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ulong uniffi_matrix_sdk_ffi_fn_clone_secretstoragekey(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    void uniffi_matrix_sdk_ffi_fn_free_secretstoragekey(ulong @handle, ref UniffiRustCallStatus _uniffi_out_err);
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ulong uniffi_matrix_sdk_ffi_fn_constructor_secretstoragekey_new(ref UniffiRustCallStatus _uniffi_out_err);
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ulong uniffi_matrix_sdk_ffi_fn_constructor_secretstoragekey_new_from_passphrase(
+        RustBuffer @passphrase,
+        ref UniffiRustCallStatus _uniffi_out_err
+    );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    RustBuffer uniffi_matrix_sdk_ffi_fn_method_secretstoragekey_to_base58(
+        ulong @ptr,
+        ref UniffiRustCallStatus _uniffi_out_err
+    );
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -6538,6 +6683,16 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_room_members_fetching_global_profiles(ulong @ptr);
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     ulong uniffi_matrix_sdk_ffi_fn_method_room_members_no_sync(ulong @ptr);
 
 #if NET8_0_OR_GREATER
@@ -6705,7 +6860,12 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
-    ulong uniffi_matrix_sdk_ffi_fn_method_room_send_raw(ulong @ptr, RustBuffer @eventType, RustBuffer @content);
+    ulong uniffi_matrix_sdk_ffi_fn_method_room_send_raw(
+        ulong @ptr,
+        RustBuffer @eventType,
+        RustBuffer @content,
+        RustBuffer @requestConfigOverride
+    );
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -6734,7 +6894,8 @@ static class _UniFFILib
         ulong @ptr,
         RustBuffer @eventType,
         RustBuffer @stateKey,
-        RustBuffer @content
+        RustBuffer @content,
+        RustBuffer @requestConfigOverride
     );
 
 #if NET8_0_OR_GREATER
@@ -7129,7 +7290,8 @@ static class _UniFFILib
         ulong @ptr,
         RustBuffer @eventType,
         RustBuffer @content,
-        ulong @durationMs
+        ulong @durationMs,
+        RustBuffer @requestConfigOverride
     );
 
 #if NET8_0_OR_GREATER
@@ -10147,6 +10309,19 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    void uniffi_matrix_sdk_ffi_fn_init_callback_vtable_invitepermissionlistener(
+        IntPtr /*_UniFFILib.UniffiVTableCallbackInterfaceInvitePermissionListener*/
+        @vtable
+    );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     void uniffi_matrix_sdk_ffi_fn_init_callback_vtable_mediapreviewconfiglistener(
         IntPtr /*_UniFFILib.UniffiVTableCallbackInterfaceMediaPreviewConfigListener*/
         @vtable
@@ -10240,6 +10415,19 @@ static class _UniFFILib
 #endif
     void uniffi_matrix_sdk_ffi_fn_init_callback_vtable_todevicemessagelistener(
         IntPtr /*_UniFFILib.UniffiVTableCallbackInterfaceToDeviceMessageListener*/
+        @vtable
+    );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    void uniffi_matrix_sdk_ffi_fn_init_callback_vtable_totalunreadnotificationslistener(
+        IntPtr /*_UniFFILib.UniffiVTableCallbackInterfaceTotalUnreadNotificationsListener*/
         @vtable
     );
 
@@ -12385,6 +12573,16 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_client_get_invite_permission();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_client_get_max_media_upload_size();
 
 #if NET8_0_OR_GREATER
@@ -12526,6 +12724,16 @@ static class _UniFFILib
     public static extern
 #endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_client_get_url_preview();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_client_has_encrypted_rooms();
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -12795,6 +13003,16 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_client_observe_total_unread_notifications();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_client_optimize_stores();
 
 #if NET8_0_OR_GREATER
@@ -13055,6 +13273,16 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_client_set_invite_permission();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_client_set_media_preview_display_policy();
 
 #if NET8_0_OR_GREATER
@@ -13166,6 +13394,16 @@ static class _UniFFILib
     public static extern
 #endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_client_subscribe_to_ignored_users();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_client_subscribe_to_invite_permission();
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -14116,6 +14354,16 @@ static class _UniFFILib
     public static extern
 #endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_identityresethandle_reset();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_secretstoragekey_to_base58();
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -15296,6 +15544,16 @@ static class _UniFFILib
     public static extern
 #endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_room_members();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_room_members_fetching_global_profiles();
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -17665,6 +17923,26 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    ushort uniffi_matrix_sdk_ffi_checksum_constructor_secretstoragekey_new();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_constructor_secretstoragekey_new_from_passphrase();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     ushort uniffi_matrix_sdk_ffi_checksum_constructor_secretsbundlewithuserid_from_database();
 
 #if NET8_0_OR_GREATER
@@ -17865,6 +18143,16 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_invitepermissionlistener_on_change();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_mediapreviewconfiglistener_on_change();
 
 #if NET8_0_OR_GREATER
@@ -17936,6 +18224,16 @@ static class _UniFFILib
     public static extern
 #endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_todevicemessagelistener_on_message();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_totalunreadnotificationslistener_on_update();
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -18835,10 +19133,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_clear_caches();
-            if (checksum != 12078)
+            if (checksum != 23784)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_clear_caches` checksum `12078`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_clear_caches` checksum `23784`, library returned `{checksum}`"
                 );
             }
         }
@@ -19005,6 +19303,15 @@ static class _UniFFILib
             }
         }
         {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_get_invite_permission();
+            if (checksum != 51899)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_get_invite_permission` checksum `51899`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_get_max_media_upload_size();
             if (checksum != 31461)
             {
@@ -19137,6 +19444,15 @@ static class _UniFFILib
             {
                 throw new UniffiContractChecksumException(
                     $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_get_url_preview` checksum `44378`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_has_encrypted_rooms();
+            if (checksum != 34305)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_has_encrypted_rooms` checksum `34305`, library returned `{checksum}`"
                 );
             }
         }
@@ -19377,6 +19693,15 @@ static class _UniFFILib
             }
         }
         {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_observe_total_unread_notifications();
+            if (checksum != 58076)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_observe_total_unread_notifications` checksum `58076`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_optimize_stores();
             if (checksum != 24510)
             {
@@ -19611,6 +19936,15 @@ static class _UniFFILib
             }
         }
         {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_set_invite_permission();
+            if (checksum != 33188)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_set_invite_permission` checksum `33188`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_set_media_preview_display_policy();
             if (checksum != 58885)
             {
@@ -19717,6 +20051,15 @@ static class _UniFFILib
             {
                 throw new UniffiContractChecksumException(
                     $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_subscribe_to_ignored_users` checksum `43126`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_subscribe_to_invite_permission();
+            if (checksum != 16523)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_subscribe_to_invite_permission` checksum `16523`, library returned `{checksum}`"
                 );
             }
         }
@@ -20385,19 +20728,19 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_encryption_enable_recovery();
-            if (checksum != 1090)
+            if (checksum != 48489)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_encryption_enable_recovery` checksum `1090`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_encryption_enable_recovery` checksum `48489`, library returned `{checksum}`"
                 );
             }
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_encryption_has_devices_to_verify_against();
-            if (checksum != 53568)
+            if (checksum != 40096)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_encryption_has_devices_to_verify_against` checksum `53568`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_encryption_has_devices_to_verify_against` checksum `40096`, library returned `{checksum}`"
                 );
             }
         }
@@ -20589,6 +20932,15 @@ static class _UniFFILib
             {
                 throw new UniffiContractChecksumException(
                     $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_identityresethandle_reset` checksum `30627`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_secretstoragekey_to_base58();
+            if (checksum != 26990)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_secretstoragekey_to_base58` checksum `26990`, library returned `{checksum}`"
                 );
             }
         }
@@ -21672,6 +22024,15 @@ static class _UniFFILib
             }
         }
         {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_members_fetching_global_profiles();
+            if (checksum != 13248)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_members_fetching_global_profiles` checksum `13248`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_members_no_sync();
             if (checksum != 18379)
             {
@@ -21818,10 +22179,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_send_raw();
-            if (checksum != 29137)
+            if (checksum != 31612)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_raw` checksum `29137`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_raw` checksum `31612`, library returned `{checksum}`"
                 );
             }
         }
@@ -21836,10 +22197,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_send_state_event_raw();
-            if (checksum != 54069)
+            if (checksum != 50352)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_state_event_raw` checksum `54069`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_state_event_raw` checksum `50352`, library returned `{checksum}`"
                 );
             }
         }
@@ -22142,10 +22503,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_send_sticky_raw();
-            if (checksum != 20102)
+            if (checksum != 12025)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_sticky_raw` checksum `20102`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_sticky_raw` checksum `12025`, library returned `{checksum}`"
                 );
             }
         }
@@ -23831,6 +24192,24 @@ static class _UniFFILib
             }
         }
         {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_constructor_secretstoragekey_new();
+            if (checksum != 59636)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_constructor_secretstoragekey_new` checksum `59636`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_constructor_secretstoragekey_new_from_passphrase();
+            if (checksum != 43240)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_constructor_secretstoragekey_new_from_passphrase` checksum `43240`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
             var checksum =
                 _UniFFILib.uniffi_matrix_sdk_ffi_checksum_constructor_secretsbundlewithuserid_from_database();
             if (checksum != 44628)
@@ -24018,6 +24397,15 @@ static class _UniFFILib
             }
         }
         {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_invitepermissionlistener_on_change();
+            if (checksum != 36582)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_invitepermissionlistener_on_change` checksum `36582`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_mediapreviewconfiglistener_on_change();
             if (checksum != 65101)
             {
@@ -24086,6 +24474,16 @@ static class _UniFFILib
             {
                 throw new UniffiContractChecksumException(
                     $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_todevicemessagelistener_on_message` checksum `17223`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum =
+                _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_totalunreadnotificationslistener_on_update();
+            if (checksum != 47437)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_totalunreadnotificationslistener_on_update` checksum `47437`, library returned `{checksum}`"
                 );
             }
         }
@@ -25215,11 +25613,12 @@ public interface IClient
     /// it via dropping the previous and re-creating it, restarting their
     /// application, or any other similar means.
     ///
-    /// - This will get rid of the backing state store file, if provided.
     /// - This will empty all the room's persisted event caches, so all rooms
     /// will start as if they were empty.
-    /// - This will empty the media cache according to the current media
-    /// retention policy.
+    /// - This will delete the search index.
+    /// - This will close all the stores, then get rid of the backing state
+    /// store, event cache store and media store files, if provided. The
+    /// crypto store is kept.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task ClearCaches(SyncService? @syncService);
@@ -25354,6 +25753,14 @@ public interface IClient
     Task<InviteAvatars?> GetInviteAvatarsDisplayPolicy();
 
     /// <summary>
+    /// Get the room invite permission stored in the cache.
+    ///
+    /// A missing configuration is treated as unrestricted.
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    Task<InvitePermissionState> GetInvitePermission();
+
+    /// <summary>
     /// Gets the `max_upload_size` value from the homeserver, which controls the
     /// max size a media upload request can have.
     /// </summary>
@@ -25458,6 +25865,20 @@ public interface IClient
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task<string?> GetUrlPreview(string @url, ulong? @ts);
+
+    /// <summary>
+    /// Whether the user has joined at least one encrypted room, spaces
+    /// excluded.
+    ///
+    /// The local cache is consulted first, falling back to asking the
+    /// homeserver directly if no encrypted room is known. If the server
+    /// does not answer in `timeout_ms` milliseconds, this returns an error.
+    ///
+    /// Clients should treat errors as "maybe encrypted", not as "not
+    /// encrypted".
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    Task<bool> HasEncryptedRooms(TimeSpan @timeout);
 
     /// <summary>
     /// The homeserver this client is configured to use.
@@ -25660,6 +26081,19 @@ public interface IClient
         RoomAccountDataEventType @eventType,
         RoomAccountDataListener @listener
     );
+
+    /// <summary>
+    /// Subscribe to the total unread notification count of this [`Client`].
+    ///
+    /// The listener is called at most once every `min_interval` when new
+    /// [`RoomInfoNotableUpdate`] are received. This interval mode is to avoid
+    /// calculating hundreds of new values in a very small amount of time.
+    ///
+    /// An initial value will be reported as soon as the subscription starts.
+    ///
+    /// Use the returned [`TaskHandle`] to cancel the subscription.
+    /// </summary>
+    TaskHandle ObserveTotalUnreadNotifications(TotalUnreadNotificationsListener @listener, TimeSpan @minInterval);
 
     /// <summary>
     /// Perform database optimizations if any are available, i.e. vacuuming in
@@ -25881,6 +26315,12 @@ public interface IClient
     Task SetInviteAvatarsDisplayPolicy(InviteAvatars @policy);
 
     /// <summary>
+    /// Set the room invite permission for this account.
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    Task SetInvitePermission(InvitePermissionAction @action);
+
+    /// <summary>
     /// Set the media previews timeline display policy
     /// </summary>
     /// <exception cref="ClientException"></exception>
@@ -25966,6 +26406,12 @@ public interface IClient
     /// </summary>
     TaskHandle SubscribeToDuplicateKeyUploadErrors(DuplicateKeyUploadErrorListener @listener);
     TaskHandle SubscribeToIgnoredUsers(IgnoredUsersListener @listener);
+
+    /// <summary>
+    /// Subscribe to changes in the room invite permission configuration.
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    Task<TaskHandle> SubscribeToInvitePermission(InvitePermissionListener @listener);
 
     /// <summary>
     /// Subscribe to changes in the media preview configuration.
@@ -26524,11 +26970,12 @@ public class Client : IClient, IDisposable
     /// it via dropping the previous and re-creating it, restarting their
     /// application, or any other similar means.
     ///
-    /// - This will get rid of the backing state store file, if provided.
     /// - This will empty all the room's persisted event caches, so all rooms
     /// will start as if they were empty.
-    /// - This will empty the media cache according to the current media
-    /// retention policy.
+    /// - This will delete the search index.
+    /// - This will close all the stores, then get rid of the backing state
+    /// store, event cache store and media store files, if provided. The
+    /// crypto store is kept.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task ClearCaches(SyncService? @syncService)
@@ -27036,6 +27483,37 @@ public class Client : IClient, IDisposable
     }
 
     /// <summary>
+    /// Get the room invite permission stored in the cache.
+    ///
+    /// A missing configuration is treated as unrestricted.
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    public async Task<InvitePermissionState> GetInvitePermission()
+    {
+        return await _UniFFIAsync.UniffiRustCallAsync(
+            // Get rust future
+            CallWithPointer(thisPtr =>
+            {
+                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_get_invite_permission(thisPtr);
+            }),
+            // Poll
+            (ulong future, IntPtr continuation, ulong data) =>
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_rust_buffer(future, continuation, data),
+            // Complete
+            (ulong future, ref UniffiRustCallStatus status) =>
+            {
+                return _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_rust_buffer(future, ref status);
+            },
+            // Free
+            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_rust_buffer(future),
+            // Lift
+            (result) => FfiConverterTypeInvitePermissionState.INSTANCE.Lift(result),
+            // Error
+            FfiConverterTypeClientError.INSTANCE
+        );
+    }
+
+    /// <summary>
     /// Gets the `max_upload_size` value from the homeserver, which controls the
     /// max size a media upload request can have.
     /// </summary>
@@ -27506,6 +27984,46 @@ public class Client : IClient, IDisposable
             (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_rust_buffer(future),
             // Lift
             (result) => FfiConverterOptionalString.INSTANCE.Lift(result),
+            // Error
+            FfiConverterTypeClientError.INSTANCE
+        );
+    }
+
+    /// <summary>
+    /// Whether the user has joined at least one encrypted room, spaces
+    /// excluded.
+    ///
+    /// The local cache is consulted first, falling back to asking the
+    /// homeserver directly if no encrypted room is known. If the server
+    /// does not answer in `timeout_ms` milliseconds, this returns an error.
+    ///
+    /// Clients should treat errors as "maybe encrypted", not as "not
+    /// encrypted".
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    public async Task<bool> HasEncryptedRooms(TimeSpan @timeout)
+    {
+        return await _UniFFIAsync.UniffiRustCallAsync(
+            // Get rust future
+            CallWithPointer(thisPtr =>
+            {
+                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_has_encrypted_rooms(
+                    thisPtr,
+                    FfiConverterDuration.INSTANCE.Lower(@timeout)
+                );
+            }),
+            // Poll
+            (ulong future, IntPtr continuation, ulong data) =>
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_i8(future, continuation, data),
+            // Complete
+            (ulong future, ref UniffiRustCallStatus status) =>
+            {
+                return _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_i8(future, ref status);
+            },
+            // Free
+            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_i8(future),
+            // Lift
+            (result) => FfiConverterBoolean.INSTANCE.Lift(result),
             // Error
             FfiConverterTypeClientError.INSTANCE
         );
@@ -28284,6 +28802,34 @@ public class Client : IClient, IDisposable
     }
 
     /// <summary>
+    /// Subscribe to the total unread notification count of this [`Client`].
+    ///
+    /// The listener is called at most once every `min_interval` when new
+    /// [`RoomInfoNotableUpdate`] are received. This interval mode is to avoid
+    /// calculating hundreds of new values in a very small amount of time.
+    ///
+    /// An initial value will be reported as soon as the subscription starts.
+    ///
+    /// Use the returned [`TaskHandle`] to cancel the subscription.
+    /// </summary>
+    public TaskHandle ObserveTotalUnreadNotifications(TotalUnreadNotificationsListener @listener, TimeSpan @minInterval)
+    {
+        return CallWithPointer(thisPtr =>
+            FfiConverterTypeTaskHandle.INSTANCE.Lift(
+                _UniffiHelpers.RustCall(
+                    (ref UniffiRustCallStatus _status) =>
+                        _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_observe_total_unread_notifications(
+                            thisPtr,
+                            FfiConverterTypeTotalUnreadNotificationsListener.INSTANCE.Lower(@listener),
+                            FfiConverterDuration.INSTANCE.Lower(@minInterval),
+                            ref _status
+                        )
+                )
+            )
+        );
+    }
+
+    /// <summary>
     /// Perform database optimizations if any are available, i.e. vacuuming in
     /// SQLite.
     /// </summary>
@@ -29048,6 +29594,36 @@ public class Client : IClient, IDisposable
     }
 
     /// <summary>
+    /// Set the room invite permission for this account.
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    public async Task SetInvitePermission(InvitePermissionAction @action)
+    {
+        await _UniFFIAsync.UniffiRustCallAsync(
+            // Get rust future
+            CallWithPointer(thisPtr =>
+            {
+                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_set_invite_permission(
+                    thisPtr,
+                    FfiConverterTypeInvitePermissionAction.INSTANCE.Lower(@action)
+                );
+            }),
+            // Poll
+            (ulong future, IntPtr continuation, ulong data) =>
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_void(future, continuation, data),
+            // Complete
+            (ulong future, ref UniffiRustCallStatus status) =>
+            {
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_void(future, ref status);
+            },
+            // Free
+            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_void(future),
+            // Error
+            FfiConverterTypeClientError.INSTANCE
+        );
+    }
+
+    /// <summary>
     /// Set the media previews timeline display policy
     /// </summary>
     /// <exception cref="ClientException"></exception>
@@ -29387,6 +29963,38 @@ public class Client : IClient, IDisposable
                         )
                 )
             )
+        );
+    }
+
+    /// <summary>
+    /// Subscribe to changes in the room invite permission configuration.
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    public async Task<TaskHandle> SubscribeToInvitePermission(InvitePermissionListener @listener)
+    {
+        return await _UniFFIAsync.UniffiRustCallAsync(
+            // Get rust future
+            CallWithPointer(thisPtr =>
+            {
+                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_subscribe_to_invite_permission(
+                    thisPtr,
+                    FfiConverterTypeInvitePermissionListener.INSTANCE.Lower(@listener)
+                );
+            }),
+            // Poll
+            (ulong future, IntPtr continuation, ulong data) =>
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_u64(future, continuation, data),
+            // Complete
+            (ulong future, ref UniffiRustCallStatus status) =>
+            {
+                return _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_u64(future, ref status);
+            },
+            // Free
+            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_u64(future),
+            // Lift
+            (result) => FfiConverterTypeTaskHandle.INSTANCE.Lift(result),
+            // Error
+            FfiConverterTypeClientError.INSTANCE
         );
     }
 
@@ -31502,19 +32110,35 @@ public interface IEncryption
     /// <exception cref="RecoveryException"></exception>
     Task EnableBackups();
 
+    /// <summary>
+    /// Enable recovery on the account.
+    ///
+    /// # Arguments
+    ///
+    /// - `wait_for_backups_to_upload` - Should the enabling of the recovery
+    /// also wait for _all_ room keys to be uploaded to the server-side key
+    /// backup?
+    /// - `key` - The key to use to encrypt secret storage.  If `None`, a new
+    /// key will be randomly generated.  A key can be generated from a
+    /// passphrase by using [`SecretStorageKey::new_from_passphrase`].
+    /// - `progress_listener` - A listener to track the progress of enabling
+    /// recovery.
+    ///
+    /// Returns the base58-representation of the secret storage key.
+    /// </summary>
     /// <exception cref="RecoveryException"></exception>
     Task<string> EnableRecovery(
         bool @waitForBackupsToUpload,
-        string? @passphrase,
+        SecretStorageKey? @key,
         EnableRecoveryProgressListener @progressListener
     );
 
     /// <summary>
-    /// Does the user have other devices that the current device can verify
-    /// against?
+    /// Does the user have devices, other than the current one, that the
+    /// current device can verify against?
     ///
-    /// The device must be signed by the user's cross-signing key, must have an
-    /// identity, and must not be a dehydrated device.
+    /// The device must be signed by the user's cross-signing key, must support
+    /// Olm (have a Curve25519 key), and must not be a dehydrated device.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task<bool> HasDevicesToVerifyAgainst();
@@ -32011,10 +32635,26 @@ public class Encryption : IEncryption, IDisposable
         );
     }
 
+    /// <summary>
+    /// Enable recovery on the account.
+    ///
+    /// # Arguments
+    ///
+    /// - `wait_for_backups_to_upload` - Should the enabling of the recovery
+    /// also wait for _all_ room keys to be uploaded to the server-side key
+    /// backup?
+    /// - `key` - The key to use to encrypt secret storage.  If `None`, a new
+    /// key will be randomly generated.  A key can be generated from a
+    /// passphrase by using [`SecretStorageKey::new_from_passphrase`].
+    /// - `progress_listener` - A listener to track the progress of enabling
+    /// recovery.
+    ///
+    /// Returns the base58-representation of the secret storage key.
+    /// </summary>
     /// <exception cref="RecoveryException"></exception>
     public async Task<string> EnableRecovery(
         bool @waitForBackupsToUpload,
-        string? @passphrase,
+        SecretStorageKey? @key,
         EnableRecoveryProgressListener @progressListener
     )
     {
@@ -32025,7 +32665,7 @@ public class Encryption : IEncryption, IDisposable
                 return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_encryption_enable_recovery(
                     thisPtr,
                     FfiConverterBoolean.INSTANCE.Lower(@waitForBackupsToUpload),
-                    FfiConverterOptionalString.INSTANCE.Lower(@passphrase),
+                    FfiConverterOptionalTypeSecretStorageKey.INSTANCE.Lower(@key),
                     FfiConverterTypeEnableRecoveryProgressListener.INSTANCE.Lower(@progressListener)
                 );
             }),
@@ -32047,11 +32687,11 @@ public class Encryption : IEncryption, IDisposable
     }
 
     /// <summary>
-    /// Does the user have other devices that the current device can verify
-    /// against?
+    /// Does the user have devices, other than the current one, that the
+    /// current device can verify against?
     ///
-    /// The device must be signed by the user's cross-signing key, must have an
-    /// identity, and must not be a dehydrated device.
+    /// The device must be signed by the user's cross-signing key, must support
+    /// Olm (have a Curve25519 key), and must not be a dehydrated device.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task<bool> HasDevicesToVerifyAgainst()
@@ -38287,6 +38927,14 @@ public interface IRoom
     /// <exception cref="ClientException"></exception>
     Task<RoomMembersIterator> Members();
 
+    /// <summary>
+    /// Gets the members for this room, like [`Room::members`], but also fetches
+    /// any missing global profiles for those members in the background (when
+    /// supported by the server).
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    Task<RoomMembersIterator> MembersFetchingGlobalProfiles();
+
     /// <exception cref="ClientException"></exception>
     Task<RoomMembersIterator> MembersNoSync();
 
@@ -38422,10 +39070,13 @@ public interface IRoom
     ///
     /// * `content` - The content of the event to send encoded as JSON string.
     ///
+    /// * `request_config_override` - Overrides the client's request config for
+    /// this request. Fields that are not set keep the client's values.
+    ///
     /// Returns the event ID of the newly sent event.
     /// </summary>
     /// <exception cref="ClientException"></exception>
-    Task<string> SendRaw(string @eventType, string @content);
+    Task<string> SendRaw(string @eventType, string @content, RequestConfigOverride? @requestConfigOverride = null);
 
     /// <summary>
     /// Send a single receipt of the given type for the given event, optionally
@@ -38453,10 +39104,18 @@ public interface IRoom
     ///
     /// - `content` - The content of the state event encoded as a JSON string.
     ///
+    /// - `request_config_override` - Overrides the client's request config for
+    /// this request. Fields that are not set keep the client's values.
+    ///
     /// Returns the event ID of the newly created state event.
     /// </summary>
     /// <exception cref="ClientException"></exception>
-    Task<string> SendStateEventRaw(string @eventType, string @stateKey, string @content);
+    Task<string> SendStateEventRaw(
+        string @eventType,
+        string @stateKey,
+        string @content,
+        RequestConfigOverride? @requestConfigOverride = null
+    );
 
     /// <exception cref="ClientException"></exception>
     Task SetIsFavourite(bool @isFavourite, double? @tagOrder);
@@ -38723,6 +39382,8 @@ public interface IRoom
     /// - `content` - The content of the event to send encoded as JSON string.
     /// - `duration_ms` - How long the event stays sticky for, in milliseconds,
     /// clamped to one hour.
+    /// - `request_config_override` - Overrides the client's request config for
+    /// this request. Fields that are not set keep the client's values.
     ///
     /// # Returns
     ///
@@ -38731,7 +39392,12 @@ public interface IRoom
     /// [`Client::is_sticky_events_supported`]: crate::client::Client::is_sticky_events_supported
     /// </summary>
     /// <exception cref="ClientException"></exception>
-    Task<string> SendStickyRaw(string @eventType, string @content, ulong @durationMs);
+    Task<string> SendStickyRaw(
+        string @eventType,
+        string @content,
+        ulong @durationMs,
+        RequestConfigOverride? @requestConfigOverride = null
+    );
 
     /// <summary>
     /// The sticky events that are currently live in this room.
@@ -40287,6 +40953,37 @@ public class Room : IRoom, IDisposable
         );
     }
 
+    /// <summary>
+    /// Gets the members for this room, like [`Room::members`], but also fetches
+    /// any missing global profiles for those members in the background (when
+    /// supported by the server).
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    public async Task<RoomMembersIterator> MembersFetchingGlobalProfiles()
+    {
+        return await _UniFFIAsync.UniffiRustCallAsync(
+            // Get rust future
+            CallWithPointer(thisPtr =>
+            {
+                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_members_fetching_global_profiles(thisPtr);
+            }),
+            // Poll
+            (ulong future, IntPtr continuation, ulong data) =>
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_u64(future, continuation, data),
+            // Complete
+            (ulong future, ref UniffiRustCallStatus status) =>
+            {
+                return _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_u64(future, ref status);
+            },
+            // Free
+            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_u64(future),
+            // Lift
+            (result) => FfiConverterTypeRoomMembersIterator.INSTANCE.Lift(result),
+            // Error
+            FfiConverterTypeClientError.INSTANCE
+        );
+    }
+
     /// <exception cref="ClientException"></exception>
     public async Task<RoomMembersIterator> MembersNoSync()
     {
@@ -40754,10 +41451,17 @@ public class Room : IRoom, IDisposable
     ///
     /// * `content` - The content of the event to send encoded as JSON string.
     ///
+    /// * `request_config_override` - Overrides the client's request config for
+    /// this request. Fields that are not set keep the client's values.
+    ///
     /// Returns the event ID of the newly sent event.
     /// </summary>
     /// <exception cref="ClientException"></exception>
-    public async Task<string> SendRaw(string @eventType, string @content)
+    public async Task<string> SendRaw(
+        string @eventType,
+        string @content,
+        RequestConfigOverride? @requestConfigOverride = null
+    )
     {
         return await _UniFFIAsync.UniffiRustCallAsync(
             // Get rust future
@@ -40766,7 +41470,8 @@ public class Room : IRoom, IDisposable
                 return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_send_raw(
                     thisPtr,
                     FfiConverterString.INSTANCE.Lower(@eventType),
-                    FfiConverterString.INSTANCE.Lower(@content)
+                    FfiConverterString.INSTANCE.Lower(@content),
+                    FfiConverterOptionalTypeRequestConfigOverride.INSTANCE.Lower(@requestConfigOverride)
                 );
             }),
             // Poll
@@ -40838,10 +41543,18 @@ public class Room : IRoom, IDisposable
     ///
     /// - `content` - The content of the state event encoded as a JSON string.
     ///
+    /// - `request_config_override` - Overrides the client's request config for
+    /// this request. Fields that are not set keep the client's values.
+    ///
     /// Returns the event ID of the newly created state event.
     /// </summary>
     /// <exception cref="ClientException"></exception>
-    public async Task<string> SendStateEventRaw(string @eventType, string @stateKey, string @content)
+    public async Task<string> SendStateEventRaw(
+        string @eventType,
+        string @stateKey,
+        string @content,
+        RequestConfigOverride? @requestConfigOverride = null
+    )
     {
         return await _UniFFIAsync.UniffiRustCallAsync(
             // Get rust future
@@ -40851,7 +41564,8 @@ public class Room : IRoom, IDisposable
                     thisPtr,
                     FfiConverterString.INSTANCE.Lower(@eventType),
                     FfiConverterString.INSTANCE.Lower(@stateKey),
-                    FfiConverterString.INSTANCE.Lower(@content)
+                    FfiConverterString.INSTANCE.Lower(@content),
+                    FfiConverterOptionalTypeRequestConfigOverride.INSTANCE.Lower(@requestConfigOverride)
                 );
             }),
             // Poll
@@ -41864,6 +42578,8 @@ public class Room : IRoom, IDisposable
     /// - `content` - The content of the event to send encoded as JSON string.
     /// - `duration_ms` - How long the event stays sticky for, in milliseconds,
     /// clamped to one hour.
+    /// - `request_config_override` - Overrides the client's request config for
+    /// this request. Fields that are not set keep the client's values.
     ///
     /// # Returns
     ///
@@ -41872,7 +42588,12 @@ public class Room : IRoom, IDisposable
     /// [`Client::is_sticky_events_supported`]: crate::client::Client::is_sticky_events_supported
     /// </summary>
     /// <exception cref="ClientException"></exception>
-    public async Task<string> SendStickyRaw(string @eventType, string @content, ulong @durationMs)
+    public async Task<string> SendStickyRaw(
+        string @eventType,
+        string @content,
+        ulong @durationMs,
+        RequestConfigOverride? @requestConfigOverride = null
+    )
     {
         return await _UniFFIAsync.UniffiRustCallAsync(
             // Get rust future
@@ -41882,7 +42603,8 @@ public class Room : IRoom, IDisposable
                     thisPtr,
                     FfiConverterString.INSTANCE.Lower(@eventType),
                     FfiConverterString.INSTANCE.Lower(@content),
-                    FfiConverterUInt64.INSTANCE.Lower(@durationMs)
+                    FfiConverterUInt64.INSTANCE.Lower(@durationMs),
+                    FfiConverterOptionalTypeRequestConfigOverride.INSTANCE.Lower(@requestConfigOverride)
                 );
             }),
             // Poll
@@ -44903,6 +45625,210 @@ class FfiConverterTypeSearchService : FfiConverter<SearchService, ulong>
     }
 
     public override void Write(SearchService value, BigEndianStream stream)
+    {
+        stream.WriteULong(Lower(value));
+    }
+}
+
+/// <summary>
+/// A secret storage key.
+/// </summary>
+public interface ISecretStorageKey
+{
+    /// <summary>
+    /// The base-58 representation of the key to present to the user.
+    ///
+    /// _Note_: This returns a copy of the private key material of the
+    /// [`SecretStorageKey`] as a string. The caller needs to ensure that this
+    /// string is zeroized.
+    /// </summary>
+    string ToBase58();
+}
+
+/// <summary>
+/// A secret storage key.
+/// </summary>
+public class SecretStorageKey : ISecretStorageKey, IDisposable
+{
+    protected ulong pointer;
+    private int _wasDestroyed = 0;
+    private long _callCounter = 1;
+
+    public SecretStorageKey(ulong pointer)
+    {
+        this.pointer = pointer;
+    }
+
+    ~SecretStorageKey()
+    {
+        Destroy();
+    }
+
+    /// <summary>
+    /// Create a new random secret storage key.
+    /// </summary>
+    public SecretStorageKey()
+        : this(
+            _UniffiHelpers.RustCall(
+                (ref UniffiRustCallStatus _status) =>
+                    _UniFFILib.uniffi_matrix_sdk_ffi_fn_constructor_secretstoragekey_new(ref _status)
+            )
+        ) { }
+
+    protected void FreeRustArcPtr()
+    {
+        _UniffiHelpers.RustCall(
+            (ref UniffiRustCallStatus status) =>
+            {
+                _UniFFILib.uniffi_matrix_sdk_ffi_fn_free_secretstoragekey(this.pointer, ref status);
+            }
+        );
+    }
+
+    protected ulong CloneRustArcPtr()
+    {
+        return _UniffiHelpers.RustCall(
+            (ref UniffiRustCallStatus status) =>
+            {
+                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_clone_secretstoragekey(this.pointer, ref status);
+            }
+        );
+    }
+
+    public void Destroy()
+    {
+        // Only allow a single call to this method.
+        if (Interlocked.CompareExchange(ref _wasDestroyed, 1, 0) == 0)
+        {
+            // This decrement always matches the initial count of 1 given at creation time.
+            if (Interlocked.Decrement(ref _callCounter) == 0)
+            {
+                FreeRustArcPtr();
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        Destroy();
+        GC.SuppressFinalize(this); // Suppress finalization to avoid unnecessary GC overhead.
+    }
+
+    private void IncrementCallCounter()
+    {
+        // Check and increment the call counter, to keep the object alive.
+        // This needs a compare-and-set retry loop in case of concurrent updates.
+        long count;
+        do
+        {
+            count = Interlocked.Read(ref _callCounter);
+            if (count == 0L)
+                throw new System.ObjectDisposedException(
+                    String.Format("'{0}' object has already been destroyed", this.GetType().Name)
+                );
+            if (count == long.MaxValue)
+                throw new System.OverflowException(
+                    String.Format("'{0}' call counter would overflow", this.GetType().Name)
+                );
+        } while (Interlocked.CompareExchange(ref _callCounter, count + 1, count) != count);
+    }
+
+    private void DecrementCallCounter()
+    {
+        // This decrement always matches the increment we performed above.
+        if (Interlocked.Decrement(ref _callCounter) == 0)
+        {
+            FreeRustArcPtr();
+        }
+    }
+
+    internal void CallWithPointer(Action<ulong> action)
+    {
+        IncrementCallCounter();
+        try
+        {
+            action(CloneRustArcPtr());
+        }
+        finally
+        {
+            DecrementCallCounter();
+        }
+    }
+
+    internal T CallWithPointer<T>(Func<ulong, T> func)
+    {
+        IncrementCallCounter();
+        try
+        {
+            return func(CloneRustArcPtr());
+        }
+        finally
+        {
+            DecrementCallCounter();
+        }
+    }
+
+    /// <summary>
+    /// The base-58 representation of the key to present to the user.
+    ///
+    /// _Note_: This returns a copy of the private key material of the
+    /// [`SecretStorageKey`] as a string. The caller needs to ensure that this
+    /// string is zeroized.
+    /// </summary>
+    public string ToBase58()
+    {
+        return CallWithPointer(thisPtr =>
+            FfiConverterString.INSTANCE.Lift(
+                _UniffiHelpers.RustCall(
+                    (ref UniffiRustCallStatus _status) =>
+                        _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_secretstoragekey_to_base58(thisPtr, ref _status)
+                )
+            )
+        );
+    }
+
+    /// <summary>
+    /// Create a new secret storage key from a passphrase.
+    /// </summary>
+    public static SecretStorageKey NewFromPassphrase(string @passphrase)
+    {
+        return new SecretStorageKey(
+            _UniffiHelpers.RustCall(
+                (ref UniffiRustCallStatus _status) =>
+                    _UniFFILib.uniffi_matrix_sdk_ffi_fn_constructor_secretstoragekey_new_from_passphrase(
+                        FfiConverterString.INSTANCE.Lower(@passphrase),
+                        ref _status
+                    )
+            )
+        );
+    }
+}
+
+class FfiConverterTypeSecretStorageKey : FfiConverter<SecretStorageKey, ulong>
+{
+    public static FfiConverterTypeSecretStorageKey INSTANCE = new FfiConverterTypeSecretStorageKey();
+
+    public override ulong Lower(SecretStorageKey value)
+    {
+        return value.CallWithPointer(thisPtr => thisPtr);
+    }
+
+    public override SecretStorageKey Lift(ulong value)
+    {
+        return new SecretStorageKey(value);
+    }
+
+    public override SecretStorageKey Read(BigEndianStream stream)
+    {
+        return Lift(stream.ReadULong());
+    }
+
+    public override int AllocationSize(SecretStorageKey value)
+    {
+        return 8;
+    }
+
+    public override void Write(SecretStorageKey value, BigEndianStream stream)
     {
         stream.WriteULong(Lower(value));
     }
@@ -53543,6 +54469,10 @@ class FfiConverterTypeEventEncryptionInfo : FfiConverterRustBuffer<EventEncrypti
 /// <param name="RedactionSendState">
 /// Send state of our pending redaction of this event, if any.
 /// </param>
+/// <param name="RedactionReason">
+/// The reason given with the redaction of this event, if any: from the
+/// server, or from our own redaction while it is still pending.
+/// </param>
 public record EventTimelineItem(
     /// <summary>
     /// Indicates that an event is remote.
@@ -53572,6 +54502,11 @@ public record EventTimelineItem(
     /// Send state of our pending redaction of this event, if any.
     /// </summary>
     EventSendState? RedactionSendState,
+    /// <summary>
+    /// The reason given with the redaction of this event, if any: from the
+    /// server, or from our own redaction while it is still pending.
+    /// </summary>
+    string? RedactionReason,
     ulong? LocalCreatedAt,
     Dictionary<string, Receipt> ReadReceipts,
     EventItemOrigin? Origin,
@@ -53597,6 +54532,7 @@ public record EventTimelineItem(
             this.LocalSendState,
             this.EditSendState,
             this.RedactionSendState,
+            this.RedactionReason,
             this.LocalCreatedAt,
             this.ReadReceipts,
             this.Origin,
@@ -53628,6 +54564,7 @@ class FfiConverterTypeEventTimelineItem : FfiConverterRustBuffer<EventTimelineIt
             LocalSendState: FfiConverterOptionalTypeEventSendState.INSTANCE.Read(stream),
             EditSendState: FfiConverterOptionalTypeEventSendState.INSTANCE.Read(stream),
             RedactionSendState: FfiConverterOptionalTypeEventSendState.INSTANCE.Read(stream),
+            RedactionReason: FfiConverterOptionalString.INSTANCE.Read(stream),
             LocalCreatedAt: FfiConverterOptionalUInt64.INSTANCE.Read(stream),
             ReadReceipts: FfiConverterDictionaryStringTypeReceipt.INSTANCE.Read(stream),
             Origin: FfiConverterOptionalTypeEventItemOrigin.INSTANCE.Read(stream),
@@ -53654,6 +54591,7 @@ class FfiConverterTypeEventTimelineItem : FfiConverterRustBuffer<EventTimelineIt
             + FfiConverterOptionalTypeEventSendState.INSTANCE.AllocationSize(value.LocalSendState)
             + FfiConverterOptionalTypeEventSendState.INSTANCE.AllocationSize(value.EditSendState)
             + FfiConverterOptionalTypeEventSendState.INSTANCE.AllocationSize(value.RedactionSendState)
+            + FfiConverterOptionalString.INSTANCE.AllocationSize(value.RedactionReason)
             + FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.LocalCreatedAt)
             + FfiConverterDictionaryStringTypeReceipt.INSTANCE.AllocationSize(value.ReadReceipts)
             + FfiConverterOptionalTypeEventItemOrigin.INSTANCE.AllocationSize(value.Origin)
@@ -53678,6 +54616,7 @@ class FfiConverterTypeEventTimelineItem : FfiConverterRustBuffer<EventTimelineIt
         FfiConverterOptionalTypeEventSendState.INSTANCE.Write(value.LocalSendState, stream);
         FfiConverterOptionalTypeEventSendState.INSTANCE.Write(value.EditSendState, stream);
         FfiConverterOptionalTypeEventSendState.INSTANCE.Write(value.RedactionSendState, stream);
+        FfiConverterOptionalString.INSTANCE.Write(value.RedactionReason, stream);
         FfiConverterOptionalUInt64.INSTANCE.Write(value.LocalCreatedAt, stream);
         FfiConverterDictionaryStringTypeReceipt.INSTANCE.Write(value.ReadReceipts, stream);
         FfiConverterOptionalTypeEventItemOrigin.INSTANCE.Write(value.Origin, stream);
@@ -56500,6 +57439,54 @@ class FfiConverterTypeRequestConfig : FfiConverterRustBuffer<RequestConfig>
         FfiConverterOptionalUInt64.INSTANCE.Write(value.Timeout, stream);
         FfiConverterOptionalUInt64.INSTANCE.Write(value.MaxConcurrentRequests, stream);
         FfiConverterOptionalUInt64.INSTANCE.Write(value.MaxRetryTime, stream);
+    }
+}
+
+/// <summary>
+/// Overrides of the client's request config for a single request.
+///
+/// Fields that are not set keep the values of the client's request config.
+/// </summary>
+/// <param name="RetryLimit">
+/// Max number of retries. `0` disables retries.
+/// </param>
+/// <param name="Timeout">
+/// Timeout for a single attempt of the request, in milliseconds.
+/// </param>
+public record RequestConfigOverride(
+    /// <summary>
+    /// Max number of retries. `0` disables retries.
+    /// </summary>
+    ulong? RetryLimit,
+    /// <summary>
+    /// Timeout for a single attempt of the request, in milliseconds.
+    /// </summary>
+    ulong? Timeout
+) { }
+
+class FfiConverterTypeRequestConfigOverride : FfiConverterRustBuffer<RequestConfigOverride>
+{
+    public static FfiConverterTypeRequestConfigOverride INSTANCE = new FfiConverterTypeRequestConfigOverride();
+
+    public override RequestConfigOverride Read(BigEndianStream stream)
+    {
+        return new RequestConfigOverride(
+            RetryLimit: FfiConverterOptionalUInt64.INSTANCE.Read(stream),
+            Timeout: FfiConverterOptionalUInt64.INSTANCE.Read(stream)
+        );
+    }
+
+    public override int AllocationSize(RequestConfigOverride value)
+    {
+        return 0
+            + FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.RetryLimit)
+            + FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.Timeout);
+    }
+
+    public override void Write(RequestConfigOverride value, BigEndianStream stream)
+    {
+        FfiConverterOptionalUInt64.INSTANCE.Write(value.RetryLimit, stream);
+        FfiConverterOptionalUInt64.INSTANCE.Write(value.Timeout, stream);
     }
 }
 
@@ -60255,6 +61242,12 @@ class FfiConverterTypeUserTagName : FfiConverterRustBuffer<UserTagName>
     }
 }
 
+/// <param name="Circle">
+/// Whether this video should be displayed as a circle video
+/// ([MSC4546](https://github.com/matrix-org/matrix-spec-proposals/pull/4546)).
+///
+/// Defaults to `false`.
+/// </param>
 public record VideoInfo(
     TimeSpan? Duration,
     ulong? Height,
@@ -60263,7 +61256,14 @@ public record VideoInfo(
     ulong? Size,
     ThumbnailInfo? ThumbnailInfo,
     MediaSource? ThumbnailSource,
-    string? Blurhash
+    string? Blurhash,
+    /// <summary>
+    /// Whether this video should be displayed as a circle video
+    /// ([MSC4546](https://github.com/matrix-org/matrix-spec-proposals/pull/4546)).
+    ///
+    /// Defaults to `false`.
+    /// </summary>
+    bool Circle = false
 ) : IDisposable
 {
     public void Dispose()
@@ -60276,7 +61276,8 @@ public record VideoInfo(
             this.Size,
             this.ThumbnailInfo,
             this.ThumbnailSource,
-            this.Blurhash
+            this.Blurhash,
+            this.Circle
         );
     }
 }
@@ -60295,7 +61296,8 @@ class FfiConverterTypeVideoInfo : FfiConverterRustBuffer<VideoInfo>
             Size: FfiConverterOptionalUInt64.INSTANCE.Read(stream),
             ThumbnailInfo: FfiConverterOptionalTypeThumbnailInfo.INSTANCE.Read(stream),
             ThumbnailSource: FfiConverterOptionalTypeMediaSource.INSTANCE.Read(stream),
-            Blurhash: FfiConverterOptionalString.INSTANCE.Read(stream)
+            Blurhash: FfiConverterOptionalString.INSTANCE.Read(stream),
+            Circle: FfiConverterBoolean.INSTANCE.Read(stream)
         );
     }
 
@@ -60309,7 +61311,8 @@ class FfiConverterTypeVideoInfo : FfiConverterRustBuffer<VideoInfo>
             + FfiConverterOptionalUInt64.INSTANCE.AllocationSize(value.Size)
             + FfiConverterOptionalTypeThumbnailInfo.INSTANCE.AllocationSize(value.ThumbnailInfo)
             + FfiConverterOptionalTypeMediaSource.INSTANCE.AllocationSize(value.ThumbnailSource)
-            + FfiConverterOptionalString.INSTANCE.AllocationSize(value.Blurhash);
+            + FfiConverterOptionalString.INSTANCE.AllocationSize(value.Blurhash)
+            + FfiConverterBoolean.INSTANCE.AllocationSize(value.Circle);
     }
 
     public override void Write(VideoInfo value, BigEndianStream stream)
@@ -60322,11 +61325,18 @@ class FfiConverterTypeVideoInfo : FfiConverterRustBuffer<VideoInfo>
         FfiConverterOptionalTypeThumbnailInfo.INSTANCE.Write(value.ThumbnailInfo, stream);
         FfiConverterOptionalTypeMediaSource.INSTANCE.Write(value.ThumbnailSource, stream);
         FfiConverterOptionalString.INSTANCE.Write(value.Blurhash, stream);
+        FfiConverterBoolean.INSTANCE.Write(value.Circle, stream);
     }
 }
 
 /// <param name="Filename">
 /// The computed filename, for use in a client.
+/// </param>
+/// <param name="Circle">
+/// Whether this video should be displayed as a circle video
+/// ([MSC4546](https://github.com/matrix-org/matrix-spec-proposals/pull/4546)).
+///
+/// Defaults to `false`.
 /// </param>
 public record VideoMessageContent(
     /// <summary>
@@ -60336,12 +61346,26 @@ public record VideoMessageContent(
     string? Caption,
     FormattedBody? FormattedCaption,
     MediaSource Source,
-    VideoInfo? Info
+    VideoInfo? Info,
+    /// <summary>
+    /// Whether this video should be displayed as a circle video
+    /// ([MSC4546](https://github.com/matrix-org/matrix-spec-proposals/pull/4546)).
+    ///
+    /// Defaults to `false`.
+    /// </summary>
+    bool Circle = false
 ) : IDisposable
 {
     public void Dispose()
     {
-        FFIObjectUtil.DisposeAll(this.Filename, this.Caption, this.FormattedCaption, this.Source, this.Info);
+        FFIObjectUtil.DisposeAll(
+            this.Filename,
+            this.Caption,
+            this.FormattedCaption,
+            this.Source,
+            this.Info,
+            this.Circle
+        );
     }
 }
 
@@ -60356,7 +61380,8 @@ class FfiConverterTypeVideoMessageContent : FfiConverterRustBuffer<VideoMessageC
             Caption: FfiConverterOptionalString.INSTANCE.Read(stream),
             FormattedCaption: FfiConverterOptionalTypeFormattedBody.INSTANCE.Read(stream),
             Source: FfiConverterTypeMediaSource.INSTANCE.Read(stream),
-            Info: FfiConverterOptionalTypeVideoInfo.INSTANCE.Read(stream)
+            Info: FfiConverterOptionalTypeVideoInfo.INSTANCE.Read(stream),
+            Circle: FfiConverterBoolean.INSTANCE.Read(stream)
         );
     }
 
@@ -60367,7 +61392,8 @@ class FfiConverterTypeVideoMessageContent : FfiConverterRustBuffer<VideoMessageC
             + FfiConverterOptionalString.INSTANCE.AllocationSize(value.Caption)
             + FfiConverterOptionalTypeFormattedBody.INSTANCE.AllocationSize(value.FormattedCaption)
             + FfiConverterTypeMediaSource.INSTANCE.AllocationSize(value.Source)
-            + FfiConverterOptionalTypeVideoInfo.INSTANCE.AllocationSize(value.Info);
+            + FfiConverterOptionalTypeVideoInfo.INSTANCE.AllocationSize(value.Info)
+            + FfiConverterBoolean.INSTANCE.AllocationSize(value.Circle);
     }
 
     public override void Write(VideoMessageContent value, BigEndianStream stream)
@@ -60377,6 +61403,7 @@ class FfiConverterTypeVideoMessageContent : FfiConverterRustBuffer<VideoMessageC
         FfiConverterOptionalTypeFormattedBody.INSTANCE.Write(value.FormattedCaption, stream);
         FfiConverterTypeMediaSource.INSTANCE.Write(value.Source, stream);
         FfiConverterOptionalTypeVideoInfo.INSTANCE.Write(value.Info, stream);
+        FfiConverterBoolean.INSTANCE.Write(value.Circle, stream);
     }
 }
 
@@ -66221,6 +67248,134 @@ class FfiConverterTypeInviteAvatars : FfiConverterRustBuffer<InviteAvatars>
             default:
                 throw new InternalException(
                     String.Format("invalid enum value '{0}' in FfiConverterTypeInviteAvatars.Write()", value)
+                );
+        }
+    }
+}
+
+/// <summary>
+/// The room invite permissions that can be set.
+/// </summary>
+public enum InvitePermissionAction : int
+{
+    /// <summary>
+    /// Allow room invitations.
+    /// </summary>
+    Allow,
+
+    /// <summary>
+    /// Block all room invitations.
+    /// </summary>
+    Block,
+}
+
+class FfiConverterTypeInvitePermissionAction : FfiConverterRustBuffer<InvitePermissionAction>
+{
+    public static FfiConverterTypeInvitePermissionAction INSTANCE = new FfiConverterTypeInvitePermissionAction();
+
+    public override InvitePermissionAction Read(BigEndianStream stream)
+    {
+        var value = stream.ReadInt();
+        switch (value)
+        {
+            case 1:
+                return InvitePermissionAction.Allow;
+            case 2:
+                return InvitePermissionAction.Block;
+            default:
+                throw new InternalException(
+                    String.Format("invalid enum value '{0}' in FfiConverterTypeInvitePermissionAction.Read()", value)
+                );
+        }
+    }
+
+    public override int AllocationSize(InvitePermissionAction value)
+    {
+        return 4;
+    }
+
+    public override void Write(InvitePermissionAction value, BigEndianStream stream)
+    {
+        switch (value)
+        {
+            case InvitePermissionAction.Allow:
+                stream.WriteInt(1);
+                break;
+            case InvitePermissionAction.Block:
+                stream.WriteInt(2);
+                break;
+            default:
+                throw new InternalException(
+                    String.Format("invalid enum value '{0}' in FfiConverterTypeInvitePermissionAction.Write()", value)
+                );
+        }
+    }
+}
+
+/// <summary>
+/// The current room invite permission state.
+/// </summary>
+public enum InvitePermissionState : int
+{
+    /// <summary>
+    /// No default restriction on room invitations.
+    /// </summary>
+    Unrestricted,
+
+    /// <summary>
+    /// All room invitations are blocked.
+    /// </summary>
+    Block,
+
+    /// <summary>
+    /// An invite permission not supported by the SDK.
+    /// </summary>
+    Unsupported,
+}
+
+class FfiConverterTypeInvitePermissionState : FfiConverterRustBuffer<InvitePermissionState>
+{
+    public static FfiConverterTypeInvitePermissionState INSTANCE = new FfiConverterTypeInvitePermissionState();
+
+    public override InvitePermissionState Read(BigEndianStream stream)
+    {
+        var value = stream.ReadInt();
+        switch (value)
+        {
+            case 1:
+                return InvitePermissionState.Unrestricted;
+            case 2:
+                return InvitePermissionState.Block;
+            case 3:
+                return InvitePermissionState.Unsupported;
+            default:
+                throw new InternalException(
+                    String.Format("invalid enum value '{0}' in FfiConverterTypeInvitePermissionState.Read()", value)
+                );
+        }
+    }
+
+    public override int AllocationSize(InvitePermissionState value)
+    {
+        return 4;
+    }
+
+    public override void Write(InvitePermissionState value, BigEndianStream stream)
+    {
+        switch (value)
+        {
+            case InvitePermissionState.Unrestricted:
+                stream.WriteInt(1);
+                break;
+            case InvitePermissionState.Block:
+                stream.WriteInt(2);
+                break;
+            case InvitePermissionState.Unsupported:
+                stream.WriteInt(3);
+                break;
+            default:
+                throw new InternalException(
+                    String.Format("invalid enum value '{0}' in FfiConverterTypeInvitePermissionState.Write()", value)
                 );
         }
     }
@@ -73408,7 +74563,7 @@ public record RtcTransport
     /// <summary>
     /// A LiveKit RTC transport.
     /// </summary>
-    public record LiveKit(string ServiceUrl) : RtcTransport { }
+    public record LiveKit(string? Url, string? ServiceUrl) : RtcTransport { }
 
     /// <summary>
     /// A transport type the SDK doesn't know about, up for interpretation by
@@ -73427,7 +74582,10 @@ class FfiConverterTypeRtcTransport : FfiConverterRustBuffer<RtcTransport>
         switch (value)
         {
             case 1:
-                return new RtcTransport.LiveKit(FfiConverterString.INSTANCE.Read(stream));
+                return new RtcTransport.LiveKit(
+                    FfiConverterOptionalString.INSTANCE.Read(stream),
+                    FfiConverterOptionalString.INSTANCE.Read(stream)
+                );
             case 2:
                 return new RtcTransport.Custom(
                     FfiConverterString.INSTANCE.Read(stream),
@@ -73445,7 +74603,9 @@ class FfiConverterTypeRtcTransport : FfiConverterRustBuffer<RtcTransport>
         switch (value)
         {
             case RtcTransport.LiveKit variant_value:
-                return 4 + FfiConverterString.INSTANCE.AllocationSize(variant_value.ServiceUrl);
+                return 4
+                    + FfiConverterOptionalString.INSTANCE.AllocationSize(variant_value.Url)
+                    + FfiConverterOptionalString.INSTANCE.AllocationSize(variant_value.ServiceUrl);
             case RtcTransport.Custom variant_value:
                 return 4
                     + FfiConverterString.INSTANCE.AllocationSize(variant_value.TransportType)
@@ -73463,7 +74623,8 @@ class FfiConverterTypeRtcTransport : FfiConverterRustBuffer<RtcTransport>
         {
             case RtcTransport.LiveKit variant_value:
                 stream.WriteInt(1);
-                FfiConverterString.INSTANCE.Write(variant_value.ServiceUrl, stream);
+                FfiConverterOptionalString.INSTANCE.Write(variant_value.Url, stream);
+                FfiConverterOptionalString.INSTANCE.Write(variant_value.ServiceUrl, stream);
                 break;
             case RtcTransport.Custom variant_value:
                 stream.WriteInt(2);
@@ -78968,6 +80129,135 @@ class FfiConverterTypeIgnoredUsersListener : FfiConverter<IgnoredUsersListener, 
     }
 }
 
+public interface InvitePermissionListener
+{
+    void OnChange(InvitePermissionState @invitePermission);
+}
+
+class UniffiCallbackInterfaceInvitePermissionListener
+{
+    static void OnChange(
+        ulong @uniffiHandle,
+        RustBuffer @invitePermission,
+        IntPtr @uniffiOutReturn,
+        ref UniffiRustCallStatus _uniffi_out_err
+    )
+    {
+        var handle = @uniffiHandle;
+        try
+        {
+            if (!FfiConverterTypeInvitePermissionListener.INSTANCE.handleMap.TryGet(handle, out var uniffiObject))
+            {
+                throw new InternalException($"No callback in handlemap '{handle}'");
+            }
+            uniffiObject.OnChange(FfiConverterTypeInvitePermissionState.INSTANCE.Lift(@invitePermission));
+
+            _uniffi_out_err.code = UniffiCallbackResponseStatus.SUCCESS;
+        }
+        catch (System.Exception e)
+        {
+            _uniffi_out_err.code = UniffiCallbackResponseStatus.UNEXPECTED_ERROR;
+            try
+            {
+                _uniffi_out_err.error_buf = FfiConverterString.INSTANCE.Lower(e.Message);
+            }
+            catch { }
+        }
+    }
+
+    static void UniffiFree(ulong @handle)
+    {
+        FfiConverterTypeInvitePermissionListener.INSTANCE.handleMap.Remove(@handle);
+    }
+
+    static ulong UniffiClone(ulong @handle)
+    {
+        try
+        {
+            if (!FfiConverterTypeInvitePermissionListener.INSTANCE.handleMap.TryGet(@handle, out var obj))
+            {
+                throw new InternalException($"No callback in handlemap '{@handle}'");
+            }
+            return FfiConverterTypeInvitePermissionListener.INSTANCE.handleMap.Insert(obj);
+        }
+        catch (System.Exception)
+        {
+            return 0; // 0 is never a valid handle; ConcurrentHandleMap starts at 1
+        }
+    }
+
+    static _UniFFILib.UniffiCallbackInterfaceInvitePermissionListenerMethod0 _m0 =
+        new _UniFFILib.UniffiCallbackInterfaceInvitePermissionListenerMethod0(OnChange);
+    static _UniFFILib.UniffiCallbackInterfaceFree _callback_interface_free = new _UniFFILib.UniffiCallbackInterfaceFree(
+        UniffiFree
+    );
+    static _UniFFILib.UniffiCallbackInterfaceClone _callback_interface_clone =
+        new _UniFFILib.UniffiCallbackInterfaceClone(UniffiClone);
+
+    private static GCHandle? _vtablePin;
+
+    public static void Register()
+    {
+        if (_vtablePin.HasValue)
+            return;
+        _UniFFILib.UniffiVTableCallbackInterfaceInvitePermissionListener _vtable =
+            new _UniFFILib.UniffiVTableCallbackInterfaceInvitePermissionListener
+            {
+                @onChange = Marshal.GetFunctionPointerForDelegate(_m0),
+                @uniffiFree = Marshal.GetFunctionPointerForDelegate(_callback_interface_free),
+                @uniffiClone = Marshal.GetFunctionPointerForDelegate(_callback_interface_clone),
+            };
+
+        // Pin the vtable so the GC never moves it. The GCHandle is intentionally never freed —
+        // this pin must remain valid for the process lifetime.
+        _vtablePin = GCHandle.Alloc(_vtable, GCHandleType.Pinned);
+        _UniFFILib.uniffi_matrix_sdk_ffi_fn_init_callback_vtable_invitepermissionlistener(
+            _vtablePin.Value.AddrOfPinnedObject()
+        );
+    }
+}
+
+// The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
+class FfiConverterTypeInvitePermissionListener : FfiConverter<InvitePermissionListener, ulong>
+{
+    public static FfiConverterTypeInvitePermissionListener INSTANCE = new FfiConverterTypeInvitePermissionListener();
+
+    public ConcurrentHandleMap<InvitePermissionListener> handleMap =
+        new ConcurrentHandleMap<InvitePermissionListener>();
+
+    public override ulong Lower(InvitePermissionListener value)
+    {
+        return handleMap.Insert(value);
+    }
+
+    public override InvitePermissionListener Lift(ulong value)
+    {
+        if (handleMap.TryGet(value, out var uniffiCallback))
+        {
+            return uniffiCallback;
+        }
+        else
+        {
+            throw new InternalException($"No callback in handlemap '{value}'");
+        }
+    }
+
+    public override InvitePermissionListener Read(BigEndianStream stream)
+    {
+        return Lift(stream.ReadULong());
+    }
+
+    public override int AllocationSize(InvitePermissionListener value)
+    {
+        return 8;
+    }
+
+    public override void Write(InvitePermissionListener value, BigEndianStream stream)
+    {
+        stream.WriteULong(Lower(value));
+    }
+}
+
 /// <summary>
 /// A listener for receiving new requests to a join a room.
 /// </summary>
@@ -84100,6 +85390,145 @@ class FfiConverterTypeToDeviceMessageListener : FfiConverter<ToDeviceMessageList
     }
 }
 
+/// <summary>
+/// A callback interface for receiving updates of the total unread notification
+/// count.
+/// </summary>
+public interface TotalUnreadNotificationsListener
+{
+    void OnUpdate(ulong @count);
+}
+
+class UniffiCallbackInterfaceTotalUnreadNotificationsListener
+{
+    static void OnUpdate(
+        ulong @uniffiHandle,
+        ulong @count,
+        IntPtr @uniffiOutReturn,
+        ref UniffiRustCallStatus _uniffi_out_err
+    )
+    {
+        var handle = @uniffiHandle;
+        try
+        {
+            if (
+                !FfiConverterTypeTotalUnreadNotificationsListener.INSTANCE.handleMap.TryGet(
+                    handle,
+                    out var uniffiObject
+                )
+            )
+            {
+                throw new InternalException($"No callback in handlemap '{handle}'");
+            }
+            uniffiObject.OnUpdate(FfiConverterUInt64.INSTANCE.Lift(@count));
+
+            _uniffi_out_err.code = UniffiCallbackResponseStatus.SUCCESS;
+        }
+        catch (System.Exception e)
+        {
+            _uniffi_out_err.code = UniffiCallbackResponseStatus.UNEXPECTED_ERROR;
+            try
+            {
+                _uniffi_out_err.error_buf = FfiConverterString.INSTANCE.Lower(e.Message);
+            }
+            catch { }
+        }
+    }
+
+    static void UniffiFree(ulong @handle)
+    {
+        FfiConverterTypeTotalUnreadNotificationsListener.INSTANCE.handleMap.Remove(@handle);
+    }
+
+    static ulong UniffiClone(ulong @handle)
+    {
+        try
+        {
+            if (!FfiConverterTypeTotalUnreadNotificationsListener.INSTANCE.handleMap.TryGet(@handle, out var obj))
+            {
+                throw new InternalException($"No callback in handlemap '{@handle}'");
+            }
+            return FfiConverterTypeTotalUnreadNotificationsListener.INSTANCE.handleMap.Insert(obj);
+        }
+        catch (System.Exception)
+        {
+            return 0; // 0 is never a valid handle; ConcurrentHandleMap starts at 1
+        }
+    }
+
+    static _UniFFILib.UniffiCallbackInterfaceTotalUnreadNotificationsListenerMethod0 _m0 =
+        new _UniFFILib.UniffiCallbackInterfaceTotalUnreadNotificationsListenerMethod0(OnUpdate);
+    static _UniFFILib.UniffiCallbackInterfaceFree _callback_interface_free = new _UniFFILib.UniffiCallbackInterfaceFree(
+        UniffiFree
+    );
+    static _UniFFILib.UniffiCallbackInterfaceClone _callback_interface_clone =
+        new _UniFFILib.UniffiCallbackInterfaceClone(UniffiClone);
+
+    private static GCHandle? _vtablePin;
+
+    public static void Register()
+    {
+        if (_vtablePin.HasValue)
+            return;
+        _UniFFILib.UniffiVTableCallbackInterfaceTotalUnreadNotificationsListener _vtable =
+            new _UniFFILib.UniffiVTableCallbackInterfaceTotalUnreadNotificationsListener
+            {
+                @onUpdate = Marshal.GetFunctionPointerForDelegate(_m0),
+                @uniffiFree = Marshal.GetFunctionPointerForDelegate(_callback_interface_free),
+                @uniffiClone = Marshal.GetFunctionPointerForDelegate(_callback_interface_clone),
+            };
+
+        // Pin the vtable so the GC never moves it. The GCHandle is intentionally never freed —
+        // this pin must remain valid for the process lifetime.
+        _vtablePin = GCHandle.Alloc(_vtable, GCHandleType.Pinned);
+        _UniFFILib.uniffi_matrix_sdk_ffi_fn_init_callback_vtable_totalunreadnotificationslistener(
+            _vtablePin.Value.AddrOfPinnedObject()
+        );
+    }
+}
+
+// The ffiConverter which transforms the Callbacks in to Handles to pass to Rust.
+class FfiConverterTypeTotalUnreadNotificationsListener : FfiConverter<TotalUnreadNotificationsListener, ulong>
+{
+    public static FfiConverterTypeTotalUnreadNotificationsListener INSTANCE =
+        new FfiConverterTypeTotalUnreadNotificationsListener();
+
+    public ConcurrentHandleMap<TotalUnreadNotificationsListener> handleMap =
+        new ConcurrentHandleMap<TotalUnreadNotificationsListener>();
+
+    public override ulong Lower(TotalUnreadNotificationsListener value)
+    {
+        return handleMap.Insert(value);
+    }
+
+    public override TotalUnreadNotificationsListener Lift(ulong value)
+    {
+        if (handleMap.TryGet(value, out var uniffiCallback))
+        {
+            return uniffiCallback;
+        }
+        else
+        {
+            throw new InternalException($"No callback in handlemap '{value}'");
+        }
+    }
+
+    public override TotalUnreadNotificationsListener Read(BigEndianStream stream)
+    {
+        return Lift(stream.ReadULong());
+    }
+
+    public override int AllocationSize(TotalUnreadNotificationsListener value)
+    {
+        return 8;
+    }
+
+    public override void Write(TotalUnreadNotificationsListener value, BigEndianStream stream)
+    {
+        stream.WriteULong(Lower(value));
+    }
+}
+
 public interface TypingNotificationsListener
 {
     void Call(string[] @typingUserIds);
@@ -85358,6 +86787,45 @@ class FfiConverterOptionalTypeRoomPowerLevels : FfiConverterRustBuffer<RoomPower
     }
 }
 
+class FfiConverterOptionalTypeSecretStorageKey : FfiConverterRustBuffer<SecretStorageKey?>
+{
+    public static FfiConverterOptionalTypeSecretStorageKey INSTANCE = new FfiConverterOptionalTypeSecretStorageKey();
+
+    public override SecretStorageKey? Read(BigEndianStream stream)
+    {
+        if (stream.ReadByte() == 0)
+        {
+            return null;
+        }
+        return FfiConverterTypeSecretStorageKey.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(SecretStorageKey? value)
+    {
+        if (value == null)
+        {
+            return 1;
+        }
+        else
+        {
+            return 1 + FfiConverterTypeSecretStorageKey.INSTANCE.AllocationSize((SecretStorageKey)value);
+        }
+    }
+
+    public override void Write(SecretStorageKey? value, BigEndianStream stream)
+    {
+        if (value == null)
+        {
+            stream.WriteByte(0);
+        }
+        else
+        {
+            stream.WriteByte(1);
+            FfiConverterTypeSecretStorageKey.INSTANCE.Write((SecretStorageKey)value, stream);
+        }
+    }
+}
+
 class FfiConverterOptionalTypeSendHandle : FfiConverterRustBuffer<SendHandle?>
 {
     public static FfiConverterOptionalTypeSendHandle INSTANCE = new FfiConverterOptionalTypeSendHandle();
@@ -86342,6 +87810,46 @@ class FfiConverterOptionalTypePredecessorRoom : FfiConverterRustBuffer<Predecess
         {
             stream.WriteByte(1);
             FfiConverterTypePredecessorRoom.INSTANCE.Write((PredecessorRoom)value, stream);
+        }
+    }
+}
+
+class FfiConverterOptionalTypeRequestConfigOverride : FfiConverterRustBuffer<RequestConfigOverride?>
+{
+    public static FfiConverterOptionalTypeRequestConfigOverride INSTANCE =
+        new FfiConverterOptionalTypeRequestConfigOverride();
+
+    public override RequestConfigOverride? Read(BigEndianStream stream)
+    {
+        if (stream.ReadByte() == 0)
+        {
+            return null;
+        }
+        return FfiConverterTypeRequestConfigOverride.INSTANCE.Read(stream);
+    }
+
+    public override int AllocationSize(RequestConfigOverride? value)
+    {
+        if (value == null)
+        {
+            return 1;
+        }
+        else
+        {
+            return 1 + FfiConverterTypeRequestConfigOverride.INSTANCE.AllocationSize((RequestConfigOverride)value);
+        }
+    }
+
+    public override void Write(RequestConfigOverride? value, BigEndianStream stream)
+    {
+        if (value == null)
+        {
+            stream.WriteByte(0);
+        }
+        else
+        {
+            stream.WriteByte(1);
+            FfiConverterTypeRequestConfigOverride.INSTANCE.Write((RequestConfigOverride)value, stream);
         }
     }
 }
