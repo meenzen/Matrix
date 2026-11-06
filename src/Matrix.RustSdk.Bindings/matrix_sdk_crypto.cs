@@ -2938,6 +2938,11 @@ public enum UtdCause : int
     /// Expected message to user: "You need to verify this device".
     /// </summary>
     HistoricalMessageAndDeviceIsUnverified,
+
+    /// <summary>
+    /// This event is malformed in some way.
+    /// </summary>
+    Malformed,
 }
 
 class FfiConverterTypeUtdCause : FfiConverterRustBuffer<UtdCause>
@@ -2967,6 +2972,8 @@ class FfiConverterTypeUtdCause : FfiConverterRustBuffer<UtdCause>
                 return UtdCause.WithheldBySender;
             case 9:
                 return UtdCause.HistoricalMessageAndDeviceIsUnverified;
+            case 10:
+                return UtdCause.Malformed;
             default:
                 throw new InternalException(
                     String.Format("invalid enum value '{0}' in FfiConverterTypeUtdCause.Read()", value)
@@ -3009,6 +3016,9 @@ class FfiConverterTypeUtdCause : FfiConverterRustBuffer<UtdCause>
                 break;
             case UtdCause.HistoricalMessageAndDeviceIsUnverified:
                 stream.WriteInt(9);
+                break;
+            case UtdCause.Malformed:
+                stream.WriteInt(10);
                 break;
             default:
                 throw new InternalException(

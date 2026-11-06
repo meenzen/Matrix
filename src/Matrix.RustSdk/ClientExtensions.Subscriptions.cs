@@ -110,6 +110,42 @@ public static partial class ClientExtensions
     );
 
     /// <summary>
+    /// Watches who may invite the own user to rooms. Yields the permission, starting with the current one,
+    /// <see cref="InvitePermissionState.Unrestricted"/> while none is set.
+    /// </summary>
+    /// <param name="client">The client.</param>
+    /// <include file="Subscriptions/Subscriptions.xml" path="docs/cancellationToken/*"/>
+    /// <remarks><include file="Subscriptions/Subscriptions.xml" path="docs/state/*"/></remarks>
+    /// <exception cref="ClientException">
+    /// The stored permission couldn't be read, thrown when the enumeration starts.
+    /// </exception>
+    [Subscription(nameof(Client.SubscribeToInvitePermission), SubscriptionBuffer.Latest)]
+    public static partial IAsyncEnumerable<InvitePermissionState> WatchInvitePermissionAsync(
+        this Client client,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
+    /// Watches the total number of unread notifications in all rooms. Yields it, starting with the current count,
+    /// then each time it changed, at most once every <paramref name="minInterval"/>.
+    /// </summary>
+    /// <param name="client">The client.</param>
+    /// <param name="minInterval">
+    /// The minimum time between two counts, the SDK recomputes the count at most this often.
+    /// </param>
+    /// <include file="Subscriptions/Subscriptions.xml" path="docs/cancellationToken/*"/>
+    /// <remarks>
+    /// <include file="Subscriptions/Subscriptions.xml" path="docs/state/*"/>
+    /// <para>The SDK also ends the subscription when it falls behind, subscribe again if you still need it.</para>
+    /// </remarks>
+    [Subscription(nameof(Client.ObserveTotalUnreadNotifications), SubscriptionBuffer.Latest)]
+    public static partial IAsyncEnumerable<ulong> WatchTotalUnreadNotificationsAsync(
+        this Client client,
+        TimeSpan minInterval,
+        CancellationToken cancellationToken = default
+    );
+
+    /// <summary>
     /// Watches the media preview configuration of the account. Yields it, starting with the current one,
     /// <see langword="null"/> while none is set.
     /// </summary>
