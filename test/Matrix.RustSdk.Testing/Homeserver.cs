@@ -50,7 +50,7 @@ public sealed class Homeserver : IAsyncInitializer, IAsyncDisposable
 
     public async Task InitializeAsync()
     {
-        _container = new ContainerBuilder("ghcr.io/matrix-construct/tuwunel:v1.9.4")
+        _container = new ContainerBuilder("ghcr.io/matrix-construct/tuwunel:v2.0.0")
             .WithEnvironment("TUWUNEL_SERVER_NAME", ServerName)
             .WithEnvironment("TUWUNEL_ADDRESS", "0.0.0.0")
             .WithEnvironment("TUWUNEL_PORT", Port.ToString(CultureInfo.InvariantCulture))
