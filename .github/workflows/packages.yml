@@ -95,7 +95,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 11.0.x
 
       # test the exact library that ends up in the package
       - name: Test native library
@@ -232,7 +232,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 11.0.x
 
       - name: Restore dependencies
         run: dotnet restore
