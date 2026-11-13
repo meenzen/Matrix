@@ -36,7 +36,13 @@
     };
     dotnet = {
       enable = true;
-      package = pkgs.dotnetCorePackages.sdk_10_0;
+      # the .NET 11 SDK builds everything, the .NET 10 runtime runs the net10.0 tests. nixpkgs only ships a preview of
+      # .NET 11, the GA release is vendored in nix/dotnet-11-releases.nix until it does.
+      package = with pkgs.dotnetCorePackages;
+        combinePackages [
+          (buildDotnetSdk ./nix/dotnet-11-releases.nix).sdk_11_0
+          sdk_10_0
+        ];
     };
   };
 

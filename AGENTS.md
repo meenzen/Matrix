@@ -25,7 +25,8 @@ matrix-rust-sdk.
 
 ## Development
 
-Use the devenv shell, it provides Rust (stable), the .NET SDK, uniffi-bindgen-cs and csharpier:
+Use the devenv shell, it provides Rust (stable), the .NET 11 SDK with the .NET 10 runtime, uniffi-bindgen-cs and
+csharpier:
 
 ```bash
 git submodule update --init
@@ -39,6 +40,10 @@ dotnet test               # requires docker
   `uniffi.toml` and regenerate. Regenerating with the same SDK version must not produce a diff.
 - `TreatWarningsAsErrors` is enabled (except for the generated bindings), builds have to be warning free. Missing XML
   docs (CS1591) are only an error in the published `Matrix.RustSdk`, every public member there needs docs.
+- Projects target `net10.0;net11.0` (`Directory.Build.props`), the examples and their tests only `net11.0`, the
+  generator `netstandard2.0`. The net11.0 builds enable runtime async (`Directory.Build.targets`), on net10.0 the flag
+  fails the build (preview APIs). nixpkgs only ships a preview of .NET 11, devenv uses the GA release vendored in
+  `nix/dotnet-11-releases.nix` (from nixpkgs' `update.sh 11.0`), drop it once nixpkgs has 11.0.100.
 - Package versions are managed centrally in `Directory.Packages.props`, projects reference packages without a
   `Version`. The versions are pinned for transitive dependencies as well, `VersionOverride` is disabled. Packages every
   project needs are referenced in `Directory.Build.props` (not as `GlobalPackageReference`, so a project can drop one
@@ -134,7 +139,7 @@ obvious:
 - `SdkTests` and the example tests run against a tuwunel homeserver started with Testcontainers, they are in the
   `Homeserver` category. `NativeLibraryTests` are smoke tests without a homeserver, they run on every platform.
 - `Matrix.RustSdk.Tests` and the TUI client tests initialize the SDK once per session (`SdkSetup`, multi-threaded
-  runtime like apps), their logs are in `bin/<configuration>/net10.0/logs`. Without it the SDK runs on a single thread,
+  runtime like apps), their logs are in `bin/<configuration>/<tfm>/logs`. Without it the SDK runs on a single thread,
   which can't keep up with several clients in parallel. The example apps call `MatrixSdk.Initialize` in `Program.cs`,
   which their tests don't run.
 - The tuwunel image is pinned in `Homeserver.cs`, Renovate updates it with a regex manager (`renovate.json`). Read
@@ -165,7 +170,8 @@ obvious:
 
 - `packages.yml` builds the native library with the `small-release-stripped` profile on native runners for every
   platform, tests that exact library on its runner and packs the packages. Linux and musl run all tests, Windows and
-  macOS runners have no linux containers and only run the smoke tests.
+  macOS runners have no linux containers and only run the smoke tests. These runs only test `net11.0`
+  (`--framework`), both target frameworks use the same native library, the net10.0 tests run in `build.yml`.
 - Failing test steps upload the SDK logs and test reports as `test-logs-*` artifacts (7 days), look there for
   failures that don't reproduce locally.
 - Codecov ignores the generated bindings (`codecov.yml`), the project check allows a drop of 1% because timing

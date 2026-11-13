@@ -16,8 +16,13 @@ public class PublicApiTests
         // Arrange
         ApiGeneratorOptions options = new()
         {
-            // which assemblies see the internals isn't part of the public API
-            ExcludeAttributes = ["System.Runtime.CompilerServices.InternalsVisibleToAttribute"],
+            // which assemblies see the internals isn't part of the public API, the target framework differs between the
+            // builds of the package that share this snapshot
+            ExcludeAttributes =
+            [
+                "System.Runtime.CompilerServices.InternalsVisibleToAttribute",
+                "System.Runtime.Versioning.TargetFrameworkAttribute",
+            ],
         };
 
         // Act
