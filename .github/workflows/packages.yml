@@ -95,15 +95,16 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 11.0.x
 
-      # test the exact library that ends up in the package
+      # test the exact library that ends up in the package, on one target framework, both use the same library (the
+      # net10.0 tests run in build.yml)
       - name: Test native library
         shell: bash
         env:
           TEST_FILTER: ${{ matrix.test-filter }}
         run: >-
-          dotnet test --project test/Matrix.RustSdk.Tests
+          dotnet test --project test/Matrix.RustSdk.Tests --framework net11.0
           -p:NativeLibraryPath="../../external/matrix-rust-sdk/target/${{ matrix.target }}/$CARGO_PROFILE/${{ matrix.library }}"
           ${TEST_FILTER:+--treenode-filter "$TEST_FILTER"}
 
@@ -194,7 +195,7 @@ jobs:
           docker run --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -v "$PWD:/work" -w /work
           -e NATIVE_LIBRARY_PATH="../../external/matrix-rust-sdk/target/${{ matrix.target }}/$CARGO_PROFILE/libmatrix_sdk_ffi.so"
           -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" -e TESTCONTAINERS_RYUK_DISABLED
-          mcr.microsoft.com/dotnet/sdk:10.0-alpine .github/scripts/test-musl.sh
+          mcr.microsoft.com/dotnet/sdk:11.0-alpine .github/scripts/test-musl.sh
 
       # the SDK logs and the test reports, to find the cause of failures that don't reproduce locally
       - name: Upload test logs
@@ -256,7 +257,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 11.0.x
 
       - name: Restore dependencies
         run: dotnet restore

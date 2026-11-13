@@ -5,6 +5,7 @@
     the NuGet packages reference Matrix.RustSdk.Bindings.Native.* instead, see README.md.
   -->
   <PropertyGroup>
+    <TargetFrameworks>net11.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
     <CopyNativeLibrary>true</CopyNativeLibrary>
   </PropertyGroup>
