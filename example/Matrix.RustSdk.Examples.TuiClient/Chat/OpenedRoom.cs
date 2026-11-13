@@ -70,6 +70,12 @@ public sealed class OpenedRoom : IAsyncDisposable
     public bool ReachedStart { get; private set; }
 
     /// <summary>
+    /// Whether loading older messages finished once. A new timeline only contains the latest message, the read marker
+    /// shows up once the message it follows was loaded.
+    /// </summary>
+    public bool LoadedHistory { get; private set; }
+
+    /// <summary>
     /// Whether older messages are being loaded.
     /// </summary>
     public bool IsPaginating => Volatile.Read(ref _paginating) == 1;
@@ -228,6 +234,7 @@ public sealed class OpenedRoom : IAsyncDisposable
         }
         finally
         {
+            LoadedHistory = true;
             Volatile.Write(ref _paginating, 0);
             EntriesChanged?.Invoke(this, EventArgs.Empty);
         }
@@ -249,7 +256,8 @@ public sealed class OpenedRoom : IAsyncDisposable
     }
 
     /// <summary>
-    /// Sends a read receipt for the latest message and clears the unread mark of the room.
+    /// Sends a read receipt and moves the fully read marker to the latest message, and clears the unread mark of the
+    /// room.
     /// </summary>
     public async Task MarkAsReadAsync()
     {
@@ -258,6 +266,9 @@ public sealed class OpenedRoom : IAsyncDisposable
         {
             return;
         }
+        // the timeline places its read marker after the fully read marker. Without one it falls back to the read
+        // receipt, but only if that event is loaded when the timeline is created, so the room may open at the end.
+        await _timeline.MarkAsRead(ReceiptType.FullyRead);
         await _timeline.MarkAsRead(ReceiptType.Read);
         if (Summary.IsMarkedUnread)
         {
