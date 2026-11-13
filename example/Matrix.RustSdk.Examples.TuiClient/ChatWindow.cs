@@ -51,6 +51,8 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
     private OpenedRoom? _room;
     private int _roomGeneration;
     private Page? _page;
+
+    // the key of the newest entry the read receipt was sent for, in the timeline of the open room
     private string? _lastReadKey;
     private volatile bool _disposed;
 
@@ -333,6 +335,8 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
         OpenedRoom? previous = _room;
         _room = null;
         _entries = [];
+        // keys are only unique within a timeline, the newest item of every new timeline can have the same key
+        _lastReadKey = null;
         _selectUnread = true;
         ClosePage();
         string name = _rooms.FirstOrDefault(r => r.RoomId == roomId)?.Name ?? roomId;
@@ -347,8 +351,7 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
             {
                 await previous.DisposeAsync();
             }
-            Room nativeRoom =
-                _session.GetRoom(roomId)
+            Room nativeRoom = _session.GetRoom(roomId)
                 ?? throw new InvalidOperationException("The room is unknown, it may not have synced yet.");
             OpenedRoom opened = await OpenedRoom.OpenAsync(_session.Client, nativeRoom, _session.UserId);
             if (generation != _roomGeneration || _disposed)
@@ -487,11 +490,11 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
         _entries = entries;
 
         int? selected = null;
-        if (_selectUnread && entries.Count > 0)
+        int marker = _selectUnread ? IndexOf(entries, e => e.Kind == EntryKind.ReadMarker) : -1;
+        if (_selectUnread && entries.Count > 0 && (marker >= 0 || _room is { LoadedHistory: true }))
         {
             // an opened room starts at the first unread message, the read receipt follows once the user reaches the end
             _selectUnread = false;
-            int marker = IndexOf(entries, e => e.Kind == EntryKind.ReadMarker);
             selected = marker >= 0 ? marker : null;
         }
         else if (!following && selectedKey is not null)
@@ -527,7 +530,8 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
     /// </summary>
     private void MarkAsReadIfFollowing()
     {
-        if (_room is not { IsInvite: false } room || _entries.Count == 0)
+        // until the opened room knows where the unread messages start, it shows the end without having read it
+        if (_room is not { IsInvite: false } room || _entries.Count == 0 || _selectUnread)
         {
             return;
         }
