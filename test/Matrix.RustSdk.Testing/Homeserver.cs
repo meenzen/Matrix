@@ -52,15 +52,17 @@ public sealed class Homeserver : IAsyncInitializer, IAsyncDisposable
     {
         _container = new ContainerBuilder("ghcr.io/matrix-construct/tuwunel:v2.0.0")
             .WithEnvironment("TUWUNEL_SERVER_NAME", ServerName)
-            .WithEnvironment("TUWUNEL_ADDRESS", "0.0.0.0")
-            .WithEnvironment("TUWUNEL_PORT", Port.ToString(CultureInfo.InvariantCulture))
-            .WithEnvironment("TUWUNEL_ALLOW_REGISTRATION", "true")
+            .WithEnvironment("TUWUNEL_HTTP__LISTEN__ADDRESS", "0.0.0.0")
+            .WithEnvironment("TUWUNEL_HTTP__LISTEN__PORT", Port.ToString(CultureInfo.InvariantCulture))
+            .WithEnvironment("TUWUNEL_REGISTRATION__ENABLE", "true")
             .WithEnvironment(
-                "TUWUNEL_YES_I_AM_VERY_VERY_SURE_I_WANT_AN_OPEN_REGISTRATION_SERVER_PRONE_TO_ABUSE",
+                "TUWUNEL_REGISTRATION__YES_I_AM_VERY_VERY_SURE_I_WANT_AN_OPEN_REGISTRATION_SERVER_PRONE_TO_ABUSE",
                 "true"
             )
-            // the tests log in to the same accounts many times and try wrong passwords, a burst of 0 disables the limits
+            // the tests log in to the same accounts many times and try wrong passwords, all from the address of the
+            // docker gateway, a burst of 0 disables the limits
             .WithEnvironment("TUWUNEL_RATE_LIMITING__LOGIN__ACCOUNT__BURST_COUNT", "0")
+            .WithEnvironment("TUWUNEL_RATE_LIMITING__LOGIN__ADDRESS__BURST_COUNT", "0")
             .WithEnvironment("TUWUNEL_RATE_LIMITING__LOGIN__FAILED__BURST_COUNT", "0")
             .WithPortBinding(Port, true)
             .WithWaitStrategy(
