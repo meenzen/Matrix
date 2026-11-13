@@ -1,0 +1,11 @@
+# the generated bindings are most of the measured lines, their coverage only depends on which SDK calls the tests
+# happen to reach and would hide the coverage of the code written here
+ignore:
+  - "src/Matrix.RustSdk.Bindings/*.cs"
+
+coverage:
+  status:
+    project:
+      default:
+        # timing dependent paths (sync, retries) make the coverage of identical code vary slightly between runs
+        threshold: 1%

@@ -166,6 +166,10 @@ obvious:
 - `packages.yml` builds the native library with the `small-release-stripped` profile on native runners for every
   platform, tests that exact library on its runner and packs the packages. Linux and musl run all tests, Windows and
   macOS runners have no linux containers and only run the smoke tests.
+- Failing test steps upload the SDK logs and test reports as `test-logs-*` artifacts (7 days), look there for
+  failures that don't reproduce locally.
+- Codecov ignores the generated bindings (`codecov.yml`), the project check allows a drop of 1% because timing
+  dependent paths vary between runs.
 - musl: GitHub's javascript actions don't run in alpine containers on arm64, so the jobs start containers themselves
   (`.github/scripts/build-musl.sh` in `rust:1-alpine` from `mirror.gcr.io`, Docker Hub and ECR Public rate limit the
   runners, `.github/scripts/test-musl.sh` in the .NET alpine image with the docker socket). musl shared libraries need
