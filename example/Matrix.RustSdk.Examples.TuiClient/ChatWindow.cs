@@ -347,8 +347,7 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
             {
                 await previous.DisposeAsync();
             }
-            Room nativeRoom =
-                _session.GetRoom(roomId)
+            Room nativeRoom = _session.GetRoom(roomId)
                 ?? throw new InvalidOperationException("The room is unknown, it may not have synced yet.");
             OpenedRoom opened = await OpenedRoom.OpenAsync(_session.Client, nativeRoom, _session.UserId);
             if (generation != _roomGeneration || _disposed)

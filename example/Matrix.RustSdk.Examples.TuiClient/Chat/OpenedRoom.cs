@@ -502,15 +502,11 @@ public sealed class OpenedRoom : IAsyncDisposable
         using EventTimelineItem? eventItem = item.AsEvent();
         if (eventItem?.LazyProvider.GetSendHandle() is { } handle)
         {
-            _failedSends.AddOrUpdate(
-                entry.Key,
-                handle,
-                (_, previous) =>
-                {
-                    previous.Dispose();
-                    return handle;
-                }
-            );
+            _failedSends.AddOrUpdate(entry.Key, handle, (_, previous) =>
+            {
+                previous.Dispose();
+                return handle;
+            });
         }
     }
 
