@@ -7,11 +7,11 @@
 }: {
   # https://devenv.sh/basics/
   env = {
-    # No uniffi-bindgen-cs release supports uniffi 0.32 yet, the revision is the commit of the open upgrade pull request
-    # https://github.com/NordSecurity/uniffi-bindgen-cs/pull/176 (version 0.12.0), patches/uniffi-bindgen-cs/*.patch
-    # are applied on top. The version is only used for the release notes (.github/scripts/create-release.sh).
+    # The revision is the commit of the release v0.12.0+v0.32.0, patches/uniffi-bindgen-cs/*.patch are applied on top
+    # (async callback interface return types, https://github.com/NordSecurity/uniffi-bindgen-cs/pull/166). The version
+    # is only used for the release notes (.github/scripts/create-release.sh).
     UNIFFI_BINDGEN_CS_VERSION = "0.12.0";
-    UNIFFI_BINDGEN_CS_REV = "cf0aa7a8fb59358a846708730a58a02bf206ac05";
+    UNIFFI_BINDGEN_CS_REV = "fc32e9bbf91ee66b0b92241f575cbce1bf5e3151";
     UNIFFI_RS_VERSION = "0.32.0";
     # apphosts prefer DOTNET_ROOT_<ARCH> over DOTNET_ROOT, a value inherited from outside the shell (e.g. a system wide
     # .NET on NixOS) makes them load that runtime, which can be linked against a different glibc than the apphost

@@ -372,14 +372,11 @@ class _UniffiHelpers
     public static void RustCallWithError<E>(CallStatusErrorHandler<E> errorHandler, RustCallAction callback)
         where E : System.Exception
     {
-        _UniffiHelpers.RustCallWithError(
-            errorHandler,
-            (ref UniffiRustCallStatus status) =>
-            {
-                callback(ref status);
-                return 0;
-            }
-        );
+        _UniffiHelpers.RustCallWithError(errorHandler, (ref UniffiRustCallStatus status) =>
+        {
+            callback(ref status);
+            return 0;
+        });
     }
 
     // Call a rust function that returns a plain value
@@ -36682,13 +36679,11 @@ public class MediaSource : IMediaSource, IDisposable
     public static MediaSource FromJson(string @json)
     {
         return new MediaSource(
-            _UniffiHelpers.RustCallWithError(
-                FfiConverterTypeClientError.INSTANCE,
-                (ref UniffiRustCallStatus _status) =>
-                    _UniFFILib.uniffi_matrix_sdk_ffi_fn_constructor_mediasource_from_json(
-                        FfiConverterString.INSTANCE.Lower(@json),
-                        ref _status
-                    )
+            _UniffiHelpers.RustCallWithError(FfiConverterTypeClientError.INSTANCE, (ref UniffiRustCallStatus _status) =>
+                _UniFFILib.uniffi_matrix_sdk_ffi_fn_constructor_mediasource_from_json(
+                    FfiConverterString.INSTANCE.Lower(@json),
+                    ref _status
+                )
             )
         );
     }
@@ -36697,13 +36692,11 @@ public class MediaSource : IMediaSource, IDisposable
     public static MediaSource FromUrl(string @url)
     {
         return new MediaSource(
-            _UniffiHelpers.RustCallWithError(
-                FfiConverterTypeClientError.INSTANCE,
-                (ref UniffiRustCallStatus _status) =>
-                    _UniFFILib.uniffi_matrix_sdk_ffi_fn_constructor_mediasource_from_url(
-                        FfiConverterString.INSTANCE.Lower(@url),
-                        ref _status
-                    )
+            _UniffiHelpers.RustCallWithError(FfiConverterTypeClientError.INSTANCE, (ref UniffiRustCallStatus _status) =>
+                _UniFFILib.uniffi_matrix_sdk_ffi_fn_constructor_mediasource_from_url(
+                    FfiConverterString.INSTANCE.Lower(@url),
+                    ref _status
+                )
             )
         );
     }
@@ -94405,9 +94398,8 @@ internal static class _UniFFIAsync
         try
         {
             await PollFuture(rustFuture, pollFunc);
-            var result = _UniffiHelpers.RustCallWithError(
-                errorHandler,
-                (ref UniffiRustCallStatus status) => completeFunc(rustFuture, ref status)
+            var result = _UniffiHelpers.RustCallWithError(errorHandler, (ref UniffiRustCallStatus status) =>
+                completeFunc(rustFuture, ref status)
             );
             return liftFunc(result);
         }
@@ -94429,9 +94421,8 @@ internal static class _UniFFIAsync
         try
         {
             await PollFuture(rustFuture, pollFunc);
-            _UniffiHelpers.RustCallWithError(
-                errorHandler,
-                (ref UniffiRustCallStatus status) => completeFunc(rustFuture, ref status)
+            _UniffiHelpers.RustCallWithError(errorHandler, (ref UniffiRustCallStatus status) =>
+                completeFunc(rustFuture, ref status)
             );
         }
         finally
@@ -94503,14 +94494,12 @@ public static class MatrixSdkFfiMethods
     public static DetectedSecretsBundle JsonStringContainsSecretsBundle(string @bundle, string? @backupInfo)
     {
         return FfiConverterTypeDetectedSecretsBundle.INSTANCE.Lift(
-            _UniffiHelpers.RustCallWithError(
-                FfiConverterTypeClientError.INSTANCE,
-                (ref UniffiRustCallStatus _status) =>
-                    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_json_string_contains_secrets_bundle(
-                        FfiConverterString.INSTANCE.Lower(@bundle),
-                        FfiConverterOptionalString.INSTANCE.Lower(@backupInfo),
-                        ref _status
-                    )
+            _UniffiHelpers.RustCallWithError(FfiConverterTypeClientError.INSTANCE, (ref UniffiRustCallStatus _status) =>
+                _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_json_string_contains_secrets_bundle(
+                    FfiConverterString.INSTANCE.Lower(@bundle),
+                    FfiConverterOptionalString.INSTANCE.Lower(@backupInfo),
+                    ref _status
+                )
             )
         );
     }
@@ -94526,14 +94515,12 @@ public static class MatrixSdkFfiMethods
     /// <exception cref="ClientException"></exception>
     public static void InitPlatform(TracingConfiguration @config, bool @useLightweightTokioRuntime)
     {
-        _UniffiHelpers.RustCallWithError(
-            FfiConverterTypeClientError.INSTANCE,
-            (ref UniffiRustCallStatus _status) =>
-                _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_init_platform(
-                    FfiConverterTypeTracingConfiguration.INSTANCE.Lower(@config),
-                    FfiConverterBoolean.INSTANCE.Lower(@useLightweightTokioRuntime),
-                    ref _status
-                )
+        _UniffiHelpers.RustCallWithError(FfiConverterTypeClientError.INSTANCE, (ref UniffiRustCallStatus _status) =>
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_init_platform(
+                FfiConverterTypeTracingConfiguration.INSTANCE.Lower(@config),
+                FfiConverterBoolean.INSTANCE.Lower(@useLightweightTokioRuntime),
+                ref _status
+            )
         );
     }
 
@@ -94547,13 +94534,11 @@ public static class MatrixSdkFfiMethods
     /// <exception cref="ClientException"></exception>
     public static void ReloadTracingFileWriter(TracingFileConfiguration @configuration)
     {
-        _UniffiHelpers.RustCallWithError(
-            FfiConverterTypeClientError.INSTANCE,
-            (ref UniffiRustCallStatus _status) =>
-                _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_reload_tracing_file_writer(
-                    FfiConverterTypeTracingFileConfiguration.INSTANCE.Lower(@configuration),
-                    ref _status
-                )
+        _UniffiHelpers.RustCallWithError(FfiConverterTypeClientError.INSTANCE, (ref UniffiRustCallStatus _status) =>
+            _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_reload_tracing_file_writer(
+                FfiConverterTypeTracingFileConfiguration.INSTANCE.Lower(@configuration),
+                ref _status
+            )
         );
     }
 
@@ -94593,13 +94578,11 @@ public static class MatrixSdkFfiMethods
     public static string MatrixToRoomAliasPermalink(string @roomAlias)
     {
         return FfiConverterString.INSTANCE.Lift(
-            _UniffiHelpers.RustCallWithError(
-                FfiConverterTypeClientError.INSTANCE,
-                (ref UniffiRustCallStatus _status) =>
-                    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_matrix_to_room_alias_permalink(
-                        FfiConverterString.INSTANCE.Lower(@roomAlias),
-                        ref _status
-                    )
+            _UniffiHelpers.RustCallWithError(FfiConverterTypeClientError.INSTANCE, (ref UniffiRustCallStatus _status) =>
+                _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_matrix_to_room_alias_permalink(
+                    FfiConverterString.INSTANCE.Lower(@roomAlias),
+                    ref _status
+                )
             )
         );
     }
@@ -94647,13 +94630,11 @@ public static class MatrixSdkFfiMethods
     public static string MatrixToUserPermalink(string @userId)
     {
         return FfiConverterString.INSTANCE.Lift(
-            _UniffiHelpers.RustCallWithError(
-                FfiConverterTypeClientError.INSTANCE,
-                (ref UniffiRustCallStatus _status) =>
-                    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_matrix_to_user_permalink(
-                        FfiConverterString.INSTANCE.Lower(@userId),
-                        ref _status
-                    )
+            _UniffiHelpers.RustCallWithError(FfiConverterTypeClientError.INSTANCE, (ref UniffiRustCallStatus _status) =>
+                _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_matrix_to_user_permalink(
+                    FfiConverterString.INSTANCE.Lower(@userId),
+                    ref _status
+                )
             )
         );
     }
@@ -94667,13 +94648,11 @@ public static class MatrixSdkFfiMethods
     public static PowerLevel SuggestedPowerLevelForRole(RoomMemberRole @role)
     {
         return FfiConverterTypePowerLevel.INSTANCE.Lift(
-            _UniffiHelpers.RustCallWithError(
-                FfiConverterTypeClientError.INSTANCE,
-                (ref UniffiRustCallStatus _status) =>
-                    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_suggested_power_level_for_role(
-                        FfiConverterTypeRoomMemberRole.INSTANCE.Lower(@role),
-                        ref _status
-                    )
+            _UniffiHelpers.RustCallWithError(FfiConverterTypeClientError.INSTANCE, (ref UniffiRustCallStatus _status) =>
+                _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_suggested_power_level_for_role(
+                    FfiConverterTypeRoomMemberRole.INSTANCE.Lower(@role),
+                    ref _status
+                )
             )
         );
     }
@@ -94688,13 +94667,11 @@ public static class MatrixSdkFfiMethods
     public static RoomMemberRole SuggestedRoleForPowerLevel(PowerLevel @powerLevel)
     {
         return FfiConverterTypeRoomMemberRole.INSTANCE.Lift(
-            _UniffiHelpers.RustCallWithError(
-                FfiConverterTypeClientError.INSTANCE,
-                (ref UniffiRustCallStatus _status) =>
-                    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_suggested_role_for_power_level(
-                        FfiConverterTypePowerLevel.INSTANCE.Lower(@powerLevel),
-                        ref _status
-                    )
+            _UniffiHelpers.RustCallWithError(FfiConverterTypeClientError.INSTANCE, (ref UniffiRustCallStatus _status) =>
+                _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_suggested_role_for_power_level(
+                    FfiConverterTypePowerLevel.INSTANCE.Lower(@powerLevel),
+                    ref _status
+                )
             )
         );
     }
@@ -94707,13 +94684,11 @@ public static class MatrixSdkFfiMethods
     public static RoomMessageEventContentWithoutRelation ContentWithoutRelationFromMessage(MessageContent @message)
     {
         return FfiConverterTypeRoomMessageEventContentWithoutRelation.INSTANCE.Lift(
-            _UniffiHelpers.RustCallWithError(
-                FfiConverterTypeClientError.INSTANCE,
-                (ref UniffiRustCallStatus _status) =>
-                    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_content_without_relation_from_message(
-                        FfiConverterTypeMessageContent.INSTANCE.Lower(@message),
-                        ref _status
-                    )
+            _UniffiHelpers.RustCallWithError(FfiConverterTypeClientError.INSTANCE, (ref UniffiRustCallStatus _status) =>
+                _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_content_without_relation_from_message(
+                    FfiConverterTypeMessageContent.INSTANCE.Lower(@message),
+                    ref _status
+                )
             )
         );
     }
@@ -94779,13 +94754,11 @@ public static class MatrixSdkFfiMethods
     public static RoomMessageEventContentWithoutRelation MessageEventContentNew(MessageType @msgtype)
     {
         return FfiConverterTypeRoomMessageEventContentWithoutRelation.INSTANCE.Lift(
-            _UniffiHelpers.RustCallWithError(
-                FfiConverterTypeClientError.INSTANCE,
-                (ref UniffiRustCallStatus _status) =>
-                    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_message_event_content_new(
-                        FfiConverterTypeMessageType.INSTANCE.Lower(@msgtype),
-                        ref _status
-                    )
+            _UniffiHelpers.RustCallWithError(FfiConverterTypeClientError.INSTANCE, (ref UniffiRustCallStatus _status) =>
+                _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_message_event_content_new(
+                    FfiConverterTypeMessageType.INSTANCE.Lower(@msgtype),
+                    ref _status
+                )
             )
         );
     }
@@ -94842,13 +94815,11 @@ public static class MatrixSdkFfiMethods
     public static string ServerNameFromUserId(string @userId)
     {
         return FfiConverterString.INSTANCE.Lift(
-            _UniffiHelpers.RustCallWithError(
-                FfiConverterTypeClientError.INSTANCE,
-                (ref UniffiRustCallStatus _status) =>
-                    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_server_name_from_user_id(
-                        FfiConverterString.INSTANCE.Lower(@userId),
-                        ref _status
-                    )
+            _UniffiHelpers.RustCallWithError(FfiConverterTypeClientError.INSTANCE, (ref UniffiRustCallStatus _status) =>
+                _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_server_name_from_user_id(
+                    FfiConverterString.INSTANCE.Lower(@userId),
+                    ref _status
+                )
             )
         );
     }
@@ -94927,13 +94898,11 @@ public static class MatrixSdkFfiMethods
     public static WidgetDriverAndHandle MakeWidgetDriver(WidgetSettings @settings)
     {
         return FfiConverterTypeWidgetDriverAndHandle.INSTANCE.Lift(
-            _UniffiHelpers.RustCallWithError(
-                FfiConverterTypeParseError.INSTANCE,
-                (ref UniffiRustCallStatus _status) =>
-                    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_make_widget_driver(
-                        FfiConverterTypeWidgetSettings.INSTANCE.Lower(@settings),
-                        ref _status
-                    )
+            _UniffiHelpers.RustCallWithError(FfiConverterTypeParseError.INSTANCE, (ref UniffiRustCallStatus _status) =>
+                _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_make_widget_driver(
+                    FfiConverterTypeWidgetSettings.INSTANCE.Lower(@settings),
+                    ref _status
+                )
             )
         );
     }
@@ -94959,14 +94928,12 @@ public static class MatrixSdkFfiMethods
     )
     {
         return FfiConverterTypeWidgetSettings.INSTANCE.Lift(
-            _UniffiHelpers.RustCallWithError(
-                FfiConverterTypeParseError.INSTANCE,
-                (ref UniffiRustCallStatus _status) =>
-                    _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_new_virtual_element_call_widget(
-                        FfiConverterTypeVirtualElementCallWidgetProperties.INSTANCE.Lower(@props),
-                        FfiConverterTypeVirtualElementCallWidgetConfig.INSTANCE.Lower(@config),
-                        ref _status
-                    )
+            _UniffiHelpers.RustCallWithError(FfiConverterTypeParseError.INSTANCE, (ref UniffiRustCallStatus _status) =>
+                _UniFFILib.uniffi_matrix_sdk_ffi_fn_func_new_virtual_element_call_widget(
+                    FfiConverterTypeVirtualElementCallWidgetProperties.INSTANCE.Lower(@props),
+                    FfiConverterTypeVirtualElementCallWidgetConfig.INSTANCE.Lower(@config),
+                    ref _status
+                )
             )
         );
     }

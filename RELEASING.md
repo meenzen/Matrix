@@ -170,8 +170,9 @@ keeps an issue for each open with the uniffi versions and whether they are compa
    ```
 
 4. If a newer uniffi-bindgen-cs is needed, update `UNIFFI_BINDGEN_CS_VERSION`, `UNIFFI_BINDGEN_CS_REV` (the commit to
-   build) and `UNIFFI_RS_VERSION` in `devenv.nix`, devenv builds it when entering the shell. The patches in
-   `patches/uniffi-bindgen-cs` are applied on top, remove the ones that are included upstream. Also check the
+   build, the commit of the release tag if there is one) and `UNIFFI_RS_VERSION` in `devenv.nix`, devenv builds it
+   when entering the shell. The patches in `patches/uniffi-bindgen-cs` are applied on top, remove the ones that are
+   included upstream. The update check only reports the release again while the revision isn't its commit. Also check the
    `rust-version` of matrix-rust-sdk, devenv uses the latest stable Rust.
 5. Regenerate the bindings, check the licenses of the new dependencies and run the tests:
 

@@ -85,8 +85,12 @@ close_issue() {
 echo "=> Current: matrix-rust-sdk $CURRENT_SDK, uniffi-bindgen-cs $BINDGEN_VERSION${BINDGEN_REV:+ ($BINDGEN_REV)} for uniffi $BINDGEN_UNIFFI"
 
 # latest uniffi-bindgen-cs release, tags are named vX.Y.Z+vA.B.C (A.B.C is the uniffi version)
-LATEST_BINDGEN_TAG=$(git ls-remote --tags "https://github.com/$BINDGEN_REPO" |
+BINDGEN_TAGS=$(git ls-remote --tags "https://github.com/$BINDGEN_REPO")
+LATEST_BINDGEN_TAG=$(echo "$BINDGEN_TAGS" |
   awk '{ print $2 }' | grep -v '\^{}$' | sed 's#refs/tags/##' | grep -E '^v[0-9.]+\+v[0-9.]+$' | sort -V | tail -n 1)
+# commit of the release, annotated tags are followed by a peeled ^{} entry with the commit
+LATEST_BINDGEN_COMMIT=$(echo "$BINDGEN_TAGS" |
+  awk -v ref="refs/tags/$LATEST_BINDGEN_TAG" '$2 == ref || $2 == ref "^{}" { commit = $1 } END { print commit }')
 LATEST_BINDGEN=$(echo "$LATEST_BINDGEN_TAG" | sed -E 's/^v([0-9.]+)\+v([0-9.]+)$/\1/')
 LATEST_BINDGEN_UNIFFI=$(echo "$LATEST_BINDGEN_TAG" | sed -E 's/^v([0-9.]+)\+v([0-9.]+)$/\2/')
 echo "=> Latest uniffi-bindgen-cs release: $LATEST_BINDGEN_TAG"
@@ -143,9 +147,10 @@ else
   close_issue "$SDK_MARKER" "matrix-rust-sdk is up to date ($CURRENT_SDK)."
 fi
 
-# a newer release (or one for a newer uniffi), or a release of the version that is currently built from a commit
+# a newer release (or one for a newer uniffi), or a release of the version that is currently built from a commit. A
+# revision that is the commit of the release only adds patches the release doesn't contain yet.
 if newer "$LATEST_BINDGEN" "$BINDGEN_VERSION" || newer "$LATEST_BINDGEN_UNIFFI" "$BINDGEN_UNIFFI" ||
-  [[ -n "$BINDGEN_REV" && "$LATEST_BINDGEN" == "$BINDGEN_VERSION" ]]; then
+  [[ -n "$BINDGEN_REV" && "$LATEST_BINDGEN" == "$BINDGEN_VERSION" && "$BINDGEN_REV" != "$LATEST_BINDGEN_COMMIT" ]]; then
   if [[ -n "$BINDGEN_REV" ]]; then
     CONFIGURED="\`$BINDGEN_VERSION\`, built from [\`${BINDGEN_REV:0:9}\`](https://github.com/$BINDGEN_REPO/commit/$BINDGEN_REV) with the patches in \`patches/uniffi-bindgen-cs\`"
   else

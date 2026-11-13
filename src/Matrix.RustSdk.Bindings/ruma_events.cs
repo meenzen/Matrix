@@ -360,14 +360,11 @@ class _UniffiHelpers
     public static void RustCallWithError<E>(CallStatusErrorHandler<E> errorHandler, RustCallAction callback)
         where E : System.Exception
     {
-        _UniffiHelpers.RustCallWithError(
-            errorHandler,
-            (ref UniffiRustCallStatus status) =>
-            {
-                callback(ref status);
-                return 0;
-            }
-        );
+        _UniffiHelpers.RustCallWithError(errorHandler, (ref UniffiRustCallStatus status) =>
+        {
+            callback(ref status);
+            return 0;
+        });
     }
 
     // Call a rust function that returns a plain value
