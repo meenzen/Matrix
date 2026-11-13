@@ -107,6 +107,18 @@ jobs:
           -p:NativeLibraryPath="../../external/matrix-rust-sdk/target/${{ matrix.target }}/$CARGO_PROFILE/${{ matrix.library }}"
           ${TEST_FILTER:+--treenode-filter "$TEST_FILTER"}
 
+      # the SDK logs and the test reports, to find the cause of failures that don't reproduce locally
+      - name: Upload test logs
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: test-logs-${{ matrix.rid }}-${{ github.run_attempt }}
+          path: |
+            test/*/bin/*/*/logs/
+            TestResults/
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Collect native library
         shell: bash
         run: |
@@ -183,6 +195,18 @@ jobs:
           -e NATIVE_LIBRARY_PATH="../../external/matrix-rust-sdk/target/${{ matrix.target }}/$CARGO_PROFILE/libmatrix_sdk_ffi.so"
           -e HOST_UID="$(id -u)" -e HOST_GID="$(id -g)" -e TESTCONTAINERS_RYUK_DISABLED
           mcr.microsoft.com/dotnet/sdk:10.0-alpine .github/scripts/test-musl.sh
+
+      # the SDK logs and the test reports, to find the cause of failures that don't reproduce locally
+      - name: Upload test logs
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: test-logs-${{ matrix.rid }}-${{ github.run_attempt }}
+          path: |
+            test/*/bin/*/*/logs/
+            TestResults/
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Collect native library
         run: |
