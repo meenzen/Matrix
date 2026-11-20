@@ -3166,6 +3166,40 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_client_rtc_livekit_delegate_delayed_leave(
+        ulong @ptr,
+        RustBuffer @url,
+        RustBuffer @roomId,
+        RustBuffer @slotId,
+        RustBuffer @memberId,
+        RustBuffer @delayId
+    );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_client_rtc_livekit_get_token(
+        ulong @ptr,
+        RustBuffer @url,
+        RustBuffer @roomId,
+        RustBuffer @slotId,
+        RustBuffer @memberId,
+        RustBuffer @serverName
+    );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     ulong uniffi_matrix_sdk_ffi_fn_method_client_run_search_backfill(
         ulong @ptr,
         RustBuffer @strategy,
@@ -3617,6 +3651,21 @@ static class _UniFFILib
     public static extern
 #endif
     ulong uniffi_matrix_sdk_ffi_fn_method_client_unignore_user(ulong @ptr, RustBuffer @userId);
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_client_update_delayed_event(
+        ulong @ptr,
+        RustBuffer @delayId,
+        RustBuffer @action,
+        RustBuffer @requestConfigOverride
+    );
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -7258,6 +7307,56 @@ static class _UniFFILib
         ulong @ptr,
         RustBuffer @userIds,
         ulong @sendHandle
+    );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_room_send_delayed_event(
+        ulong @ptr,
+        RustBuffer @eventType,
+        RustBuffer @content,
+        ulong @delayMs,
+        RustBuffer @requestConfigOverride
+    );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_room_send_delayed_state_event(
+        ulong @ptr,
+        RustBuffer @eventType,
+        RustBuffer @stateKey,
+        RustBuffer @content,
+        ulong @delayMs,
+        RustBuffer @requestConfigOverride
+    );
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ulong uniffi_matrix_sdk_ffi_fn_method_room_send_sticky_delayed_event(
+        ulong @ptr,
+        RustBuffer @eventType,
+        RustBuffer @content,
+        ulong @delayMs,
+        ulong @stickyDurationMs,
+        RustBuffer @requestConfigOverride
     );
 
 #if NET8_0_OR_GREATER
@@ -13150,6 +13249,26 @@ static class _UniFFILib
     [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
     public static extern
 #endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_client_rtc_livekit_delegate_delayed_leave();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_client_rtc_livekit_get_token();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_client_run_search_backfill();
 
 #if NET8_0_OR_GREATER
@@ -13531,6 +13650,16 @@ static class _UniFFILib
     public static extern
 #endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_client_unignore_user();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_client_update_delayed_event();
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -16061,6 +16190,36 @@ static class _UniFFILib
     public static extern
 #endif
     ushort uniffi_matrix_sdk_ffi_checksum_method_room_withdraw_verification_and_resend();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_room_send_delayed_event();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_room_send_delayed_state_event();
+
+#if NET8_0_OR_GREATER
+    [LibraryImport("matrix_sdk_ffi")]
+    [UnmanagedCallConv(CallConvs = new[] { typeof(CallConvCdecl) })]
+    public static partial
+#else
+    [DllImport("matrix_sdk_ffi", CallingConvention = CallingConvention.Cdecl)]
+    public static extern
+#endif
+    ushort uniffi_matrix_sdk_ffi_checksum_method_room_send_sticky_delayed_event();
 
 #if NET8_0_OR_GREATER
     [LibraryImport("matrix_sdk_ffi")]
@@ -19500,10 +19659,10 @@ static class _UniFFILib
         }
         {
             var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_is_livekit_rtc_supported();
-            if (checksum != 21068)
+            if (checksum != 60417)
             {
                 throw new UniffiContractChecksumException(
-                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_is_livekit_rtc_supported` checksum `21068`, library returned `{checksum}`"
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_is_livekit_rtc_supported` checksum `60417`, library returned `{checksum}`"
                 );
             }
         }
@@ -19821,6 +19980,24 @@ static class _UniFFILib
             {
                 throw new UniffiContractChecksumException(
                     $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_rooms` checksum `64941`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_rtc_livekit_delegate_delayed_leave();
+            if (checksum != 64232)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_rtc_livekit_delegate_delayed_leave` checksum `64232`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_rtc_livekit_get_token();
+            if (checksum != 18096)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_rtc_livekit_get_token` checksum `18096`, library returned `{checksum}`"
                 );
             }
         }
@@ -20175,6 +20352,15 @@ static class _UniFFILib
             {
                 throw new UniffiContractChecksumException(
                     $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_unignore_user` checksum `28367`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_client_update_delayed_event();
+            if (checksum != 23725)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_client_update_delayed_event` checksum `23725`, library returned `{checksum}`"
                 );
             }
         }
@@ -22486,6 +22672,33 @@ static class _UniFFILib
             {
                 throw new UniffiContractChecksumException(
                     $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_withdraw_verification_and_resend` checksum `56581`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_send_delayed_event();
+            if (checksum != 7176)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_delayed_event` checksum `7176`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_send_delayed_state_event();
+            if (checksum != 26141)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_delayed_state_event` checksum `26141`, library returned `{checksum}`"
+                );
+            }
+        }
+        {
+            var checksum = _UniFFILib.uniffi_matrix_sdk_ffi_checksum_method_room_send_sticky_delayed_event();
+            if (checksum != 20506)
+            {
+                throw new UniffiContractChecksumException(
+                    $"Matrix.RustSdk.Bindings: uniffi bindings expected function `uniffi_matrix_sdk_ffi_checksum_method_room_send_sticky_delayed_event` checksum `20506`, library returned `{checksum}`"
                 );
             }
         }
@@ -25903,6 +26116,9 @@ public interface IClient
     /// a fallback, unless well-known discovery was disabled with
     /// [`ClientBuilder::disable_well_known_lookup`] or
     /// [`Client::disable_well_known_lookup`].
+    ///
+    /// Both the `m.livekit` and the legacy `livekit` transport types count as
+    /// LiveKit support.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     Task<bool> IsLivekitRtcSupported();
@@ -26207,6 +26423,48 @@ public interface IClient
     Task<bool> RoomAliasExists(string @roomAlias);
     RoomDirectorySearch RoomDirectorySearch();
     Room[] Rooms();
+
+    /// <summary>
+    /// Hand the delayed leave event of a MatrixRTC session over to the
+    /// homeserver, through its `/rtc/livekit/delegate_delayed_leave` endpoint
+    /// (MSC4195).
+    ///
+    /// # Arguments
+    ///
+    /// * `url` - The WebSocket URL of the LiveKit SFU that the user has
+    /// connected to.
+    /// * `room_id` - The room where the `m.rtc.member` event is present.
+    /// * `slot_id` - The slot ID from the `m.rtc.member` event.
+    /// * `member_id` - The `member.id` property of the `m.rtc.member` event.
+    /// * `delay_id` - The ID of the delayed `m.rtc.member` leave event to
+    /// delegate.
+    ///
+    /// Homeservers that don't implement the endpoint respond with an
+    /// `M_UNRECOGNIZED` error.
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    Task RtcLivekitDelegateDelayedLeave(string @url, string @roomId, string @slotId, string @memberId, string @delayId);
+
+    /// <summary>
+    /// Obtain a JWT to authenticate with a LiveKit SFU, through the
+    /// homeserver's `/rtc/livekit/get_token` endpoint (MSC4195).
+    ///
+    /// # Arguments
+    ///
+    /// * `url` - The WebSocket URL of the LiveKit SFU to obtain a token for.
+    /// * `room_id` - The room where the `m.rtc.member` event is present.
+    /// * `slot_id` - The slot ID from the `m.rtc.member` event.
+    /// * `member_id` - The `member.id` property of the user's own
+    /// `m.rtc.member` event.
+    /// * `server_name` - The server name of the sender of the `m.rtc.member`
+    /// event that advertised the SFU. If `None`, the homeserver uses its own
+    /// server name.
+    ///
+    /// Homeservers that don't implement the endpoint respond with an
+    /// `M_UNRECOGNIZED` error.
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    Task<string> RtcLivekitGetToken(string @url, string @roomId, string @slotId, string @memberId, string? @serverName);
 
     /// <summary>
     /// Start a search backfill sweep in the background.
@@ -26515,6 +26773,31 @@ public interface IClient
 
     /// <exception cref="ClientException"></exception>
     Task UnignoreUser(string @userId);
+
+    /// <summary>
+    /// Cancel, restart or immediately send a previously scheduled delayed
+    /// event ([MSC4140]).
+    ///
+    /// # Arguments
+    ///
+    /// * `delay_id` - The identifier returned by [`Room::send_delayed_event`]
+    /// or [`Room::send_delayed_state_event`].
+    ///
+    /// * `action` - What should happen to the delayed event.
+    ///
+    /// * `request_config_override` - Overrides the client's request config for
+    /// this request. Fields that are not set keep the client's values.
+    ///
+    /// [MSC4140]: https://github.com/matrix-org/matrix-spec-proposals/pull/4140
+    /// [`Room::send_delayed_event`]: crate::room::Room::send_delayed_event
+    /// [`Room::send_delayed_state_event`]: crate::room::Room::send_delayed_state_event
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    Task UpdateDelayedEvent(
+        string @delayId,
+        DelayedEventUpdateAction @action,
+        RequestConfigOverride? @requestConfigOverride = null
+    );
 
     /// <exception cref="ClientException"></exception>
     Task UploadAvatar(string @mimeType, byte[] @data);
@@ -28143,6 +28426,9 @@ public class Client : IClient, IDisposable
     /// a fallback, unless well-known discovery was disabled with
     /// [`ClientBuilder::disable_well_known_lookup`] or
     /// [`Client::disable_well_known_lookup`].
+    ///
+    /// Both the `m.livekit` and the legacy `livekit` transport types count as
+    /// LiveKit support.
     /// </summary>
     /// <exception cref="ClientException"></exception>
     public async Task<bool> IsLivekitRtcSupported()
@@ -29235,6 +29521,118 @@ public class Client : IClient, IDisposable
                         _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_rooms(thisPtr, ref _status)
                 )
             )
+        );
+    }
+
+    /// <summary>
+    /// Hand the delayed leave event of a MatrixRTC session over to the
+    /// homeserver, through its `/rtc/livekit/delegate_delayed_leave` endpoint
+    /// (MSC4195).
+    ///
+    /// # Arguments
+    ///
+    /// * `url` - The WebSocket URL of the LiveKit SFU that the user has
+    /// connected to.
+    /// * `room_id` - The room where the `m.rtc.member` event is present.
+    /// * `slot_id` - The slot ID from the `m.rtc.member` event.
+    /// * `member_id` - The `member.id` property of the `m.rtc.member` event.
+    /// * `delay_id` - The ID of the delayed `m.rtc.member` leave event to
+    /// delegate.
+    ///
+    /// Homeservers that don't implement the endpoint respond with an
+    /// `M_UNRECOGNIZED` error.
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    public async Task RtcLivekitDelegateDelayedLeave(
+        string @url,
+        string @roomId,
+        string @slotId,
+        string @memberId,
+        string @delayId
+    )
+    {
+        await _UniFFIAsync.UniffiRustCallAsync(
+            // Get rust future
+            CallWithPointer(thisPtr =>
+            {
+                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_rtc_livekit_delegate_delayed_leave(
+                    thisPtr,
+                    FfiConverterString.INSTANCE.Lower(@url),
+                    FfiConverterString.INSTANCE.Lower(@roomId),
+                    FfiConverterString.INSTANCE.Lower(@slotId),
+                    FfiConverterString.INSTANCE.Lower(@memberId),
+                    FfiConverterString.INSTANCE.Lower(@delayId)
+                );
+            }),
+            // Poll
+            (ulong future, IntPtr continuation, ulong data) =>
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_void(future, continuation, data),
+            // Complete
+            (ulong future, ref UniffiRustCallStatus status) =>
+            {
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_void(future, ref status);
+            },
+            // Free
+            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_void(future),
+            // Error
+            FfiConverterTypeClientError.INSTANCE
+        );
+    }
+
+    /// <summary>
+    /// Obtain a JWT to authenticate with a LiveKit SFU, through the
+    /// homeserver's `/rtc/livekit/get_token` endpoint (MSC4195).
+    ///
+    /// # Arguments
+    ///
+    /// * `url` - The WebSocket URL of the LiveKit SFU to obtain a token for.
+    /// * `room_id` - The room where the `m.rtc.member` event is present.
+    /// * `slot_id` - The slot ID from the `m.rtc.member` event.
+    /// * `member_id` - The `member.id` property of the user's own
+    /// `m.rtc.member` event.
+    /// * `server_name` - The server name of the sender of the `m.rtc.member`
+    /// event that advertised the SFU. If `None`, the homeserver uses its own
+    /// server name.
+    ///
+    /// Homeservers that don't implement the endpoint respond with an
+    /// `M_UNRECOGNIZED` error.
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    public async Task<string> RtcLivekitGetToken(
+        string @url,
+        string @roomId,
+        string @slotId,
+        string @memberId,
+        string? @serverName
+    )
+    {
+        return await _UniFFIAsync.UniffiRustCallAsync(
+            // Get rust future
+            CallWithPointer(thisPtr =>
+            {
+                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_rtc_livekit_get_token(
+                    thisPtr,
+                    FfiConverterString.INSTANCE.Lower(@url),
+                    FfiConverterString.INSTANCE.Lower(@roomId),
+                    FfiConverterString.INSTANCE.Lower(@slotId),
+                    FfiConverterString.INSTANCE.Lower(@memberId),
+                    FfiConverterOptionalString.INSTANCE.Lower(@serverName)
+                );
+            }),
+            // Poll
+            (ulong future, IntPtr continuation, ulong data) =>
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_rust_buffer(future, continuation, data),
+            // Complete
+            (ulong future, ref UniffiRustCallStatus status) =>
+            {
+                return _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_rust_buffer(future, ref status);
+            },
+            // Free
+            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_rust_buffer(future),
+            // Lift
+            (result) => FfiConverterString.INSTANCE.Lift(result),
+            // Error
+            FfiConverterTypeClientError.INSTANCE
         );
     }
 
@@ -30343,6 +30741,57 @@ public class Client : IClient, IDisposable
                 return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_unignore_user(
                     thisPtr,
                     FfiConverterString.INSTANCE.Lower(@userId)
+                );
+            }),
+            // Poll
+            (ulong future, IntPtr continuation, ulong data) =>
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_void(future, continuation, data),
+            // Complete
+            (ulong future, ref UniffiRustCallStatus status) =>
+            {
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_void(future, ref status);
+            },
+            // Free
+            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_void(future),
+            // Error
+            FfiConverterTypeClientError.INSTANCE
+        );
+    }
+
+    /// <summary>
+    /// Cancel, restart or immediately send a previously scheduled delayed
+    /// event ([MSC4140]).
+    ///
+    /// # Arguments
+    ///
+    /// * `delay_id` - The identifier returned by [`Room::send_delayed_event`]
+    /// or [`Room::send_delayed_state_event`].
+    ///
+    /// * `action` - What should happen to the delayed event.
+    ///
+    /// * `request_config_override` - Overrides the client's request config for
+    /// this request. Fields that are not set keep the client's values.
+    ///
+    /// [MSC4140]: https://github.com/matrix-org/matrix-spec-proposals/pull/4140
+    /// [`Room::send_delayed_event`]: crate::room::Room::send_delayed_event
+    /// [`Room::send_delayed_state_event`]: crate::room::Room::send_delayed_state_event
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    public async Task UpdateDelayedEvent(
+        string @delayId,
+        DelayedEventUpdateAction @action,
+        RequestConfigOverride? @requestConfigOverride = null
+    )
+    {
+        await _UniFFIAsync.UniffiRustCallAsync(
+            // Get rust future
+            CallWithPointer(thisPtr =>
+            {
+                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_client_update_delayed_event(
+                    thisPtr,
+                    FfiConverterString.INSTANCE.Lower(@delayId),
+                    FfiConverterTypeDelayedEventUpdateAction.INSTANCE.Lower(@action),
+                    FfiConverterOptionalTypeRequestConfigOverride.INSTANCE.Lower(@requestConfigOverride)
                 );
             }),
             // Poll
@@ -39343,6 +39792,116 @@ public interface IRoom
     Task WithdrawVerificationAndResend(string[] @userIds, SendHandle @sendHandle);
 
     /// <summary>
+    /// Send a delayed message-like event to the room ([MSC4140]).
+    ///
+    /// The homeserver holds on to the event and only distributes it to the room
+    /// once `delay_ms` has elapsed, unless the delayed event is updated
+    /// beforehand with [`Client::update_delayed_event`].
+    ///
+    /// If the room is encrypted, the content is encrypted when the event is
+    /// scheduled, like [`Room::send_raw`] does. A member joining the room
+    /// before the delay elapses won't be able to decrypt it.
+    ///
+    /// # Arguments
+    ///
+    /// * `event_type` - The type of the event to send.
+    ///
+    /// * `content` - The content of the event to send encoded as a JSON string.
+    ///
+    /// * `delay_ms` - How long, in milliseconds, the homeserver should hold on
+    /// to the event.
+    ///
+    /// * `request_config_override` - Overrides the client's request config for
+    /// this request. Fields that are not set keep the client's values.
+    ///
+    /// Returns the `delay_id` identifying the scheduled event.
+    ///
+    /// [MSC4140]: https://github.com/matrix-org/matrix-spec-proposals/pull/4140
+    /// [`Client::update_delayed_event`]: crate::client::Client::update_delayed_event
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    Task<string> SendDelayedEvent(
+        string @eventType,
+        string @content,
+        ulong @delayMs,
+        RequestConfigOverride? @requestConfigOverride = null
+    );
+
+    /// <summary>
+    /// Send a delayed state event to the room ([MSC4140]).
+    ///
+    /// See [`Room::send_delayed_event`] for the semantics of delayed events.
+    /// Unlike message-like events, state events can't be sticky.
+    ///
+    /// # Arguments
+    ///
+    /// * `event_type` - The type of the state event to send.
+    ///
+    /// * `state_key` - A unique key which defines the overwriting semantics for
+    /// this piece of room state. This is often an empty string.
+    ///
+    /// * `content` - The content of the event to send encoded as a JSON string.
+    ///
+    /// * `delay_ms` - How long, in milliseconds, the homeserver should hold on
+    /// to the event.
+    ///
+    /// * `request_config_override` - Overrides the client's request config for
+    /// this request. Fields that are not set keep the client's values.
+    ///
+    /// Returns the `delay_id` identifying the scheduled event.
+    ///
+    /// [MSC4140]: https://github.com/matrix-org/matrix-spec-proposals/pull/4140
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    Task<string> SendDelayedStateEvent(
+        string @eventType,
+        string @stateKey,
+        string @content,
+        ulong @delayMs,
+        RequestConfigOverride? @requestConfigOverride = null
+    );
+
+    /// <summary>
+    /// Send a delayed message-like event to the room ([MSC4140]) that becomes
+    /// sticky ([MSC4354]) once the homeserver sends it.
+    ///
+    /// See [`Room::send_delayed_event`] for the semantics of delayed events.
+    ///
+    /// Note that if the homeserver doesn't support sticky events, it will
+    /// ignore the duration and send the event unsticky. Server support can be
+    /// checked with [`Client::is_sticky_events_supported`].
+    ///
+    /// # Arguments
+    ///
+    /// * `event_type` - The type of the event to send.
+    ///
+    /// * `content` - The content of the event to send encoded as a JSON string.
+    ///
+    /// * `delay_ms` - How long, in milliseconds, the homeserver should hold on
+    /// to the event.
+    ///
+    /// * `sticky_duration_ms` - How long the event stays sticky for once it is
+    /// sent, in milliseconds, clamped to one hour.
+    ///
+    /// * `request_config_override` - Overrides the client's request config for
+    /// this request. Fields that are not set keep the client's values.
+    ///
+    /// Returns the `delay_id` identifying the scheduled event.
+    ///
+    /// [MSC4140]: https://github.com/matrix-org/matrix-spec-proposals/pull/4140
+    /// [MSC4354]: https://github.com/matrix-org/matrix-spec-proposals/pull/4354
+    /// [`Client::is_sticky_events_supported`]: crate::client::Client::is_sticky_events_supported
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    Task<string> SendStickyDelayedEvent(
+        string @eventType,
+        string @content,
+        ulong @delayMs,
+        ulong @stickyDurationMs,
+        RequestConfigOverride? @requestConfigOverride = null
+    );
+
+    /// <summary>
     /// Subscribe to the message-like events of the given type in this room.
     ///
     /// The listener is called with every event of that type that a sync brings
@@ -42515,6 +43074,205 @@ public class Room : IRoom, IDisposable
             },
             // Free
             (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_void(future),
+            // Error
+            FfiConverterTypeClientError.INSTANCE
+        );
+    }
+
+    /// <summary>
+    /// Send a delayed message-like event to the room ([MSC4140]).
+    ///
+    /// The homeserver holds on to the event and only distributes it to the room
+    /// once `delay_ms` has elapsed, unless the delayed event is updated
+    /// beforehand with [`Client::update_delayed_event`].
+    ///
+    /// If the room is encrypted, the content is encrypted when the event is
+    /// scheduled, like [`Room::send_raw`] does. A member joining the room
+    /// before the delay elapses won't be able to decrypt it.
+    ///
+    /// # Arguments
+    ///
+    /// * `event_type` - The type of the event to send.
+    ///
+    /// * `content` - The content of the event to send encoded as a JSON string.
+    ///
+    /// * `delay_ms` - How long, in milliseconds, the homeserver should hold on
+    /// to the event.
+    ///
+    /// * `request_config_override` - Overrides the client's request config for
+    /// this request. Fields that are not set keep the client's values.
+    ///
+    /// Returns the `delay_id` identifying the scheduled event.
+    ///
+    /// [MSC4140]: https://github.com/matrix-org/matrix-spec-proposals/pull/4140
+    /// [`Client::update_delayed_event`]: crate::client::Client::update_delayed_event
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    public async Task<string> SendDelayedEvent(
+        string @eventType,
+        string @content,
+        ulong @delayMs,
+        RequestConfigOverride? @requestConfigOverride = null
+    )
+    {
+        return await _UniFFIAsync.UniffiRustCallAsync(
+            // Get rust future
+            CallWithPointer(thisPtr =>
+            {
+                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_send_delayed_event(
+                    thisPtr,
+                    FfiConverterString.INSTANCE.Lower(@eventType),
+                    FfiConverterString.INSTANCE.Lower(@content),
+                    FfiConverterUInt64.INSTANCE.Lower(@delayMs),
+                    FfiConverterOptionalTypeRequestConfigOverride.INSTANCE.Lower(@requestConfigOverride)
+                );
+            }),
+            // Poll
+            (ulong future, IntPtr continuation, ulong data) =>
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_rust_buffer(future, continuation, data),
+            // Complete
+            (ulong future, ref UniffiRustCallStatus status) =>
+            {
+                return _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_rust_buffer(future, ref status);
+            },
+            // Free
+            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_rust_buffer(future),
+            // Lift
+            (result) => FfiConverterString.INSTANCE.Lift(result),
+            // Error
+            FfiConverterTypeClientError.INSTANCE
+        );
+    }
+
+    /// <summary>
+    /// Send a delayed state event to the room ([MSC4140]).
+    ///
+    /// See [`Room::send_delayed_event`] for the semantics of delayed events.
+    /// Unlike message-like events, state events can't be sticky.
+    ///
+    /// # Arguments
+    ///
+    /// * `event_type` - The type of the state event to send.
+    ///
+    /// * `state_key` - A unique key which defines the overwriting semantics for
+    /// this piece of room state. This is often an empty string.
+    ///
+    /// * `content` - The content of the event to send encoded as a JSON string.
+    ///
+    /// * `delay_ms` - How long, in milliseconds, the homeserver should hold on
+    /// to the event.
+    ///
+    /// * `request_config_override` - Overrides the client's request config for
+    /// this request. Fields that are not set keep the client's values.
+    ///
+    /// Returns the `delay_id` identifying the scheduled event.
+    ///
+    /// [MSC4140]: https://github.com/matrix-org/matrix-spec-proposals/pull/4140
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    public async Task<string> SendDelayedStateEvent(
+        string @eventType,
+        string @stateKey,
+        string @content,
+        ulong @delayMs,
+        RequestConfigOverride? @requestConfigOverride = null
+    )
+    {
+        return await _UniFFIAsync.UniffiRustCallAsync(
+            // Get rust future
+            CallWithPointer(thisPtr =>
+            {
+                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_send_delayed_state_event(
+                    thisPtr,
+                    FfiConverterString.INSTANCE.Lower(@eventType),
+                    FfiConverterString.INSTANCE.Lower(@stateKey),
+                    FfiConverterString.INSTANCE.Lower(@content),
+                    FfiConverterUInt64.INSTANCE.Lower(@delayMs),
+                    FfiConverterOptionalTypeRequestConfigOverride.INSTANCE.Lower(@requestConfigOverride)
+                );
+            }),
+            // Poll
+            (ulong future, IntPtr continuation, ulong data) =>
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_rust_buffer(future, continuation, data),
+            // Complete
+            (ulong future, ref UniffiRustCallStatus status) =>
+            {
+                return _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_rust_buffer(future, ref status);
+            },
+            // Free
+            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_rust_buffer(future),
+            // Lift
+            (result) => FfiConverterString.INSTANCE.Lift(result),
+            // Error
+            FfiConverterTypeClientError.INSTANCE
+        );
+    }
+
+    /// <summary>
+    /// Send a delayed message-like event to the room ([MSC4140]) that becomes
+    /// sticky ([MSC4354]) once the homeserver sends it.
+    ///
+    /// See [`Room::send_delayed_event`] for the semantics of delayed events.
+    ///
+    /// Note that if the homeserver doesn't support sticky events, it will
+    /// ignore the duration and send the event unsticky. Server support can be
+    /// checked with [`Client::is_sticky_events_supported`].
+    ///
+    /// # Arguments
+    ///
+    /// * `event_type` - The type of the event to send.
+    ///
+    /// * `content` - The content of the event to send encoded as a JSON string.
+    ///
+    /// * `delay_ms` - How long, in milliseconds, the homeserver should hold on
+    /// to the event.
+    ///
+    /// * `sticky_duration_ms` - How long the event stays sticky for once it is
+    /// sent, in milliseconds, clamped to one hour.
+    ///
+    /// * `request_config_override` - Overrides the client's request config for
+    /// this request. Fields that are not set keep the client's values.
+    ///
+    /// Returns the `delay_id` identifying the scheduled event.
+    ///
+    /// [MSC4140]: https://github.com/matrix-org/matrix-spec-proposals/pull/4140
+    /// [MSC4354]: https://github.com/matrix-org/matrix-spec-proposals/pull/4354
+    /// [`Client::is_sticky_events_supported`]: crate::client::Client::is_sticky_events_supported
+    /// </summary>
+    /// <exception cref="ClientException"></exception>
+    public async Task<string> SendStickyDelayedEvent(
+        string @eventType,
+        string @content,
+        ulong @delayMs,
+        ulong @stickyDurationMs,
+        RequestConfigOverride? @requestConfigOverride = null
+    )
+    {
+        return await _UniFFIAsync.UniffiRustCallAsync(
+            // Get rust future
+            CallWithPointer(thisPtr =>
+            {
+                return _UniFFILib.uniffi_matrix_sdk_ffi_fn_method_room_send_sticky_delayed_event(
+                    thisPtr,
+                    FfiConverterString.INSTANCE.Lower(@eventType),
+                    FfiConverterString.INSTANCE.Lower(@content),
+                    FfiConverterUInt64.INSTANCE.Lower(@delayMs),
+                    FfiConverterUInt64.INSTANCE.Lower(@stickyDurationMs),
+                    FfiConverterOptionalTypeRequestConfigOverride.INSTANCE.Lower(@requestConfigOverride)
+                );
+            }),
+            // Poll
+            (ulong future, IntPtr continuation, ulong data) =>
+                _UniFFILib.ffi_matrix_sdk_ffi_rust_future_poll_rust_buffer(future, continuation, data),
+            // Complete
+            (ulong future, ref UniffiRustCallStatus status) =>
+            {
+                return _UniFFILib.ffi_matrix_sdk_ffi_rust_future_complete_rust_buffer(future, ref status);
+            },
+            // Free
+            (ulong future) => _UniFFILib.ffi_matrix_sdk_ffi_rust_future_free_rust_buffer(future),
+            // Lift
+            (result) => FfiConverterString.INSTANCE.Lift(result),
             // Error
             FfiConverterTypeClientError.INSTANCE
         );
@@ -63861,6 +64619,78 @@ class FfiConverterTypeDehydratedDeviceEvent : FfiConverterRustBuffer<DehydratedD
 }
 
 /// <summary>
+/// What to do with a delayed event that hasn't been distributed to the room
+/// yet ([MSC4140]).
+///
+/// [MSC4140]: https://github.com/matrix-org/matrix-spec-proposals/pull/4140
+/// </summary>
+public enum DelayedEventUpdateAction : int
+{
+    /// <summary>
+    /// Cancel the delayed event: it will never be sent to the room.
+    /// </summary>
+    Cancel,
+
+    /// <summary>
+    /// Restart the delay timeout, keeping the event scheduled.
+    /// </summary>
+    Restart,
+
+    /// <summary>
+    /// Send the event to the room right away.
+    /// </summary>
+    Send,
+}
+
+class FfiConverterTypeDelayedEventUpdateAction : FfiConverterRustBuffer<DelayedEventUpdateAction>
+{
+    public static FfiConverterTypeDelayedEventUpdateAction INSTANCE = new FfiConverterTypeDelayedEventUpdateAction();
+
+    public override DelayedEventUpdateAction Read(BigEndianStream stream)
+    {
+        var value = stream.ReadInt();
+        switch (value)
+        {
+            case 1:
+                return DelayedEventUpdateAction.Cancel;
+            case 2:
+                return DelayedEventUpdateAction.Restart;
+            case 3:
+                return DelayedEventUpdateAction.Send;
+            default:
+                throw new InternalException(
+                    String.Format("invalid enum value '{0}' in FfiConverterTypeDelayedEventUpdateAction.Read()", value)
+                );
+        }
+    }
+
+    public override int AllocationSize(DelayedEventUpdateAction value)
+    {
+        return 4;
+    }
+
+    public override void Write(DelayedEventUpdateAction value, BigEndianStream stream)
+    {
+        switch (value)
+        {
+            case DelayedEventUpdateAction.Cancel:
+                stream.WriteInt(1);
+                break;
+            case DelayedEventUpdateAction.Restart:
+                stream.WriteInt(2);
+                break;
+            case DelayedEventUpdateAction.Send:
+                stream.WriteInt(3);
+                break;
+            default:
+                throw new InternalException(
+                    String.Format("invalid enum value '{0}' in FfiConverterTypeDelayedEventUpdateAction.Write()", value)
+                );
+        }
+    }
+}
+
+/// <summary>
 /// Result for the check if a store has a valid secrets bundle.
 /// </summary>
 public enum DetectedSecretsBundle : int
@@ -74555,6 +75385,9 @@ public record RtcTransport
 {
     /// <summary>
     /// A LiveKit RTC transport.
+    ///
+    /// This covers both the `m.livekit` transport type and the legacy `livekit`
+    /// type used by implementations of earlier versions of MSC4195.
     /// </summary>
     public record LiveKit(string? Url, string? ServiceUrl) : RtcTransport { }
 
