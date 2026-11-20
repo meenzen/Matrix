@@ -66,6 +66,13 @@ internal sealed record SessionFile
     /// </summary>
     public bool DeviceMayExist { get; init; }
 
+    /// <summary>
+    /// Whether the store of a pending login is empty: set when the login is started, cleared once a client was built
+    /// with it. A login on another homeserver deletes the store unless it is set, a client whose build failed may
+    /// still have the store open.
+    /// </summary>
+    public bool StoreIsEmpty { get; init; }
+
     public StoredSession? Session { get; init; }
 }
 
