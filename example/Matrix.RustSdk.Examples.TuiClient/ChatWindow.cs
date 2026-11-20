@@ -491,7 +491,14 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
 
         int? selected = null;
         int marker = _selectUnread ? IndexOf(entries, e => e.Kind == EntryKind.ReadMarker) : -1;
-        if (_selectUnread && entries.Count > 0 && (marker >= 0 || _room is { LoadedHistory: true }))
+        // without unread messages there is no marker once the history loaded. With unread messages it comes with the
+        // items of the history, the SDK delivers them after the pagination returned: until then the user moving in the
+        // timeline ends the wait (EndSelectUnread)
+        if (
+            _selectUnread
+            && entries.Count > 0
+            && (marker >= 0 || _room is { LoadedHistory: true, Summary.UnreadMessages: 0 })
+        )
         {
             // an opened room starts at the first unread message, the read receipt follows once the user reaches the end
             _selectUnread = false;
@@ -541,6 +548,18 @@ public sealed partial class ChatWindow : Window, IAsyncDisposable
         {
             _lastReadKey = lastKey;
             _ = MarkAsReadAsync(room);
+        }
+    }
+
+    /// <summary>
+    /// The user moves in the timeline on their own: the opened room stops waiting for the first unread message, reading
+    /// to the end sends the read receipt even if the SDK never inserts a read marker.
+    /// </summary>
+    private void EndSelectUnread()
+    {
+        if (_room is not null)
+        {
+            _selectUnread = false;
         }
     }
 
