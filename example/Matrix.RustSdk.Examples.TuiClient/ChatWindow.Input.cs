@@ -99,6 +99,21 @@ public sealed partial class ChatWindow
     private void Dispatch(KeyAction keyAction)
     {
         int count = keyAction.Count;
+        bool timelineMove = _pane == Pane.Timeline && IsMove(keyAction.Action);
+        if (timelineMove)
+        {
+            EndSelectUnread();
+        }
+        DispatchCore(keyAction, count);
+        if (timelineMove)
+        {
+            // also when the selection was at the end already and didn't change
+            MarkAsReadIfFollowing();
+        }
+    }
+
+    private void DispatchCore(KeyAction keyAction, int count)
+    {
         switch (keyAction.Action)
         {
             case InputAction.MoveDown:
@@ -237,6 +252,17 @@ public sealed partial class ChatWindow
                 break;
         }
     }
+
+    private static bool IsMove(InputAction action) =>
+        action
+            is InputAction.MoveDown
+                or InputAction.MoveUp
+                or InputAction.MoveFirst
+                or InputAction.MoveLast
+                or InputAction.HalfPageDown
+                or InputAction.HalfPageUp
+                or InputAction.PageDown
+                or InputAction.PageUp;
 
     /// <summary>
     /// Moving to the top of the timeline loads older messages, also when the selection is there already.
