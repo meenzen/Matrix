@@ -67,10 +67,7 @@ public static class TuiClient
                 continue;
             }
             // the password was used, the login form asks for it again
-            options = options with
-            {
-                Password = null,
-            };
+            options = options with { Password = null };
         }
     }
 

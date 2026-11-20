@@ -179,16 +179,11 @@ public sealed class MatrixSession : IAsyncDisposable
         await ThreadPoolHop.Yield();
         CancellationToken stopping = _stopping.Token;
         _watchers.Add(WatchAsync(_syncService.WatchStateAsync(_stopping.Token), OnSyncStateChanged));
-        _watchers.Add(
-            WatchAsync(
-                _client.WatchSendQueueErrorsAsync(_stopping.Token),
-                failure =>
-                {
-                    SendFailed?.Invoke(this, (failure.RoomId, failure.Error.Message));
-                    ScheduleSendRetry();
-                }
-            )
-        );
+        _watchers.Add(WatchAsync(_client.WatchSendQueueErrorsAsync(_stopping.Token), failure =>
+            {
+                SendFailed?.Invoke(this, (failure.RoomId, failure.Error.Message));
+                ScheduleSendRetry();
+            }));
 
         // notifications are evaluated while syncing, the handler has to be registered before the sync starts
         await _client.RegisterNotificationHandler(new NotificationListener(this));

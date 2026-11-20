@@ -170,8 +170,8 @@ public sealed class VerificationFlow(Client client) : SessionVerificationControl
     {
         await ThreadPoolHop.Yield();
         SessionVerificationController controller = Controller;
-        SessionVerificationRequestDetails details =
-            _incoming ?? throw new InvalidOperationException("There is no verification request to accept.");
+        SessionVerificationRequestDetails details = _incoming
+            ?? throw new InvalidOperationException("There is no verification request to accept.");
         _isInitiator = false;
         await controller.AcknowledgeVerificationRequest(details.SenderProfile.UserId, details.FlowId);
         await controller.AcceptVerificationRequest();

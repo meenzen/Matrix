@@ -45,18 +45,16 @@ public sealed partial class ChatWindow
                 break;
             case Command.Leave:
                 WithRoom(room =>
-                    Ask(
-                        $"Leave {room.Summary.Name}? (y/n)",
-                        () =>
-                            Run(
-                                "Leaving…",
-                                async () =>
-                                {
-                                    await room.LeaveAsync();
-                                    await CloseIfOpenAsync(room);
-                                },
-                                "Left the room."
-                            )
+                    Ask($"Leave {room.Summary.Name}? (y/n)", () =>
+                        Run(
+                            "Leaving…",
+                            async () =>
+                            {
+                                await room.LeaveAsync();
+                                await CloseIfOpenAsync(room);
+                            },
+                            "Left the room."
+                        )
                     )
                 );
                 break;
@@ -221,19 +219,17 @@ public sealed partial class ChatWindow
                 );
                 break;
             case Command.ResetRecoveryKey:
-                Ask(
-                    "Replace the recovery key? The old one stops working. (y/n)",
-                    () =>
-                        Run(
-                            "Creating a new recovery key…",
-                            async () =>
-                            {
-                                _shownRecoveryKey = await _session.Encryption.ResetRecoveryKeyAsync();
-                                ShowEncryptionPage();
-                            },
-                            "Created a new recovery key, store it.",
-                            "Resetting the recovery key failed"
-                        )
+                Ask("Replace the recovery key? The old one stops working. (y/n)", () =>
+                    Run(
+                        "Creating a new recovery key…",
+                        async () =>
+                        {
+                            _shownRecoveryKey = await _session.Encryption.ResetRecoveryKeyAsync();
+                            ShowEncryptionPage();
+                        },
+                        "Created a new recovery key, store it.",
+                        "Resetting the recovery key failed"
+                    )
                 );
                 break;
             case Command.Recover recover:
@@ -346,31 +342,28 @@ public sealed partial class ChatWindow
         WithRoom(room =>
         {
             int generation = _roomGeneration;
-            Run(
-                "Loading the members…",
-                async () =>
+            Run("Loading the members…", async () =>
+            {
+                IReadOnlyList<MemberSummary> members = await room.GetMembersAsync();
+                if (generation == _roomGeneration)
                 {
-                    IReadOnlyList<MemberSummary> members = await room.GetMembersAsync();
-                    if (generation == _roomGeneration)
-                    {
-                        ShowPage(
-                            Pages.Members(room.Summary.Name, members) with
+                    ShowPage(
+                        Pages.Members(room.Summary.Name, members) with
+                        {
+                            // Enter opens the direct chat with the member
+                            Open = item =>
                             {
-                                // Enter opens the direct chat with the member
-                                Open = item =>
+                                string userId = members[item].UserId;
+                                if (userId != _session.UserId)
                                 {
-                                    string userId = members[item].UserId;
-                                    if (userId != _session.UserId)
-                                    {
-                                        Execute(new Command.DirectMessage(userId));
-                                    }
-                                    return Task.CompletedTask;
-                                },
-                            }
-                        );
-                    }
+                                    Execute(new Command.DirectMessage(userId));
+                                }
+                                return Task.CompletedTask;
+                            },
+                        }
+                    );
                 }
-            );
+            });
         });
     }
 

@@ -397,9 +397,8 @@ public sealed class SubscriptionGenerator : IIncrementalGenerator
         return valueType is INamedTypeSymbol { IsTupleType: true } tuple
             && tuple.TupleElements.Length == parameters.Length
             && tuple
-                .TupleElements.Zip(
-                    parameters,
-                    (e, p) => SymbolEqualityComparer.IncludeNullability.Equals(e.Type, p.Type)
+                .TupleElements.Zip(parameters, (e, p) =>
+                    SymbolEqualityComparer.IncludeNullability.Equals(e.Type, p.Type)
                 )
                 .All(matches => matches);
     }

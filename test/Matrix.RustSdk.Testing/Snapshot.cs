@@ -58,9 +58,9 @@ public static class Snapshot
         // qualified, TUnit has a HookType.Assembly
         System.Reflection.Assembly? tests = System.Reflection.Assembly.GetEntryAssembly();
         return tests
-                ?.GetCustomAttributes<AssemblyMetadataAttribute>()
-                .SingleOrDefault(metadata => metadata.Key == "ProjectDirectory")
-                ?.Value
+            ?.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .SingleOrDefault(metadata => metadata.Key == "ProjectDirectory")
+            ?.Value
             ?? throw new InvalidOperationException("The test project has no ProjectDirectory assembly metadata.");
     }
 }

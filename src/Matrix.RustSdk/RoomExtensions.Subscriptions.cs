@@ -190,16 +190,11 @@ public static partial class RoomExtensions
     {
         public void OnUpdate(RoomStateEvent[] events)
         {
-            writer.Write(
-                Array.ConvertAll(
-                    events,
-                    stateEvent =>
-                    {
-                        stateEvent.EventType.Dispose();
-                        return stateEvent with { EventType = eventType };
-                    }
-                )
-            );
+            writer.Write(Array.ConvertAll(events, stateEvent =>
+                {
+                    stateEvent.EventType.Dispose();
+                    return stateEvent with { EventType = eventType };
+                }));
         }
     }
 
