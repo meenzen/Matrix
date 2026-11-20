@@ -457,6 +457,11 @@ public sealed class StoredClient : IAsyncDisposable, IDisposable
         SessionFile active;
         try
         {
+            if (pending.State == SessionState.Pending)
+            {
+                // the client may write to the store, it isn't empty anymore
+                pending = pending with { StoreIsEmpty = false };
+            }
             if (pending.State == SessionState.Pending && !pending.DeviceMayExist)
             {
                 // from here on the homeserver may create the device
@@ -517,6 +522,10 @@ public sealed class StoredClient : IAsyncDisposable, IDisposable
                     && string.Equals(session.Homeserver, homeserver, StringComparison.OrdinalIgnoreCase):
                 // an earlier attempt may have created the device, reuse it
                 return (session, homeserver);
+            case { State: SessionState.Pending, DeviceMayExist: false, StoreIsEmpty: true }:
+                // every build failed: the store is empty, but a failed build closes its connections in the background,
+                // a new store at the same path would lose its write-ahead log when they close
+                return (NewPendingLogin(homeserver, username), homeserver);
             case { State: SessionState.Pending, DeviceMayExist: false }:
                 // no attempt reached the homeserver, the store contains no keys
                 directory.DeleteStore();
@@ -543,6 +552,8 @@ public sealed class StoredClient : IAsyncDisposable, IDisposable
             Username = username,
             // like Synapse generates them: letters only, so they can't clash with key ids or need escaping in URLs
             DeviceId = RandomNumberGenerator.GetString(DeviceIdCharacters, DeviceIdLength),
+            // there was no store or it was just deleted
+            StoreIsEmpty = true,
         };
 
     private static void EnsureSameAccount(
